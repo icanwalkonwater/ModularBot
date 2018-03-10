@@ -1,0 +1,19 @@
+group 'com.jesus_crie'
+version '2.0.0-SNAPSHOT'
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    compile 'net.dv8tion:JDA:3.5.1_347'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+compileJava.options.encoding = 'UTF-8'
