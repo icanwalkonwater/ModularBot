@@ -4,6 +4,9 @@ import org.slf4j.helpers.MarkerIgnoringBase;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import java.time.Instant;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.jesus_crie.modularbot2.utils.F.f;
@@ -41,9 +44,8 @@ public class ModularLogger extends MarkerIgnoringBase {
     }
 
     private void log(@Nonnull ModularLog.Level level, @Nullable Throwable error, @Nonnull String message) {
-        final ModularLog log = new ModularLog(System.currentTimeMillis() / 1000,
-                level, name + ": " + Thread.currentThread().getName(),
-                message, error);
+        final ModularLog log = new ModularLog(new Date(),
+                level, name, Thread.currentThread().getName(), message, error);
         listeners.forEach(l -> l.onLog(log));
     }
 

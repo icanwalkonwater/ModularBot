@@ -1,17 +1,17 @@
 package com.jesus_crie.modularbot2.module;
 
-import com.jesus_crie.modularbot2.ModularBot;
-import com.jesus_crie.modularbot2.ModularBotBuilder;
-import net.dv8tion.jda.core.JDA;
-
 import javax.annotation.Nonnull;
-import java.util.List;
 
-public abstract class BaseModule {
+public abstract class BaseModule implements Lifecycle {
+
+    /**
+     * Package private field, describe the state of the module.
+     */
+    Lifecycle.State state = State.STOPPED;
 
     protected ModuleInfo info;
 
-    protected BaseModule(@Nonnull ModuleInfo i) {
+    protected BaseModule(final @Nonnull ModuleInfo i) {
         info = i;
     }
 
@@ -19,27 +19,26 @@ public abstract class BaseModule {
         return info;
     }
 
-    public void onLoad() {}
+    public State getState() {
+        return state;
+    }
 
-    public void onPreInitialization(@Nonnull ModularBotBuilder builder) {}
+    @Override
+    public String toString() {
+        return info.toString();
+    }
 
-    public void onPostInitialization(@Nonnull ModularBot bot) {}
+    public static final class ModuleInfo {
 
-    public void onPrePrepareShards(@Nonnull ModularBot bot, int shardTotal) {}
-
-    public void onPostShardLoaded(@Nonnull ModularBot bot, List<JDA> shards) {}
-
-    public void onUnload() {}
-
-    public final class ModuleInfo {
-
+        private final Class<? extends BaseModule> moduleClass;
         private final String name;
         private final String author;
         private final String url;
         private final String versionName;
         private final int buildNumber;
 
-        public ModuleInfo(String name, String author, String url, String versionName, int buildNumber) {
+        public ModuleInfo(Class<? extends BaseModule> moduleClass, final String name, final String author, final String url, final String versionName, final int buildNumber) {
+            this.moduleClass = moduleClass;
             this.name = name;
             this.author = author;
             this.url = url;
@@ -69,7 +68,7 @@ public abstract class BaseModule {
 
         @Override
         public String toString() {
-            return name + "#" + buildNumber;
+            return name + "#" + versionName;
         }
 
         @Override

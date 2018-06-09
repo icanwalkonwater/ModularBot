@@ -6,7 +6,7 @@ import org.slf4j.spi.LoggerFactoryBinder;
 public class StaticLoggerBinder implements LoggerFactoryBinder {
 
     private static final StaticLoggerBinder SINGLETON = new StaticLoggerBinder();
-    private static final String REQUESTED_API_VERSION = "1.7";
+    public static final String REQUESTED_API_VERSION = "1.7";
 
     public static StaticLoggerBinder getSingleton() {
         return SINGLETON;
