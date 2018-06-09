@@ -9,7 +9,7 @@ public abstract class BaseModule implements Lifecycle {
      */
     Lifecycle.State state = State.STOPPED;
 
-    protected ModuleInfo info;
+    protected final ModuleInfo info;
 
     protected BaseModule(final @Nonnull ModuleInfo i) {
         info = i;

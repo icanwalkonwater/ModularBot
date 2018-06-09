@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ModularLoggerFactory implements ILoggerFactory {
 
@@ -15,6 +14,10 @@ public class ModularLoggerFactory implements ILoggerFactory {
     @Nonnull
     public Logger getLogger(@Nonnull String name) {
         if (loggers.containsKey(name)) return loggers.get(name);
-        return new ModularLogger(name);
+        else {
+            ModularLogger logger = new ModularLogger(name);
+            loggers.put(name, logger);
+            return logger;
+        }
     }
 }

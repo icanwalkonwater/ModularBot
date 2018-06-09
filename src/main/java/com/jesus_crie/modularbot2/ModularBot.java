@@ -8,20 +8,16 @@ import com.jesus_crie.modularbot2.utils.ModularSessionController;
 import com.jesus_crie.modularbot2.utils.ModularThreadFactory;
 import net.dv8tion.jda.bot.sharding.DefaultShardManager;
 import net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder;
-import net.dv8tion.jda.bot.sharding.ShardManager;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;
 import net.dv8tion.jda.core.events.ReadyEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.ModularLog;
-import org.slf4j.impl.ModularLogger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,7 +26,7 @@ import java.util.function.IntFunction;
 
 public class ModularBot extends DefaultShardManager {
 
-    private static Logger logger = LoggerFactory.getLogger("ModularBot");
+    private static final Logger logger = LoggerFactory.getLogger("ModularBot");
 
     protected final ModuleManager moduleManager;
 
@@ -63,7 +59,7 @@ public class ModularBot extends DefaultShardManager {
                 true, enableBulkDeleteSplitting, true,
                 stateProvider != null ? stateProvider.getIdleProvider() : null,
                 true, useShutdownNow,
-                false, null);
+                false, null, true);
 
         listenerProviders.add(shard -> new ListenerAdapter() {
             @Override
@@ -76,6 +72,15 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.initialize();
 
         logger.info("Modular initialized !");
+    }
+
+    /**
+     * Get the module manager.
+     *
+     * @return The {@link ModuleManager} for this instance.
+     */
+    public ModuleManager getModuleManager() {
+        return moduleManager;
     }
 
     /**
@@ -92,6 +97,9 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.dispatch(Lifecycle::onShardsLoaded);
     }
 
+    /**
+     * Triggered when the bot is ready.
+     */
     private void onReady() {
         moduleManager.finalizeInitialization(this);
     }

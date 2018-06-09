@@ -1,6 +1,9 @@
 package com.jesus_crie.modularbot2.module.commands;
 
+import com.jesus_crie.modularbot2.ModularBotBuilder;
 import com.jesus_crie.modularbot2.module.BaseModule;
+
+import javax.annotation.Nonnull;
 
 public class CommandModule extends BaseModule {
 
@@ -9,5 +12,10 @@ public class CommandModule extends BaseModule {
 
     public CommandModule() {
         super(INFO);
+    }
+
+    @Override
+    public void onLoad(@Nonnull ModularBotBuilder builder) {
+
     }
 }

@@ -24,9 +24,9 @@ public class ModularBotBuilder {
     private int maxReconnectDelay = 900;
     private int poolSize = 2;
     private IAudioSendFactory audioSendFactory = null;
-    private List<IntFunction<Object>> listenersProvider = new ArrayList<>();
+    private final List<IntFunction<Object>> listenersProvider = new ArrayList<>();
 
-    private ModuleManager moduleManager = new ModuleManager();
+    private final ModuleManager moduleManager = new ModuleManager();
 
     public ModularBotBuilder(@Nonnull final String token) {
         this.token = token;

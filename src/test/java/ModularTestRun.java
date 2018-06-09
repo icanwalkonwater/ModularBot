@@ -1,6 +1,7 @@
 import com.jesus_crie.modularbot2.ModularBot;
 import com.jesus_crie.modularbot2.ModularBotBuilder;
 import com.jesus_crie.modularbot2.module.BaseModule;
+import com.jesus_crie.modularbot2.module.commands.CommandModule;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
@@ -20,6 +21,8 @@ public class ModularTestRun extends BaseModule {
                 .registerModule(module)
                 .build();
 
+        CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
+
         try {
             bot.login();
         } catch (LoginException e) {
@@ -37,7 +40,7 @@ public class ModularTestRun extends BaseModule {
         });
     }
 
-    private Logger logger = LoggerFactory.getLogger("ModuleTest");
+    private final Logger logger = LoggerFactory.getLogger("ModuleTest");
 
     protected ModularTestRun() {
         super(new ModuleInfo(ModularTestRun.class, "TestModule", "Jesus-Crie", "", "1.0", 1));
