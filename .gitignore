@@ -1,0 +1,6 @@
+# IDEA
+.idea/workspace.xml
+.idea/vcs.xml
+.gradle/
+.idea/gradle.xml
+.idea/libraries/
