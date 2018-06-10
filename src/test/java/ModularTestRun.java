@@ -32,7 +32,7 @@ public class ModularTestRun extends BaseModule {
         bot.addEventListener(new ListenerAdapter() {
             @Override
             public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-                LOG.info("Message received: " + event.getMessage().getContentDisplay());
+                LOG.info("Message received: " + event.getMessage().getContentRaw());
                 if (event.getMessage().getContentRaw().equals("stop dude")) {
                     bot.shutdown();
                 }

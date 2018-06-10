@@ -1,5 +1,7 @@
 package com.jesus_crie.modularbot2.module;
 
+import com.jesus_crie.modularbot2.ModularBot;
+
 import javax.annotation.Nonnull;
 
 public abstract class BaseModule implements Lifecycle {
@@ -11,8 +13,20 @@ public abstract class BaseModule implements Lifecycle {
 
     protected final ModuleInfo info;
 
+    /**
+     * Reference to the instance of {@link ModularBot}.
+     * Only available if state {@link Lifecycle.State#STARTED} has been reached and {@link #onShardsReady(ModularBot)}
+     * has been called.
+     */
+    protected ModularBot bot;
+
     protected BaseModule(final @Nonnull ModuleInfo i) {
         info = i;
+    }
+
+    @Override
+    public void onShardsReady(@Nonnull ModularBot bot) {
+        this.bot = bot;
     }
 
     public ModuleInfo getInfo() {
@@ -21,6 +35,10 @@ public abstract class BaseModule implements Lifecycle {
 
     public State getState() {
         return state;
+    }
+
+    public ModularBot getBot() {
+        return bot;
     }
 
     @Override
