@@ -1,6 +1,5 @@
 package com.jesus_crie.modularbot2;
 
-import com.jesus_crie.modularbot2.managers.ModularEventManager;
 import com.jesus_crie.modularbot2.module.Lifecycle;
 import com.jesus_crie.modularbot2.module.ModuleManager;
 import com.jesus_crie.modularbot2.utils.IStateProvider;
@@ -61,17 +60,10 @@ public class ModularBot extends DefaultShardManager {
                 true, useShutdownNow,
                 false, null, true);
 
-        listenerProviders.add(shard -> new ListenerAdapter() {
-            @Override
-            public void onReady(ReadyEvent event) {
-                ModularBot.this.onReady();
-            }
-        });
-
         this.moduleManager = moduleManager;
         moduleManager.initialize();
 
-        logger.info("Modular initialized !");
+        logger.info("ModularBot initialized !");
     }
 
     /**
@@ -84,7 +76,7 @@ public class ModularBot extends DefaultShardManager {
     }
 
     /**
-     * Start the bot by connecting it to discord.
+     * Start the bot by connecting it to discord and finalize the initialization of modules.
      *
      * @throws LoginException If the credentials are wrong.
      */
@@ -93,6 +85,16 @@ public class ModularBot extends DefaultShardManager {
         logger.info("Starting shards...");
         moduleManager.dispatch(Lifecycle::onPrepareShards);
         super.login();
+
+        // Add onReady on the first shard
+        getShardById(0).addEventListener(new ListenerAdapter() {
+            @Override
+            public void onReady(ReadyEvent event) {
+                ModularBot.this.onReady();
+                removeEventListener(this);
+            }
+        });
+
         logger.info(shards.size() + " shards successfully spawned !");
         moduleManager.dispatch(Lifecycle::onShardsLoaded);
     }
@@ -104,6 +106,9 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.finalizeInitialization(this);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected ScheduledExecutorService createExecutor(ThreadFactory threadFactory) {
         return Executors.newScheduledThreadPool(corePoolSize, r -> {
@@ -113,24 +118,36 @@ public class ModularBot extends DefaultShardManager {
         });
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addEventListener(Object... listeners) {
         if (shards != null)
             super.addEventListener(listeners);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void addEventListeners(IntFunction<Object> eventListenerProvider) {
         if (shards != null)
             super.addEventListeners(eventListenerProvider);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void removeEventListener(Object... listeners) {
         if (shards != null)
             super.removeEventListener(listeners);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         logger.info("Shutting down...");

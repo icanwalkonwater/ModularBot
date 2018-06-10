@@ -1,6 +1,6 @@
-package com.jesus_crie.modularbot2.module.commands.processing;
+package com.jesus_crie.modularbot2_command.processing;
 
-import com.jesus_crie.modularbot2.module.commands.exception.CommandProcessingException;
+import com.jesus_crie.modularbot2_command.exception.CommandProcessingException;
 import net.dv8tion.jda.core.utils.tuple.Pair;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -74,8 +74,7 @@ class CommandProcessorTest {
     @MethodSource("provideEscape")
     void processEscapeCharacter(String escape, char parsed) throws CommandProcessingException {
         cursor.reset(escape);
-
-        assertThat(cursor.nextToken(), is(CommandProcessor.ESCAPE_CHAR));
+        cursor.nextToken();
         assertThat(processor.processEscapeCharacter(cursor), is(parsed));
     }
 
@@ -189,7 +188,8 @@ class CommandProcessorTest {
     @MethodSource("provideOptionFail")
     void processOptionFail(String input) {
         cursor.reset(input);
-        assertThrows(CommandProcessingException.class, () -> System.out.println(processor.processOptions(cursor)));
+        assertThrows(CommandProcessingException.class, () ->
+                System.out.println(processor.processOptions(cursor)));
     }
 
     private static Stream<Arguments> provideProcess() {

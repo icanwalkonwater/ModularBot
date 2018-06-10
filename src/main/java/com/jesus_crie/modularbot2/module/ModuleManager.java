@@ -37,7 +37,7 @@ public class ModuleManager {
                 BaseModule module = clazz.newInstance();
                 registerModule(builder, module);
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.warn("Failed to autoload module " + clazz.getName(), e);
+                logger.warn("Autoload failed for module " + clazz.getName(), e);
             }
         }
     }

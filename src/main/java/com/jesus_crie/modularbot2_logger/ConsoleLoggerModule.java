@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot2.module.logger;
+package com.jesus_crie.modularbot2_logger;
 
 import com.jesus_crie.modularbot2.ModularBotBuilder;
 import com.jesus_crie.modularbot2.module.BaseModule;
@@ -11,7 +11,8 @@ import java.text.SimpleDateFormat;
 
 public class ConsoleLoggerModule extends BaseModule {
 
-    private static final ModuleInfo INFO = new ModuleInfo(ConsoleLoggerModule.class, "Console Logger", "Jesus-Crie", "https://github.com/JesusCrie/ModularBot", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo(ConsoleLoggerModule.class, "Console Logger",
+            "Jesus-Crie", "https://github.com/JesusCrie/ModularBot", "1.0", 1);
 
     private static final SimpleDateFormat FORMAT_TIME = new SimpleDateFormat("HH:mm:ss");
 

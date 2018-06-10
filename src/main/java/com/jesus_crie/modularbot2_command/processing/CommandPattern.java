@@ -1,8 +1,8 @@
-package com.jesus_crie.modularbot2.module.commands.processing;
+package com.jesus_crie.modularbot2_command.processing;
 
-import com.jesus_crie.modularbot2.module.commands.CommandEvent;
-import com.jesus_crie.modularbot2.module.commands.CommandModule;
-import com.jesus_crie.modularbot2.module.commands.exception.CommandMappingException;
+import com.jesus_crie.modularbot2_command.CommandEvent;
+import com.jesus_crie.modularbot2_command.CommandModule;
+import com.jesus_crie.modularbot2_command.exception.CommandMappingException;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;

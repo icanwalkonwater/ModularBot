@@ -2,8 +2,8 @@ package com.jesus_crie.modularbot2;
 
 import com.jesus_crie.modularbot2.module.BaseModule;
 import com.jesus_crie.modularbot2.module.ModuleManager;
-import com.jesus_crie.modularbot2.module.commands.CommandModule;
-import com.jesus_crie.modularbot2.module.logger.ConsoleLoggerModule;
+import com.jesus_crie.modularbot2_command.CommandModule;
+import com.jesus_crie.modularbot2_logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot2.utils.IStateProvider;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;

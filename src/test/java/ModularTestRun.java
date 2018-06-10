@@ -1,7 +1,7 @@
 import com.jesus_crie.modularbot2.ModularBot;
 import com.jesus_crie.modularbot2.ModularBotBuilder;
 import com.jesus_crie.modularbot2.module.BaseModule;
-import com.jesus_crie.modularbot2.module.commands.CommandModule;
+import com.jesus_crie.modularbot2_command.CommandModule;
 import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;

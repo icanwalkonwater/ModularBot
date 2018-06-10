@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot2.module.commands.exception;
+package com.jesus_crie.modularbot2_command.exception;
 
 public class CommandProcessingException extends Exception {
 

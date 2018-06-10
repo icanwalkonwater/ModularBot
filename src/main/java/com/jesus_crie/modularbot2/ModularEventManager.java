@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot2.managers;
+package com.jesus_crie.modularbot2;
 
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.hooks.InterfacedEventManager;
