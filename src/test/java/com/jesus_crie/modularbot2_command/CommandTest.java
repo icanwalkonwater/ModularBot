@@ -22,7 +22,7 @@ public class CommandTest {
     @Test
     void testArgumentRegister() {
         InnerCommand command = new InnerCommand();
-        assertThat(command.getPatterns().size(), is(9));
+        assertThat(command.getPatterns().size(), is(10));
     }
 
     @Test
@@ -66,9 +66,14 @@ public class CommandTest {
             System.out.println("3 args, list");
         }
 
-        @RegisterPattern(arguments = "URL")
+        @RegisterPattern
         protected void threeArgument(CommandEvent event, Options options, URL url) {
             System.out.println("3 args, arg");
+        }
+
+        @RegisterPattern(arguments = "WORD")
+        protected void threeArgument(CommandEvent event, Options options, String... string) {
+            System.out.println("3 args, arg implicit");
         }
 
         @RegisterPattern

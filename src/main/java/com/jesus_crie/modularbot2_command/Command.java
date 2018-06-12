@@ -6,6 +6,8 @@ import com.jesus_crie.modularbot2_command.processing.Argument;
 import com.jesus_crie.modularbot2_command.processing.CommandPattern;
 import com.jesus_crie.modularbot2_command.processing.Option;
 import com.jesus_crie.modularbot2_command.processing.Options;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class Command {
+
+    private static final Logger LOG = LoggerFactory.getLogger("Command");
 
     protected final List<String> aliases = new ArrayList<>();
     protected final AccessLevel accessLevel;
@@ -51,7 +55,7 @@ public abstract class Command {
                         // No parameters
                         patterns.add(new CommandPattern((event, args, options) -> invokeMethod(method)));
 
-                    // Have parameter
+                        // Have parameter
                     } else {
                         if (!params[0].isAssignableFrom(CommandEvent.class))
                             throw new InvalidCommandPatternMethodException("Invalid method, the first argument must be a CommandEvent: " + method);
@@ -60,7 +64,7 @@ public abstract class Command {
                             // CommandEvent
                             patterns.add(new CommandPattern((event, args, options) -> invokeMethod(method, event)));
 
-                        // More than 1 arg
+                            // More than 1 arg
                         } else {
 
                             // 2 arguments
@@ -83,7 +87,7 @@ public abstract class Command {
                                     ));
                                 }
 
-                            // More than 2 arguments
+                                // More than 2 arguments
                             } else {
                                 if (!params[1].isAssignableFrom(Options.class))
                                     throw new InvalidCommandPatternMethodException("Invalid method, second argument must be a Options: " + method);
@@ -105,7 +109,7 @@ public abstract class Command {
                                         ));
                                     }
 
-                                // More than 3 arguments
+                                    // More than 3 arguments
                                 } else {
                                     // CommandEvent, Options, Args...
                                     patterns.add(new CommandPattern(
@@ -135,13 +139,17 @@ public abstract class Command {
             arguments = translateArguments(method);
 
             for (int pos = 0; pos < arguments.length; pos++) {
-                if (!arguments[pos].getArgumentsType().isAssignableFrom(paramsToTranslate[pos].getType()))
+                if (!arguments[pos].getArgumentsType().isAssignableFrom(paramsToTranslate[pos].getType())
+                        && (paramsToTranslate[pos].isVarArgs()
+                        && !arguments[pos].getArgumentsType().isAssignableFrom(paramsToTranslate[pos].getType().getComponentType())))
                     throw new InvalidCommandPatternMethodException("Argument in annotation does not match parameters at position " + pos + ": " + method);
 
                 if (paramsToTranslate[pos].isVarArgs())
                     arguments[pos] = arguments[pos].makeRepeatable();
             }
 
+            // TODO 12/06/2018 remove
+            System.out.println("|>" + Arrays.toString(arguments));
             return arguments;
         }
 
@@ -152,6 +160,9 @@ public abstract class Command {
         for (int pos = 0; pos < paramsToTranslate.length; pos++) {
             final Parameter parameter = paramsToTranslate[pos];
             try {
+                if (!parameter.isNamePresent())
+                    LOG.warn("Parameters name aren't available ! Maybe you forgot to provide the argument -parameters when compiling ?");
+
                 Argument<?> arg = Argument.getArgument(parameter.getType(), parameter.getName());
                 if (parameter.isVarArgs())
                     arg = arg.makeRepeatable();
@@ -165,15 +176,28 @@ public abstract class Command {
             }
         }
 
+        // TODO 12/06/2018 remove
+        System.out.println("->" + method.getName() + " " + Arrays.toString(arguments));
+
         return arguments;
     }
 
+    @SuppressWarnings("ConstantConditions")
     private Argument<?>[] translateArguments(@Nonnull final Method method) {
         final RegisterPattern annotation = method.getAnnotation(RegisterPattern.class);
+        // TODO 12/06/2018 remove
+        System.out.println(method.getName() + " " + Arrays.toString(annotation.arguments()));
         final Argument<?>[] arguments = new Argument[annotation.arguments().length];
 
         for (int pos = 0; pos < annotation.arguments().length; pos++) {
-            final Argument arg = Argument.getArgument(annotation.arguments()[pos]);
+            final Argument arg;
+            final String toTranslate = annotation.arguments()[pos];
+
+            if (!toTranslate.endsWith("..."))
+                arg = Argument.getArgument(toTranslate).makeRepeatable();
+            else
+                arg = Argument.getArgument(toTranslate.substring(0, toTranslate.length() - 3));
+
             if (arg == null)
                 throw new InvalidCommandPatternMethodException("Unknown argument at pos " + pos + ": " + Arrays.toString(annotation.arguments()));
             arguments[pos] = arg;
@@ -185,7 +209,8 @@ public abstract class Command {
     private void invokeMethod(@Nonnull Method method, @Nullable Object... args) {
         try {
             method.invoke(this, args);
-        } catch (IllegalAccessException | InvocationTargetException ignore) {}
+        } catch (IllegalAccessException | InvocationTargetException ignore) {
+        }
     }
 
     @Nonnull

@@ -231,7 +231,7 @@ public class Argument<T> implements Cloneable {
             throw new InvalidCommandPatternMethodException("No Argument match this type !");
             // One match, don't go further
         else if (assignableMatches.size() == 1)
-            return (Argument<? super T>) assignableMatches.get(0);
+            return (Argument<? super T>) assignableMatches.get(0).getValue();
 
         // Rank arguments by depth
 
@@ -254,14 +254,14 @@ public class Argument<T> implements Cloneable {
         // Check the indication
 
         if (indication == null || indication.equals(""))
-            throw new InvalidCommandPatternMethodException("Too much ambiguity for this argument consider using an indication.");
+            throw new InvalidCommandPatternMethodException("Too much ambiguity and no indication (or maybe you forgot to use \"-parameters\" in the compiler).");
 
         List<Map.Entry<String, Argument<?>>> matchIndication = closestArguments.stream()
                 .filter(e -> e.getKey().startsWith(indication.toUpperCase()))
                 .collect(Collectors.toList());
 
         if (matchIndication.size() == 1)
-            return (Argument<? super T>) matchIndication.get(0);
+            return (Argument<? super T>) matchIndication.get(0).getValue();
 
         if (matchIndication.size() == 0)
             throw new InvalidCommandPatternMethodException("No indication match for this argument !");
@@ -314,7 +314,7 @@ public class Argument<T> implements Cloneable {
 
     @Nonnull
     public Argument<T> makeRepeatable() {
-        Argument<T> a = clone();
+        final Argument<T> a = clone();
         a.repeatable = true;
         return a;
     }
@@ -327,7 +327,7 @@ public class Argument<T> implements Cloneable {
         return argumentsType;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "CloneDoesntDeclareCloneNotSupportedException"})
     @Override
     protected Argument<T> clone() {
         try {
@@ -335,5 +335,10 @@ public class Argument<T> implements Cloneable {
         } catch (CloneNotSupportedException ignore) {
             return null;
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Argument[" + argumentsType.getSimpleName() + (repeatable ? "..." : "") + "]";
     }
 }
