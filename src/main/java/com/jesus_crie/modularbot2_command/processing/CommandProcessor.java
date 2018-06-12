@@ -46,6 +46,15 @@ public class CommandProcessor {
         this.flags = flags;
     }
 
+    /**
+     * Process the entire input string and return a list of all the arguments and a map with each option and their
+     * corresponding arguments.
+     *
+     * @param input The input string to process.
+     * @return A list containing the arguments and a map containing the options associated with their arguments.
+     * @throws CommandProcessingException When there is a syntax error in the input.
+     */
+    @Nonnull
     public Pair<List<String>, Map<String, String>> process(@Nonnull String input) throws CommandProcessingException {
         input = input.trim();
 

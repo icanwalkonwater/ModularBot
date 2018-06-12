@@ -75,7 +75,7 @@ public class Options {
      * @see #has(String)
      */
     public <T> T get(@Nonnull Option<T> option) {
-        if (!has(option)) return null;
+        if (!has(option) || !option.hasArgument()) return null;
 
         String raw = options.get(option);
         if (raw.equals("")) return null;

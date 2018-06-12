@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot2_command.processing;
 
 import com.jesus_crie.modularbot2_command.CommandModule;
+import com.jesus_crie.modularbot2_command.annotations.RegisterArgument;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
@@ -11,10 +12,10 @@ class ArgumentTest {
 
     @Test
     void register() {
-        assertThat(Argument.getArgument("BOOLEAN").orElse(null), is(Argument.BOOLEAN));
-        assertThat(Argument.getArgument("TEST").orElse(null), is(nullValue()));
+        assertThat(Argument.getArgument("BOOLEAN"), is(Argument.BOOLEAN));
+        assertThat(Argument.getArgument("TEST"), is(nullValue()));
         Argument.registerArguments(TestArguments.class);
-        assertThat(Argument.getArgument("TEST").orElse(null), is(TestArguments.TEST));
+        assertThat(Argument.getArgument("TEST"), is(TestArguments.TEST));
     }
 
     @Test
@@ -25,13 +26,18 @@ class ArgumentTest {
         assertThat(a.tryMap(new CommandModule(), "hey"), is(nullValue()));
     }
 
+    @Test
+    void getGeneric() {
+        assertThat(Argument.STRING.getArgumentsType(), equalTo(String.class));
+    }
+
     public static class TestArguments {
 
-        @Argument.RegisterArgument
-        public static Argument<Object> TEST = new Argument<>("", Argument.EMPTY_MAPPER);
-        @Argument.RegisterArgument
-        public static Argument<Object> HEY = new Argument<>("", Argument.EMPTY_MAPPER);
-        @Argument.RegisterArgument
-        public static Argument<Object> YO = new Argument<>("", Argument.EMPTY_MAPPER);
+        @RegisterArgument
+        public static Argument TEST = new Argument(String.class, "", Argument.EMPTY_MAPPER);
+        @RegisterArgument
+        public static Argument HEY = new Argument(String.class, "", Argument.EMPTY_MAPPER);
+        @RegisterArgument
+        public static Argument<String> YO = new Argument<>(String.class, "", (m, b) -> "");
     }
 }

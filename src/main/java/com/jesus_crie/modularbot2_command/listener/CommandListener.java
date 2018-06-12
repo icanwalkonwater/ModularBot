@@ -3,8 +3,13 @@ package com.jesus_crie.modularbot2_command.listener;
 import com.jesus_crie.modularbot2_command.Command;
 import com.jesus_crie.modularbot2_command.CommandEvent;
 import com.jesus_crie.modularbot2_command.CommandModule;
+import com.jesus_crie.modularbot2_command.exception.CommandProcessingException;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
+import net.dv8tion.jda.core.utils.tuple.Pair;
+
+import java.util.List;
+import java.util.Map;
 
 public class CommandListener extends ListenerAdapter {
 
@@ -39,7 +44,11 @@ public class CommandListener extends ListenerAdapter {
             return;
         }
 
-
+        try {
+            Pair<List<String>, Map<String, String>> content = module.getCommandProcessor().process(event.getMessage().getContentRaw());
+        } catch (CommandProcessingException e) {
+            // TODO 11/06/2018 notify error processing command
+        }
 
         // TODO 09/06/2018 stats
 

@@ -1,11 +1,9 @@
 package com.jesus_crie.modularbot2_command.processing;
 
+import com.jesus_crie.modularbot2_command.annotations.RegisterOption;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
@@ -74,7 +72,6 @@ public class Option<T> {
      */
     public static void registerOptions(@Nonnull Option... options) {
         for (Option op : options) {
-
             Option.options.put(op.name.toUpperCase(), op);
         }
     }
@@ -136,10 +133,5 @@ public class Option<T> {
 
     public Argument<T> getArgument() {
         return argument;
-    }
-
-    @Target(ElementType.FIELD)
-    @Retention(RetentionPolicy.RUNTIME)
-    public @interface RegisterOption {
     }
 }

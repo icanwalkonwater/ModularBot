@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot2_command.processing;
 
+import com.jesus_crie.modularbot2.utils.TriConsumer;
 import com.jesus_crie.modularbot2_command.CommandEvent;
 import com.jesus_crie.modularbot2_command.CommandModule;
 import com.jesus_crie.modularbot2_command.exception.CommandMappingException;
@@ -7,26 +8,32 @@ import com.jesus_crie.modularbot2_command.exception.CommandMappingException;
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.BiConsumer;
 
 public class CommandPattern {
 
-    private List<Argument> arguments;
-    private BiConsumer<CommandEvent, List<Object>> action;
+    private final List<Argument> arguments;
+    private final TriConsumer<CommandEvent, List<Object>, Options> action;
 
-    public CommandPattern(Argument[] arguments, BiConsumer<CommandEvent, List<Object>> action) {
+    public CommandPattern(@Nonnull final TriConsumer<CommandEvent, List<Object>, Options> action) {
+        arguments = Collections.emptyList();
+        this.action = action;
+    }
+
+    public CommandPattern(@Nonnull final Argument[] arguments, @Nonnull final TriConsumer<CommandEvent, List<Object>, Options> action) {
         this.arguments = Arrays.asList(arguments);
         this.action = action;
     }
 
+    @Nonnull
     public List<Object> tryMap(@Nonnull CommandModule module, @Nonnull List<String> rawArgs) throws CommandMappingException {
         if (arguments.size() == 0 && rawArgs.size() > 0
                 || rawArgs.size() < arguments.size()
                 || (rawArgs.size() > arguments.size() && !getLastArgument().isRepeatable()))
             throw new CommandMappingException("Wrong amount of arguments !");
 
-        List<Object> args = new ArrayList<>();
+        final List<Object> args = new ArrayList<>();
 
         for (int i = 0; i < rawArgs.size(); i++) {
             String raw = rawArgs.get(i);
@@ -42,8 +49,8 @@ public class CommandPattern {
         return args;
     }
 
-    public void execute(@Nonnull CommandEvent event, @Nonnull List<Object> arguments) {
-        action.accept(event, arguments);
+    public void execute(@Nonnull CommandEvent event, @Nonnull List<Object> arguments, @Nonnull Options options) {
+        action.accept(event, arguments, options);
     }
 
     private Argument getLastArgument() {

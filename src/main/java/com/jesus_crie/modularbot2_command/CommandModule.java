@@ -37,7 +37,11 @@ public class CommandModule extends BaseModule {
         Collections.addAll(commandStorage, commands);
     }
 
-    public void enableProcessorFlags(int... flags) {
+    public CommandProcessor getCommandProcessor() {
+        return processor;
+    }
+
+    public void setCommandProcessorFlags(int... flags) {
         int flag = 0;
         for (int f : flags)
             flag |= f;
