@@ -1,7 +1,9 @@
 package com.jesus_crie.modularbot2_command;
 
+import com.jesus_crie.modularbot2_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot2_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot2_command.exception.InvalidCommandPatternMethodException;
+import com.jesus_crie.modularbot2_command.processing.Option;
 import com.jesus_crie.modularbot2_command.processing.Options;
 import net.dv8tion.jda.core.entities.Channel;
 import net.dv8tion.jda.core.entities.TextChannel;
@@ -22,7 +24,18 @@ public class CommandTest {
     @Test
     void testArgumentRegister() {
         InnerCommand command = new InnerCommand();
+
         assertThat(command.getPatterns().size(), is(10));
+
+        assertThat(command.getName(), equalTo("test"));
+        assertThat(command.getAliases().size(), equalTo(2));
+        assertThat(command.getDescription(), equalTo("No description."));
+        assertThat(command.getDescription(), equalTo(command.getShortDescription()));
+
+        assertThat(command.getOptions().size(), is(2));
+        assertThat(command.getOptions().contains(Option.FORCE), is(true));
+        assertThat(command.getOptions().contains(Option.NAME), is(true));
+        assertThat(command.getOptions().contains(Option.RECURSIVE), is(false));
     }
 
     @Test
@@ -30,11 +43,8 @@ public class CommandTest {
         assertThrows(InvalidCommandPatternMethodException.class, WrongCommand::new);
     }
 
+    @CommandInfo(name = {"test", "t"}, options = {"FORCE", "NAME"})
     public static class InnerCommand extends Command {
-
-        public InnerCommand() {
-            super("test", AccessLevel.EVERYONE);
-        }
 
         @RegisterPattern
         protected void noArguments() {

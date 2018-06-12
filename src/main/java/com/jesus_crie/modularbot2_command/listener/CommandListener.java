@@ -4,6 +4,7 @@ import com.jesus_crie.modularbot2_command.Command;
 import com.jesus_crie.modularbot2_command.CommandEvent;
 import com.jesus_crie.modularbot2_command.CommandModule;
 import com.jesus_crie.modularbot2_command.exception.CommandProcessingException;
+import com.jesus_crie.modularbot2_command.processing.Options;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.tuple.Pair;
@@ -45,13 +46,16 @@ public class CommandListener extends ListenerAdapter {
         }
 
         try {
-            Pair<List<String>, Map<String, String>> content = module.getCommandProcessor().process(event.getMessage().getContentRaw());
+            final Pair<List<String>, Map<String, String>> processedContent = module.getCommandProcessor().process(event.getMessage().getContentRaw());
+
+            // TODO 13/06/2018 notify command processed successfully
+
+            final Options options = new Options(module, command, processedContent.getRight());
+            if (!command.execute(module, cmdEvent, options, processedContent.getLeft())) {
+                // TODO 13/06/2018 notify not pattern found
+            }
         } catch (CommandProcessingException e) {
             // TODO 11/06/2018 notify error processing command
         }
-
-        // TODO 09/06/2018 stats
-
-        // TODO 09/06/2018 execute cmd
     }
 }

@@ -55,7 +55,7 @@ public class Option<T> {
         for (Field field : clazz.getFields()) {
             if (Modifier.isStatic(field.getModifiers())
                     && field.isAnnotationPresent(RegisterOption.class)
-                    && field.getType() == Argument.class) {
+                    && field.getType() == Option.class) {
                 try {
                     options.put(field.getName(), (Option) field.get(null));
                 } catch (IllegalAccessException ignore) {
@@ -81,26 +81,29 @@ public class Option<T> {
      *
      * @see Argument
      * @see Argument#getArgument(String)
+     * @return The requested argument, or {@code null} if not found.
      */
-    public static Optional<Option> getOption(@Nonnull String name) {
-        return Optional.ofNullable(options.get(name));
+    public static Option getOption(@Nonnull String name) {
+        return options.get(name);
     }
 
     /**
      * Get an option by its long or short name.
      *
      * @param name The name, short or long.
-     * @return An {@link Optional Optional} containing or not the option.
+     * @return The corresponding option or {@code null} if not found.
      */
-    public static Optional<Option> getOptionByName(@Nonnull String name) {
+    public static Option getOptionByName(@Nonnull String name) {
         if (name.length() == 1) {
             return options.values().stream()
                     .filter(v -> v.getShortName() == name.charAt(0))
-                    .findAny();
+                    .findAny()
+                    .orElse(null);
         } else {
             return options.values().stream()
                     .filter(v -> v.getLongName().equals(name))
-                    .findAny();
+                    .findAny()
+                    .orElse(null);
         }
     }
 
@@ -131,7 +134,13 @@ public class Option<T> {
         return argument == null;
     }
 
+    @Nullable
     public Argument<T> getArgument() {
         return argument;
+    }
+
+    @Override
+    public String toString() {
+        return "Option{" + shortName + ", " + name + "}";
     }
 }

@@ -26,6 +26,14 @@ public class CommandPattern {
         this.action = action;
     }
 
+    /**
+     * Try to map the given arguments against this pattern and return them mapped to the correct objects.
+     *
+     * @param module  The module.
+     * @param rawArgs The raw arguments.
+     * @return A list containing the mapped objects.
+     * @throws CommandMappingException If the pattern does not match the arguments.
+     */
     @Nonnull
     public List<Object> tryMap(@Nonnull CommandModule module, @Nonnull List<String> rawArgs) throws CommandMappingException {
         if (arguments.size() == 0 && rawArgs.size() > 0
@@ -49,7 +57,7 @@ public class CommandPattern {
         return args;
     }
 
-    public void execute(@Nonnull CommandEvent event, @Nonnull List<Object> arguments, @Nonnull Options options) {
+    public void execute(@Nonnull CommandEvent event, @Nonnull Options options, @Nonnull List<Object> arguments) {
         action.accept(event, arguments, options);
     }
 

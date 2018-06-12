@@ -1,6 +1,9 @@
 package com.jesus_crie.modularbot2_command;
 
+import com.jesus_crie.modularbot2_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot2_command.annotations.RegisterPattern;
+import com.jesus_crie.modularbot2_command.exception.CommandMappingException;
+import com.jesus_crie.modularbot2_command.exception.InvalidCommandInfoException;
 import com.jesus_crie.modularbot2_command.exception.InvalidCommandPatternMethodException;
 import com.jesus_crie.modularbot2_command.processing.Argument;
 import com.jesus_crie.modularbot2_command.processing.CommandPattern;
@@ -25,21 +28,76 @@ public abstract class Command {
 
     protected final List<String> aliases = new ArrayList<>();
     protected final AccessLevel accessLevel;
+    protected final String shortDescription;
+    protected final String description;
 
     protected final List<CommandPattern> patterns = new ArrayList<>();
     protected final List<Option> options = new ArrayList<>();
 
+    /**
+     * Uses the annotation to fill the fields.
+     *
+     * @throws InvalidCommandInfoException If the annotation isn't present.
+     */
     protected Command() {
-        // TODO 10/06/2018 annotation
-        accessLevel = AccessLevel.EVERYONE; // temp
+        this(AccessLevel.EVERYONE);
     }
 
-    protected Command(@Nonnull String name, @Nonnull AccessLevel accessLevel) {
-        aliases.add(name);
+    /**
+     * Uses the annotation to fill the fields and provide a custom access level.
+     *
+     * @throws InvalidCommandInfoException If the annotation isn't present
+     */
+    protected Command(@Nonnull final AccessLevel accessLevel) {
         this.accessLevel = accessLevel;
 
-        // Register methods pattern
+        if (!getClass().isAnnotationPresent(CommandInfo.class))
+            throw new InvalidCommandInfoException("The annotation isn't present on the class !");
 
+        final CommandInfo info = getClass().getAnnotation(CommandInfo.class);
+        Collections.addAll(aliases, info.name());
+        shortDescription = info.shortDescription();
+        description = info.description();
+
+        final String[] rawOptions = info.options();
+        for (String raw : rawOptions) {
+            Option option = Option.getOption(raw);
+
+            if (option == null)
+                throw new InvalidCommandInfoException("Unrecognized option: " + raw);
+
+            else if (options.stream()
+                    .anyMatch(o -> o.getShortName() == option.getShortName() || o.getLongName().equals(option.getLongName())))
+                throw new InvalidCommandInfoException("An option has the same short or long name than another: " + option);
+
+            options.add(option);
+        }
+
+        registerCommandPatterns();
+    }
+
+    // Default constructors, does not use the annotation
+
+    protected Command(@Nonnull String name, @Nonnull AccessLevel accessLevel) {
+        this(name, accessLevel, "No description");
+    }
+
+    protected Command(@Nonnull final String name, @Nonnull final AccessLevel accessLevel,
+                      @Nonnull final String shortDescription) {
+        this(name, accessLevel, shortDescription, shortDescription);
+    }
+
+    protected Command(@Nonnull final String name, @Nonnull final AccessLevel accessLevel,
+                      @Nonnull final String shortDescription, @Nonnull final String description) {
+        aliases.add(name);
+        this.accessLevel = accessLevel;
+        this.shortDescription = shortDescription;
+        this.description = description;
+
+        registerCommandPatterns();
+    }
+
+    private void registerCommandPatterns() {
         // For each class starting from the lower to the Object class
         for (Class<?> current = getClass(); current != null; current = current.getSuperclass()) {
 
@@ -148,8 +206,6 @@ public abstract class Command {
                     arguments[pos] = arguments[pos].makeRepeatable();
             }
 
-            // TODO 12/06/2018 remove
-            System.out.println("|>" + Arrays.toString(arguments));
             return arguments;
         }
 
@@ -176,17 +232,12 @@ public abstract class Command {
             }
         }
 
-        // TODO 12/06/2018 remove
-        System.out.println("->" + method.getName() + " " + Arrays.toString(arguments));
-
         return arguments;
     }
 
     @SuppressWarnings("ConstantConditions")
     private Argument<?>[] translateArguments(@Nonnull final Method method) {
         final RegisterPattern annotation = method.getAnnotation(RegisterPattern.class);
-        // TODO 12/06/2018 remove
-        System.out.println(method.getName() + " " + Arrays.toString(annotation.arguments()));
         final Argument<?>[] arguments = new Argument[annotation.arguments().length];
 
         for (int pos = 0; pos < annotation.arguments().length; pos++) {
@@ -213,6 +264,37 @@ public abstract class Command {
         }
     }
 
+    /**
+     * Try to execute this command by matching the arguments against the patterns.
+     *
+     * @param module    The module.
+     * @param event     The corresponding event.
+     * @param options   The options passed to the command.
+     * @param arguments The arguments passed.
+     * @return {@code True} if a pattern as successfully matched, otherwise {@code false}.
+     */
+    public boolean execute(@Nonnull final CommandModule module, @Nonnull final CommandEvent event,
+                           @Nonnull final Options options, @Nonnull final List<String> arguments) {
+        for (CommandPattern pattern : patterns) {
+            try {
+                // Try to map the arguments and execute the pattern
+                List<Object> args = pattern.tryMap(module, arguments);
+                pattern.execute(event, options, args);
+                return true;
+
+            } catch (CommandMappingException expected) {
+                // If the arguments doesn't match the pattern
+            }
+        }
+
+        return false;
+    }
+
+    @Nonnull
+    public String getName() {
+        return aliases.get(0);
+    }
+
     @Nonnull
     public List<String> getAliases() {
         return aliases;
@@ -221,6 +303,16 @@ public abstract class Command {
     @Nonnull
     public AccessLevel getAccessLevel() {
         return accessLevel;
+    }
+
+    @Nonnull
+    public String getDescription() {
+        return description;
+    }
+
+    @Nonnull
+    public String getShortDescription() {
+        return shortDescription;
     }
 
     @Nonnull
