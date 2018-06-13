@@ -11,7 +11,7 @@ import java.lang.annotation.*;
  * Use on a method inside a class that extends {@link Command Command} to associate
  * a pattern with it.
  * The method should be protected or higher and should take 3 arguments in that order:
- *      {@link CommandEvent CommandEvent}, {@link java.util.List List<Object>}, {@link Options Options}.
+ *      {@link CommandEvent CommandEvent}, {@link java.util.List List}, {@link Options Options}.
  * The return type doesn't matter.
  */
 @Target(ElementType.METHOD)

@@ -45,7 +45,7 @@ public class ConsoleLoggerModule extends BaseModule {
     @Override
     public void onLoad(@Nonnull ModularBotBuilder builder) {
         ModularLogger.addListener(log -> {
-            if (log.level.getLevel() > MIN_LEVEL.getLevel()) {
+            if (log.level.getLevel() >= MIN_LEVEL.getLevel()) {
 
                 final String message = MessageFormat.format(FORMAT_LOG,
                         FORMAT_TIME.format(log.time),

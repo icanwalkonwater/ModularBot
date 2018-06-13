@@ -3,6 +3,8 @@ package com.jesus_crie.modularbot_command;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot_command.listener.CommandListener;
+import com.jesus_crie.modularbot_command.listener.DiscordCommandListener;
+import com.jesus_crie.modularbot_command.listener.NopCommandListener;
 import com.jesus_crie.modularbot_command.processing.CommandProcessor;
 
 import javax.annotation.Nonnull;
@@ -24,13 +26,15 @@ public class CommandModule extends BaseModule {
     // Command processor
     private CommandProcessor processor = new CommandProcessor();
 
+    private CommandListener listener = new NopCommandListener();
+
     public CommandModule() {
         super(INFO);
     }
 
     @Override
     public void onLoad(@Nonnull ModularBotBuilder builder) {
-        builder.addListeners(new CommandListener(this));
+        builder.addListeners(new DiscordCommandListener(this));
     }
 
     public void registerCommands(@Nonnull Command... commands) {
@@ -60,5 +64,14 @@ public class CommandModule extends BaseModule {
                 .filter(c -> c.getAliases().contains(name))
                 .findAny()
                 .orElse(null);
+    }
+
+    public void setListener(@Nonnull final CommandListener listener) {
+        this.listener = listener;
+    }
+
+    @Nonnull
+    public CommandListener getListener() {
+        return listener;
     }
 }

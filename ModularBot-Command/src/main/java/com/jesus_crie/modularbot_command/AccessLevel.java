@@ -57,7 +57,7 @@ public class  AccessLevel {
      * @param requiredPermissions   The permissions required if in a guild.
      * @param onlyGuild             Flag that indicate that this can only occur in a guild.
      * @param onlyPrivate           Flag that indicate that this can only occur in a private channel.
-     * @param user                  Flag that indicate that only this user can use this, <bold>overwrite every other flag</bold>.
+     * @param user                  Flag that indicate that only this user can use this, /!\ overwrite every other flag /!\.
      */
     public AccessLevel(@Nonnull EnumSet<Permission> requiredPermissions, boolean onlyGuild, boolean onlyPrivate, long user) {
         this.requiredPermissions = requiredPermissions;

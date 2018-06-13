@@ -130,7 +130,7 @@ public class Option<T> {
     }
 
     public boolean hasArgument() {
-        return argument == null;
+        return argument != null;
     }
 
     @Nullable

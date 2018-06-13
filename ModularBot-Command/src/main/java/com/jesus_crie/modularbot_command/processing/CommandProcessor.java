@@ -56,10 +56,13 @@ public class CommandProcessor {
      */
     @Nonnull
     public Pair<List<String>, Map<String, String>> process(@Nonnull String input) throws CommandProcessingException {
-        input = input.trim();
-
         List<String> arguments = new ArrayList<>();
         Map<String, String> options = new LinkedHashMap<>();
+
+        if (input.length() == 0)
+            return Pair.of(arguments, options);
+
+        input = input.trim();
         Cursor cursor = new Cursor(input);
 
         char n;

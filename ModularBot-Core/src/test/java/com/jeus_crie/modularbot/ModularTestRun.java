@@ -3,10 +3,14 @@ package com.jeus_crie.modularbot;
 import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
+import com.jesus_crie.modularbot_command.Command;
+import com.jesus_crie.modularbot_command.CommandEvent;
 import com.jesus_crie.modularbot_command.CommandModule;
+import com.jesus_crie.modularbot_command.annotations.CommandInfo;
+import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
+import com.jesus_crie.modularbot_command.processing.Option;
+import com.jesus_crie.modularbot_command.processing.Options;
 import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
-import net.dv8tion.jda.core.events.message.guild.GuildMessageReceivedEvent;
-import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,28 +26,18 @@ public class ModularTestRun extends BaseModule {
                 .useShutdownNow()
                 .registerModules(
                         new ConsoleLoggerModule(),
-                        new CommandModule(),
-                        new ModularTestRun()
+                        new CommandModule()
                 )
                 .build();
 
         CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
+        cmd.registerCommands(new StopCommand());
 
         try {
             bot.login();
         } catch (LoginException e) {
             e.printStackTrace();
         }
-
-        bot.addEventListener(new ListenerAdapter() {
-            @Override
-            public void onGuildMessageReceived(GuildMessageReceivedEvent event) {
-                LOG.info("Message received: " + event.getMessage().getContentRaw());
-                if (event.getMessage().getContentRaw().equals("stop dude")) {
-                    bot.shutdown();
-                }
-            }
-        });
     }
 
     private final Logger logger = LoggerFactory.getLogger("ModuleTest");
@@ -55,5 +49,35 @@ public class ModularTestRun extends BaseModule {
     @Override
     public void onShardsReady(final @Nonnull ModularBot bot) {
         logger.info("Bot ready !");
+    }
+
+    @CommandInfo(
+            name = "stop",
+            shortDescription = "Stops the bot",
+            options = {"NAME", "FORCE"})
+    public static class StopCommand extends Command {
+
+        public StopCommand() {
+            super();
+            LOG.info(String.valueOf(patterns));
+        }
+
+        @RegisterPattern
+        public void execute(CommandEvent event, Options options) {
+            if (options.has(Option.FORCE)) {
+                event.fastReply("Force shut down");
+            } else if (options.has(Option.NAME)) {
+                if (options.get(Option.NAME) != null)
+                    event.fastReply("Shut down special for " + options.get(Option.NAME));
+                else {
+                    event.fastReply("Missing argument for name");
+                    return;
+                }
+            } else {
+                event.fastReply("Regular shutdown");
+            }
+
+            event.getModule().getBot().shutdown();
+        }
     }
 }
