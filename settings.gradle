@@ -1,1 +1,8 @@
-rootProject.name = 'modularbot-core'
+rootProject.name = 'modularbot'
+include 'ModularBot-Core'
+findProject(':ModularBot-Core')?.name = 'modularbot-core'
+include 'ModularBot-Command'
+findProject(':ModularBot-Command')?.name = 'modularbot-command'
+include 'ModularBot-Logger'
+findProject(':ModularBot-Logger')?.name = 'modularbot-logger'
+

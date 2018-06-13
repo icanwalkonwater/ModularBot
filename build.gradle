@@ -1,25 +1,119 @@
-group 'com.jesus_crie'
-version '2.0.0-SNAPSHOT'
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'maven'
+    apply plugin: 'signing'
 
-apply plugin: 'java'
+    group 'com.jesus-crie'
+    version '2.0.0'
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+    sourceCompatibility = 1.8
+    targetCompatibility = 1.8
 
-repositories {
-    mavenCentral()
-    jcenter()
+    compileJava.options.encoding = 'UTF-8'
+
+    archivesBaseName = 'ModularBot'
+
+    jar {
+        archiveName "ModularBot-$name-v$version\\.jar"
+    }
+
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+
+    dependencies {
+        testCompile 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
+        testCompile 'org.junit.platform:junit-platform-launcher:1.2.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+        testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+        testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
+    }
 }
 
-dependencies {
-    compile 'net.dv8tion:JDA:3.6.0_375'
+project(':modularbot-core') {
+    dependencies {
+        compile 'net.dv8tion:JDA:3.6.0_375'
 
-    testCompile 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
-    testCompile 'org.junit.platform:junit-platform-launcher:1.2.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
-    testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
-    testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
+        testCompile project(':modularbot-command')
+    }
 }
 
-compileJava.options.encoding = 'UTF-8'
+project(':modularbot-command') {
+    dependencies {
+        compile project(':modularbot-core')
+    }
+}
+
+subprojects {
+    task testLolMdr {
+        doLast { task ->
+            println "$task.project.group:$task.project.name:$task.project.version"
+        }
+    }
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives { task ->
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            repository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name '$task.project.name'
+                packaging 'jar'
+                url = 'https://github.com/JesusCrie/ModularBot_v2'
+
+                scm {
+                    connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
+                    developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
+                    url = 'https://github.com/JesusCrie/ModularBot_v2'
+                }
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = 'https://github.com/JesusCrie/ModularBot_v2/blob/master/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'com.jesus_crie'
+                        name = 'Lucas Malandrino'
+                        email = 'lucas.malandrino@gmail.com'
+                    }
+                }
+
+            }
+        }
+    }
+}
