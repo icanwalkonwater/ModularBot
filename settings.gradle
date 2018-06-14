@@ -5,4 +5,6 @@ include 'ModularBot-Command'
 findProject(':ModularBot-Command')?.name = 'modularbot-command'
 include 'ModularBot-Logger'
 findProject(':ModularBot-Logger')?.name = 'modularbot-logger'
+include 'ModularBot-Base'
+findProject(':ModularBot-Base')?.name = 'modularbot-base'
 
