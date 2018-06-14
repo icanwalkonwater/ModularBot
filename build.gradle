@@ -71,7 +71,7 @@ project(':modularbot-command') {
     project.description = 'Module that enable the support of commands.'
 }
 
-allprojects {
+subprojects {
     uploadArchives {
         repositories {
             mavenDeployer {
