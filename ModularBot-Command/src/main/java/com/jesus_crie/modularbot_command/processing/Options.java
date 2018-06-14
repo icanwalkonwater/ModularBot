@@ -5,6 +5,7 @@ import com.jesus_crie.modularbot_command.CommandModule;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +75,7 @@ public class Options {
      * @see #has(Option)
      * @see #has(String)
      */
+    @Nullable
     public <T> T get(@Nonnull Option<T> option) {
         if (!has(option) || !option.hasArgument()) return null;
 

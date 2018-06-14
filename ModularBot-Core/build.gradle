@@ -4,3 +4,50 @@ dependencies {
     testCompile project(':modularbot-command')
     testCompile project(':modularbot-logger')
 }
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment {
+                MavenDeployment deployment -> signing.signPom(deployment)
+            }
+
+            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'ModularBot - Core'
+                description 'A java framework based on JDA that helps you create your discord bot.'
+                packaging 'jar'
+                url = 'https://github.com/JesusCrie/ModularBot_v2'
+
+                scm {
+                    connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
+                    developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
+                    url = 'https://github.com/JesusCrie/ModularBot_v2'
+                }
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0'
+                        url = 'https://github.com/JesusCrie/ModularBot_v2/blob/master/LICENSE'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id = 'com.jesus_crie'
+                        name = 'Lucas Malandrino'
+                        email = 'lucas.malandrino@gmail.com'
+                    }
+                }
+
+            }
+        }
+    }
+}

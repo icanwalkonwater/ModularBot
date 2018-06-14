@@ -135,13 +135,13 @@ public abstract class Command {
 
                                 } else if (params[1].isAssignableFrom(Options.class)) {
                                     // CommandEvent, Options
-                                    patterns.add(new CommandPattern((event, args, options) -> invokeMethod(method, options)));
+                                    patterns.add(new CommandPattern((event, args, options) -> invokeMethod(method, event, options)));
 
                                 } else {
                                     // CommandEvent, Arg1
                                     patterns.add(new CommandPattern(
                                             translateArguments(method, 1),
-                                            (event, args, options) -> invokeMethod(method, args.get(0))
+                                            (event, args, options) -> invokeMethod(method, event, args.get(0))
                                     ));
                                 }
 

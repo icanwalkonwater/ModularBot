@@ -101,7 +101,7 @@ public class CommandTest {
         }
 
         @RegisterPattern
-        public void someInvalidMethod() {
+        public void someInvalidMethod(String s) {
 
         }
     }

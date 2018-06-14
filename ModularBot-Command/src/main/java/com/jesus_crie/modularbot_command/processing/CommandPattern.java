@@ -68,4 +68,9 @@ public class CommandPattern {
     public boolean hasArguments() {
         return !arguments.isEmpty();
     }
+
+    @Override
+    public String toString() {
+        return "CommandPattern{ " + arguments + " }";
+    }
 }

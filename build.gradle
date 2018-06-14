@@ -11,11 +11,7 @@ allprojects {
 
     compileJava.options.encoding = 'UTF-8'
 
-    archivesBaseName = 'ModularBot'
-
-    jar {
-        archiveName "ModularBot-$name-v$version\\.jar"
-    }
+    archivesBaseName = name
 
     repositories {
         mavenCentral()
@@ -29,6 +25,24 @@ allprojects {
         testCompile 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
         testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
         testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
+    }
+
+    task javadocJar(type: Jar) {
+        classifier = 'javadoc'
+        from javadoc
+    }
+
+    task sourcesJar(type: Jar) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    artifacts {
+        archives javadocJar, sourcesJar
+    }
+
+    signing {
+        sign configurations.archives
     }
 }
 
@@ -50,70 +64,6 @@ subprojects {
     task testLolMdr {
         doLast { task ->
             println "$task.project.group:$task.project.name:$task.project.version"
-        }
-    }
-}
-
-task javadocJar(type: Jar) {
-    classifier = 'javadoc'
-    from javadoc
-}
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
-}
-
-signing {
-    sign configurations.archives
-}
-
-uploadArchives { task ->
-    repositories {
-        mavenDeployer {
-            beforeDeployment {
-                MavenDeployment deployment -> signing.signPom(deployment)
-            }
-
-            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            repository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
-                name '$task.project.name'
-                packaging 'jar'
-                url = 'https://github.com/JesusCrie/ModularBot_v2'
-
-                scm {
-                    connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
-                    developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
-                    url = 'https://github.com/JesusCrie/ModularBot_v2'
-                }
-
-                licenses {
-                    license {
-                        name = 'GNU General Public License v3.0'
-                        url = 'https://github.com/JesusCrie/ModularBot_v2/blob/master/LICENSE'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id = 'com.jesus_crie'
-                        name = 'Lucas Malandrino'
-                        email = 'lucas.malandrino@gmail.com'
-                    }
-                }
-
-            }
         }
     }
 }
