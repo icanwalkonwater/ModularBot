@@ -11,6 +11,7 @@ import net.dv8tion.jda.core.entities.User;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.RegEx;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.math.BigInteger;
@@ -138,8 +139,8 @@ public class Argument<T> implements Cloneable {
      * @return An new {@link Argument Argument} already registered.
      */
     @SuppressWarnings("unchecked")
-    public static Argument forString(@Nonnull String arg) {
-        return new Argument(Object.class,
+    public static Argument<Void> forString(@Nonnull String arg) {
+        return new Argument(Void.class,
                 arg.replaceAll("[-/\\\\^$*+?.()\\[\\]{}]", "\\\\$0"), EMPTY_MAPPER);
     }
 
@@ -207,6 +208,10 @@ public class Argument<T> implements Cloneable {
      *
      * If the ambiguity is still here, an exception is thrown.
      *
+     * If the target is of type {@link Void Void}, the {@link #forString(String)} method is used with the indication.
+     * To make it short, it's the same as calling {@link #forString(String)} with the name of your field as parameter.
+     * Note: this require the argument -parameters in your compiler to allow reflection to find the name of your parameters.
+     *
      * @param clazz      The target class.
      * @param indication The name of the argument in case of ambiguity.
      * @param <T>        The type of argument needed.
@@ -217,8 +222,16 @@ public class Argument<T> implements Cloneable {
     @Nonnull
     public static <T> Argument<? super T> getArgument(final @Nonnull Class<T> clazz, final @Nullable String indication) throws InvalidCommandPatternMethodException {
 
+        // Refuse collections
         if (clazz.isAssignableFrom(Collection.class))
             throw new InvalidCommandPatternMethodException("Collections are not allowed as arguments !");
+
+        // If Void, means that we need to use #forString with the parameter name
+        else if (clazz.equals(Void.class)) {
+            if (indication == null)
+                throw new InvalidCommandPatternMethodException("You need to add the -parameters to your compiler to use the Void type in your pattern !");
+            return (Argument<T>) Argument.forString(indication);
+        }
 
         // Get assignable arguments
         final List<Map.Entry<String, Argument<?>>> assignableMatches = arguments.entrySet().stream()
@@ -299,7 +312,7 @@ public class Argument<T> implements Cloneable {
     private final BiFunction<Matcher, CommandModule, T> mapper;
     private boolean repeatable = false;
 
-    public Argument(@Nonnull Class<? extends T> argumentsType, @Nonnull String regex, @Nonnull BiFunction<Matcher, CommandModule, T> mapper) {
+    public Argument(@Nonnull Class<? extends T> argumentsType, @Nonnull @RegEx String regex, @Nonnull BiFunction<Matcher, CommandModule, T> mapper) {
         this.argumentsType = argumentsType;
         this.pattern = Pattern.compile("^" + regex + "$", Pattern.UNICODE_CHARACTER_CLASS | Pattern.CASE_INSENSITIVE);
         this.mapper = mapper;
@@ -335,6 +348,14 @@ public class Argument<T> implements Cloneable {
         } catch (CloneNotSupportedException ignore) {
             return null;
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof Argument
+                && ((Argument) obj).argumentsType.equals(argumentsType)
+                && ((Argument) obj).repeatable == repeatable
+                && ((Argument) obj).pattern.pattern().equals(pattern.pattern());
     }
 
     @Override

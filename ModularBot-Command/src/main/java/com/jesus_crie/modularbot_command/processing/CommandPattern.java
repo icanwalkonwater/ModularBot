@@ -70,6 +70,12 @@ public class CommandPattern {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        return obj instanceof CommandPattern
+                && ((CommandPattern) obj).arguments.equals(arguments);
+    }
+
+    @Override
     public String toString() {
         return "CommandPattern{ " + arguments + " }";
     }

@@ -5,10 +5,18 @@ import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.exception.InvalidCommandPatternMethodException;
 import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
+import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.ModularLog;
+import org.slf4j.impl.ModularLogger;
 
+import javax.annotation.Nonnull;
+import javax.annotation.RegEx;
 import java.net.URL;
 import java.util.List;
 
@@ -18,11 +26,17 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class CommandTest {
 
+    @BeforeAll
+    static void beforeAll() {
+        new ConsoleLoggerModule().onLoad(null);
+    }
+
     @Test
     void testArgumentRegister() {
         InnerCommand command = new InnerCommand();
+        System.out.println(command.getPatterns());
 
-        assertThat(command.getPatterns().size(), is(10));
+        assertThat(command.getPatterns().size(), is(11));
 
         assertThat(command.getName(), equalTo("test"));
         assertThat(command.getAliases().size(), equalTo(2));
@@ -53,7 +67,7 @@ public class CommandTest {
             System.out.println("one argument");
         }
 
-        @RegisterPattern(arguments = {"STRING", "USER"})
+        @RegisterPattern(arguments = {"'add'", "STRING", "USER"})
         protected void twoArgument(CommandEvent event, List<Object> args) {
             System.out.println("2 arg, list");
         }
@@ -81,6 +95,11 @@ public class CommandTest {
         @RegisterPattern(arguments = "WORD")
         protected void threeArgument(CommandEvent event, Options options, String... string) {
             System.out.println("3 args, arg implicit");
+        }
+
+        @RegisterPattern
+        protected void threeArgument(CommandEvent event, Void add, User user) {
+            System.out.println("3 args, for string");
         }
 
         @RegisterPattern

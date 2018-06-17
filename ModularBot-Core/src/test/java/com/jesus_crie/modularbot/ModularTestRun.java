@@ -1,7 +1,5 @@
-package com.jeus_crie.modularbot;
+package com.jesus_crie.modularbot;
 
-import com.jesus_crie.modularbot.ModularBot;
-import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot_command.Command;
 import com.jesus_crie.modularbot_command.CommandEvent;
@@ -10,12 +8,14 @@ import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
-import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
+import java.lang.reflect.Field;
+import java.security.*;
+import java.util.Arrays;
 
 public class ModularTestRun extends BaseModule {
 
@@ -23,14 +23,12 @@ public class ModularTestRun extends BaseModule {
 
     public static void main(String[] args) {
         final ModularBot bot = new ModularBotBuilder(args[0])
+                .autoLoadBaseModules()
                 .useShutdownNow()
-                .registerModules(
-                        new ConsoleLoggerModule(),
-                        new CommandModule()
-                )
                 .build();
 
         CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
+        cmd.setOwnerId(182547138729869314L);
         cmd.registerCommands(new StopCommand());
 
         try {

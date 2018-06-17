@@ -14,9 +14,9 @@ import java.lang.annotation.*;
  *      {@link CommandEvent CommandEvent}, {@link java.util.List List}, {@link Options Options}.
  * The return type doesn't matter.
  */
+@Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Documented
 public @interface RegisterPattern {
 
     /**

@@ -17,8 +17,6 @@ import java.util.Map;
 
 public class DiscordCommandListener extends ListenerAdapter {
 
-    private static final Logger LOG = LoggerFactory.getLogger("DiscordCommandListener");
-
     private final CommandModule module;
 
     public DiscordCommandListener(CommandModule module) {
@@ -39,14 +37,16 @@ public class DiscordCommandListener extends ListenerAdapter {
         final Command command = module.getCommand(name);
 
         if (command == null) {
-            module.getListener().onCommandNotFound(name, event.getMessage());
+            // Command not found
+            module.triggerListeners(l -> l.onCommandNotFound(name, event.getMessage()));
             return;
         }
 
         final CommandEvent cmdEvent = new CommandEvent(event, module, command);
 
         if (!command.getAccessLevel().check(cmdEvent)) {
-            module.getListener().onTooLowAccessLevel(cmdEvent);
+            // Too low access level
+            module.triggerListeners(l -> l.onTooLowAccessLevel(cmdEvent));
             return;
         }
 
@@ -57,16 +57,20 @@ public class DiscordCommandListener extends ListenerAdapter {
 
             final Pair<List<String>, Map<String, String>> processedContent = module.getCommandProcessor().process(fullArgs);
 
-            module.getListener().onCommandSuccessfullyProcessed(cmdEvent, processedContent);
+            // Successfully processed
+            module.triggerListeners(l -> l.onCommandSuccessfullyProcessed(cmdEvent, processedContent));
 
             final Options options = new Options(module, command, processedContent.getRight());
             if (!command.execute(module, cmdEvent, options, processedContent.getLeft()))
-                module.getListener().onCommandFailedNoPatternMatch(cmdEvent, options, processedContent.getLeft());
+                // No pattern match
+                module.triggerListeners(l -> l.onCommandFailedNoPatternMatch(cmdEvent, options, processedContent.getLeft()));
 
         } catch (CommandProcessingException e) {
-            module.getListener().onCommandFailedProcessing(cmdEvent, e);
+            // Fail processing
+            module.triggerListeners(l -> l.onCommandFailedProcessing(cmdEvent, e));
         } catch (UnknownOptionException e) {
-            module.getListener().onCommandFailedUnknownOption(cmdEvent, e);
+            // Unknown option
+            module.triggerListeners(l -> l.onCommandFailedUnknownOption(cmdEvent, e));
         }
     }
 }

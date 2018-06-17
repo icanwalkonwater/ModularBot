@@ -14,13 +14,14 @@ import java.util.function.Consumer;
 public class ModuleManager {
 
     private final ConcurrentHashMap<Class<? extends BaseModule>, BaseModule> modules = new ConcurrentHashMap<>();
-    private final Logger logger = LoggerFactory.getLogger(ModuleManager.class.getSimpleName());
+    private final Logger LOG = LoggerFactory.getLogger(ModuleManager.class.getSimpleName());
 
-    public void registerModules(@Nonnull final ModularBotBuilder builder, @Nonnull final BaseModule... toRegister) {
-        for (BaseModule module : toRegister) registerModule(builder, module);
-    }
+    private boolean initialized = false;
 
     public void registerModule(@Nonnull final ModularBotBuilder builder, @Nonnull final BaseModule module) {
+        if (initialized)
+            throw new IllegalStateException("You can't register a module after the initialization !");
+
         BaseModule m = modules.get(module.getClass());
         if (m != null)
             throw new ModuleAlreadyLoadedException("Found another module " + m.getClass() + " !");
@@ -30,14 +31,17 @@ public class ModuleManager {
         module.state = Lifecycle.State.LOADED;
     }
 
-    @SafeVarargs
-    public final void autoRegisterModules(@Nonnull final ModularBotBuilder builder, @Nonnull final Class<? extends BaseModule>... classes) {
+    public void registerModules(@Nonnull final ModularBotBuilder builder, @Nonnull final BaseModule... toRegister) {
+        for (BaseModule module : toRegister) registerModule(builder, module);
+    }
+
+    public void registerModules(@Nonnull final ModularBotBuilder builder, @Nonnull final Class<? extends BaseModule>... classes) {
         for (Class<? extends BaseModule> clazz : classes) {
             try {
                 BaseModule module = clazz.newInstance();
                 registerModule(builder, module);
             } catch (InstantiationException | IllegalAccessException e) {
-                logger.warn("Autoload failed for module " + clazz.getName(), e);
+                LOG.warn("Autoload failed for module " + clazz.getName(), e);
             }
         }
     }
@@ -48,31 +52,50 @@ public class ModuleManager {
         return (T) modules.get(moduleClass);
     }
 
+    /**
+     * Get a module by its class name, can be useful if a module as an optional dependency and avoid raising exceptions.
+     *
+     * @param className The name of the module to query.
+     * @return The given module or null if not found or if it's not a module.
+     */
     @SuppressWarnings("unchecked")
     @Nullable
     public BaseModule getModuleByClassName(@Nonnull final String className) {
         try {
             Class<? extends BaseModule> clazz = (Class<? extends BaseModule>) Class.forName(className);
             return getModule(clazz);
-        } catch (ClassNotFoundException e) {
+        } catch (ClassNotFoundException | ClassCastException e) {
             return null;
         }
     }
 
+    /**
+     * Initialize the modules, after this method is called, no other modules can be loaded.
+     */
     public void initialize() {
         modules.forEachValue(20, m -> {
             m.onInitialization();
+            initialized = true;
             m.onPostInitialization();
             m.state = Lifecycle.State.INITIALIZED;
         });
 
-        logger.info(modules.size() + " modules initialized !");
+        LOG.info(modules.size() + " modules initialized !");
     }
 
     public void finalizeInitialization(final @Nonnull ModularBot bot) {
         modules.forEachValue(20, m -> {
             m.onShardsReady(bot);
+            if (m.bot == null)
+                throw new IllegalStateException("Error in module " + m.getInfo().getName() + ", #onShardsReady() must call super !");
             m.state = Lifecycle.State.STARTED;
+        });
+    }
+
+    public void preUnload() {
+        modules.forEachValue(20, m -> {
+            m.onShutdownShards();
+            m.state = Lifecycle.State.OFFLINE;
         });
     }
 
@@ -82,7 +105,7 @@ public class ModuleManager {
             m.state = Lifecycle.State.STOPPED;
         });
 
-        logger.info("Modules unloaded !");
+        LOG.info("Modules unloaded !");
     }
 
     public void dispatch(Consumer<BaseModule> dispatcher) {

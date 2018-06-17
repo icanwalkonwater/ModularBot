@@ -21,11 +21,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntFunction;
 
 public class ModularBot extends DefaultShardManager {
 
     private static final Logger logger = LoggerFactory.getLogger("ModularBot");
+
+    private final AtomicInteger receivedReady = new AtomicInteger();
 
     protected final ModuleManager moduleManager;
 
@@ -64,6 +67,8 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.initialize();
 
         logger.info("ModularBot initialized !");
+
+        SecurityManager manager = new SecurityManager();
     }
 
     /**
@@ -84,26 +89,29 @@ public class ModularBot extends DefaultShardManager {
     public void login() throws LoginException {
         logger.info("Starting shards...");
         moduleManager.dispatch(Lifecycle::onPrepareShards);
-        super.login();
 
-        // Add onReady on the first shard
-        getShardById(0).addEventListener(new ListenerAdapter() {
+        // Add onReady on every shard
+        listeners.add(new ListenerAdapter() {
             @Override
             public void onReady(ReadyEvent event) {
+                receivedReady.getAndIncrement();
                 ModularBot.this.onReady();
                 removeEventListener(this);
             }
         });
 
+        super.login();
+
         logger.info(shards.size() + " shards successfully spawned !");
-        moduleManager.dispatch(Lifecycle::onShardsLoaded);
+        moduleManager.dispatch(Lifecycle::onShardsCreated);
     }
 
     /**
-     * Triggered when the bot is ready.
+     * Triggered when a shard is ready.
      */
     private void onReady() {
-        moduleManager.finalizeInitialization(this);
+        if (receivedReady.get() == shardsTotal)
+            moduleManager.finalizeInitialization(this);
     }
 
     /**
@@ -151,7 +159,8 @@ public class ModularBot extends DefaultShardManager {
     @Override
     public void shutdown() {
         logger.info("Shutting down...");
-        moduleManager.dispatch(Lifecycle::onShutdownShards);
+        moduleManager.preUnload();
+        receivedReady.set(0);
         super.shutdown();
         moduleManager.unload();
 

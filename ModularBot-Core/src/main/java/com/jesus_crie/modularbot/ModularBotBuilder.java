@@ -50,7 +50,7 @@ public class ModularBotBuilder {
      * @see net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder#setGameProvider(IntFunction)
      * @see net.dv8tion.jda.bot.sharding.DefaultShardManagerBuilder#setStatusProvider(IntFunction)
      */
-    public ModularBotBuilder setStateProvider(final @Nonnull IStateProvider stateProvider) {
+    public ModularBotBuilder setStateProvider(@Nonnull final IStateProvider stateProvider) {
         this.stateProvider = stateProvider;
         return this;
     }
@@ -131,7 +131,7 @@ public class ModularBotBuilder {
      * @param listenerProvider The provider used to create the listener.
      * @see ModularBot#addEventListeners(IntFunction)
      */
-    public ModularBotBuilder addListeners(final @Nonnull IntFunction<Object> listenerProvider) {
+    public ModularBotBuilder addListeners(@Nonnull final IntFunction<Object> listenerProvider) {
         listenersProvider.add(listenerProvider);
         return this;
     }
@@ -140,24 +140,50 @@ public class ModularBotBuilder {
      * Register some listeners that will be added to all shards.
      * @param listeners The listeners to register.
      */
-    public ModularBotBuilder addListeners(final Object... listeners) {
+    public ModularBotBuilder addListeners(@Nonnull final Object... listeners) {
         for (Object listener : listeners) listenersProvider.add(shard -> listener);
         return this;
     }
 
     /**
-     * Register a module through the {@link ModuleManager ModuleManager}.
+     * Register some modules through the {@link ModuleManager ModuleManager}.
      *
-     * @param module The module to register.
-     * @see ModuleManager#registerModule(ModularBotBuilder, BaseModule)
+     * @param modules The modules to register.
      */
-    public ModularBotBuilder registerModule(final @Nonnull BaseModule module) {
-        moduleManager.registerModule(this, module);
+    public ModularBotBuilder registerModules(@Nonnull final BaseModule... modules) {
+        moduleManager.registerModules(this, modules);
         return this;
     }
 
-    public ModularBotBuilder registerModules(final BaseModule... modules) {
-        moduleManager.registerModules(this, modules);
+    public ModularBotBuilder registerModules(@Nonnull final Class<? extends BaseModule>[] modulesClass) {
+        moduleManager.registerModules(this, modulesClass);
+        return this;
+    }
+
+    /**
+     * Automatically register the modules contained in the base module (logger and command modules).
+     */
+    @SuppressWarnings("unchecked")
+    public ModularBotBuilder autoLoadBaseModules() {
+
+        // Try logger module
+        try {
+            Class<? extends BaseModule> loggerModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_logger.ConsoleLoggerModule");
+            moduleManager.registerModules(this, loggerModule);
+        } catch (ClassNotFoundException e) {
+            System.out.println("[Warn] Failed to autoload logger module.");
+        }
+
+        // Try command module
+        try {
+            Class<? extends BaseModule> commandModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_command.CommandModule");
+            moduleManager.registerModules(this, commandModule);
+        } catch (ClassNotFoundException e) {
+            System.out.println("[Warn] Failed to autoload command module.");
+        }
+
+        // TODO 16/06/18 renember to complete with new modules
+
         return this;
     }
 

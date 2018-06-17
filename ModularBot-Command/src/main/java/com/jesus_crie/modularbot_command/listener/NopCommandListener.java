@@ -4,8 +4,8 @@ import com.jesus_crie.modularbot_command.CommandEvent;
 import com.jesus_crie.modularbot_command.exception.CommandProcessingException;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 import com.jesus_crie.modularbot_command.processing.Options;
-import javafx.util.Pair;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.utils.tuple.Pair;
 
 import javax.annotation.Nonnull;
 import java.util.List;
