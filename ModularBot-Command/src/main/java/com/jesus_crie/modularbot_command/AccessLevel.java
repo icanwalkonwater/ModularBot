@@ -11,7 +11,7 @@ public class  AccessLevel {
     /**
      * Your id goes here, here is mine but you can change it.
      */
-    public static long CREATOR_ID = 182547138729869314L;
+    public static long CREATOR_ID = 0;
 
     /**
      * Literally everyone, everywhere.
@@ -66,6 +66,11 @@ public class  AccessLevel {
         this.user = user;
     }
 
+    /**
+     * The logic behind
+     * @param event
+     * @return
+     */
     public boolean check(@Nonnull CommandEvent event) {
         // Check user
         if (user != 0)

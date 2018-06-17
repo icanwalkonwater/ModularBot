@@ -147,23 +147,32 @@ public abstract class Command {
 
                                 // More than 2 arguments
                             } else {
-                                if (!params[1].isAssignableFrom(Options.class))
-                                    throw new InvalidCommandPatternMethodException("Invalid method, second argument must be a Options: " + method);
 
                                 // 3 arguments
                                 if (params.length == 3) {
-                                    if (params[2].isAssignableFrom(List.class)) {
-                                        // CommandEvent, Options, List<Object>
-                                        patterns.add(new CommandPattern(
-                                                translateArguments(method),
-                                                (event, args, options) -> invokeMethod(method, event, options, args)
-                                        ));
 
+                                    // CommandEvent, Options, ?
+                                    if (params[1].isAssignableFrom(Options.class)) {
+                                        if (params[2].isAssignableFrom(List.class)) {
+                                            // CommandEvent, Options, List<Object>
+                                            patterns.add(new CommandPattern(
+                                                    translateArguments(method),
+                                                    (event, args, options) -> invokeMethod(method, event, options, args)
+                                            ));
+
+                                        } else {
+                                            // CommandEvent, Options, Arg1
+                                            patterns.add(new CommandPattern(
+                                                    translateArguments(method, 2),
+                                                    (event, args, options) -> invokeMethod(method, event, options, args.get(0))
+                                            ));
+                                        }
+
+                                        // CommandEvent, Arg1, Arg2
                                     } else {
-                                        // CommandEvent, Options, Arg1
                                         patterns.add(new CommandPattern(
-                                                translateArguments(method, 2),
-                                                (event, args, options) -> invokeMethod(method, event, options, args.get(0))
+                                                translateArguments(method, 1),
+                                                (event, args, options) -> invokeMethod(method, event, args.get(0), args.get(1))
                                         ));
                                     }
 
@@ -177,7 +186,6 @@ public abstract class Command {
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -244,10 +252,12 @@ public abstract class Command {
             final Argument arg;
             final String toTranslate = annotation.arguments()[pos];
 
-            if (!toTranslate.endsWith("..."))
-                arg = Argument.getArgument(toTranslate).makeRepeatable();
+            if (toTranslate.matches("^'[\\S]+'$"))
+                arg = Argument.forString(toTranslate.substring(1, toTranslate.length() - 1));
+            else if (toTranslate.endsWith("..."))
+                arg = Argument.getArgument(toTranslate.substring(0, toTranslate.length() - 3)).makeRepeatable();
             else
-                arg = Argument.getArgument(toTranslate.substring(0, toTranslate.length() - 3));
+                arg = Argument.getArgument(toTranslate);
 
             if (arg == null)
                 throw new InvalidCommandPatternMethodException("Unknown argument at pos " + pos + ": " + Arrays.toString(annotation.arguments()));

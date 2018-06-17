@@ -6,6 +6,7 @@ import org.slf4j.impl.ModularLog;
 import org.slf4j.impl.ModularLogger;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
@@ -36,14 +37,14 @@ public class ConsoleLoggerModule extends BaseModule {
     /**
      * Minimum log level to allow the logs to be printed.
      */
-    public static ModularLog.Level MIN_LEVEL = ModularLog.Level.DEBUG;
+    public static ModularLog.Level MIN_LEVEL = ModularLog.Level.INFO;
 
     public ConsoleLoggerModule() {
         super(INFO);
     }
 
     @Override
-    public void onLoad(@Nonnull ModularBotBuilder builder) {
+    public void onLoad(@Nullable ModularBotBuilder builder) {
         ModularLogger.addListener(log -> {
             if (log.level.getLevel() >= MIN_LEVEL.getLevel()) {
 

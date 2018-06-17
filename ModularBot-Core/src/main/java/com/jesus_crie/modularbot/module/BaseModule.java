@@ -21,19 +21,21 @@ public abstract class BaseModule implements Lifecycle {
      */
     protected ModularBot bot;
 
-    protected BaseModule(final @Nonnull ModuleInfo i) {
+    protected BaseModule(@Nonnull final ModuleInfo i) {
         info = i;
     }
 
     @Override
-    public void onShardsReady(@Nonnull ModularBot bot) {
+    public void onShardsReady(@Nonnull final ModularBot bot) {
         this.bot = bot;
     }
 
+    @Nonnull
     public ModuleInfo getInfo() {
         return info;
     }
 
+    @Nonnull
     public State getState() {
         return state;
     }
