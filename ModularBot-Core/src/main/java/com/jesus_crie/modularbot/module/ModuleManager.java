@@ -27,7 +27,7 @@ public class ModuleManager {
             throw new ModuleAlreadyLoadedException("Found another module " + m.getClass() + " !");
 
         modules.put(module.getClass(), module);
-        module.onLoad(builder);
+        module.onLoad(this, builder);
         module.state = Lifecycle.State.LOADED;
     }
 

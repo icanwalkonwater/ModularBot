@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="modularbot-config_main" target="1.8" />
+      <module name="modularbot-config_test" target="1.8" />
+      <module name="modularbot-night-config-wrapper_main" target="1.8" />
+      <module name="modularbot-night-config-wrapper_test" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
   </component>

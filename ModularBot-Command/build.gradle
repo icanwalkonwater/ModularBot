@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':modularbot-core')
+    implementation project(':modularbot-core')
 
-    testCompile project(':modularbot-logger')
+    testImplementation project(':modularbot-logger')
 }

@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot_command;
 
+import com.jesus_crie.modularbot.module.ModuleManager;
 import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.exception.InvalidCommandPatternMethodException;
@@ -10,13 +11,7 @@ import net.dv8tion.jda.core.entities.TextChannel;
 import net.dv8tion.jda.core.entities.User;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.ModularLog;
-import org.slf4j.impl.ModularLogger;
 
-import javax.annotation.Nonnull;
-import javax.annotation.RegEx;
 import java.net.URL;
 import java.util.List;
 
@@ -28,7 +23,7 @@ public class CommandTest {
 
     @BeforeAll
     static void beforeAll() {
-        new ConsoleLoggerModule().onLoad(null);
+        new ConsoleLoggerModule().onLoad(new ModuleManager(), null);
     }
 
     @Test

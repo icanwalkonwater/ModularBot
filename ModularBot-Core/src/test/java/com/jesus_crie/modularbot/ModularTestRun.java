@@ -13,9 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
-import java.lang.reflect.Field;
-import java.security.*;
-import java.util.Arrays;
 
 public class ModularTestRun extends BaseModule {
 
@@ -28,7 +25,7 @@ public class ModularTestRun extends BaseModule {
                 .build();
 
         CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
-        cmd.setOwnerId(182547138729869314L);
+        cmd.setCreatorId(182547138729869314L);
         cmd.registerCommands(new StopCommand());
 
         try {

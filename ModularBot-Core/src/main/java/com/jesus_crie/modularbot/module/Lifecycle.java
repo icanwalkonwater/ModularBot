@@ -11,9 +11,10 @@ public interface Lifecycle {
     /**
      * Called when the module is loaded in the first place, occurs when the module is registered.
      *
-     * @param builder The {@link ModularBotBuilder ModularBotBuilder} which is associated.
+     * @param moduleManager The current {@link ModuleManager ModuleManager}
+     * @param builder       The {@link ModularBotBuilder ModularBotBuilder} which is associated.
      */
-    default void onLoad(@Nonnull final ModularBotBuilder builder) {}
+    default void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {}
 
     /**
      * Called when the instance of {@link ModularBot ModularBot} is almost created and the {@link ModuleManager ModuleManager}

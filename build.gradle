@@ -5,7 +5,7 @@ allprojects {
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version '2.0.0'
+    version '2.1.0-SNAPSHOT'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -16,20 +16,24 @@ allprojects {
 
     ext {
         name = 'ModularBot'
+        nightConfigVersion = '3.1.1' // Change in the readme too.
     }
 
     repositories {
         mavenCentral()
         jcenter()
+        maven {
+            url 'http://jitpack.io'
+        }
     }
 
     dependencies {
-        testCompile 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
-        testCompile 'org.junit.platform:junit-platform-launcher:1.2.0'
-        testCompile 'org.junit.jupiter:junit-jupiter-api:5.2.0'
-        testCompile 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
-        testCompile 'org.junit.jupiter:junit-jupiter-params:5.2.0'
-        testCompile 'org.hamcrest:hamcrest-junit:2.0.0.0'
+        testImplementation 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
+        testImplementation 'org.junit.platform:junit-platform-launcher:1.2.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params:5.2.0'
+        testImplementation 'org.hamcrest:hamcrest-junit:2.0.0.0'
     }
 
     task javadocJar(type: Jar) {
@@ -69,6 +73,11 @@ project(':modularbot-logger') {
 project(':modularbot-command') {
     ext.name = 'ModularBot - Command'
     project.description = 'Module that enable the support of commands.'
+}
+
+project(':modularbot-night-config-wrapper') {
+    ext.name = 'ModularBot - Night Config Wrapper'
+    project.description = 'A wrapper of https://github.com/TheElectronWill/Night-Config'
 }
 
 subprojects {

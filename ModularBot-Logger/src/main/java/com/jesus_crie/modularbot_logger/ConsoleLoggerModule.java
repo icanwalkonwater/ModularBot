@@ -2,6 +2,7 @@ package com.jesus_crie.modularbot_logger;
 
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
+import com.jesus_crie.modularbot.module.ModuleManager;
 import org.slf4j.impl.ModularLog;
 import org.slf4j.impl.ModularLogger;
 
@@ -44,7 +45,7 @@ public class ConsoleLoggerModule extends BaseModule {
     }
 
     @Override
-    public void onLoad(@Nullable ModularBotBuilder builder) {
+    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nullable ModularBotBuilder builder) {
         ModularLogger.addListener(log -> {
             if (log.level.getLevel() >= MIN_LEVEL.getLevel()) {
 
