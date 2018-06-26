@@ -17,53 +17,55 @@ public class  AccessLevel {
      * Literally everyone, everywhere.
      */
     public static final AccessLevel EVERYONE = new AccessLevel(
-            EnumSet.noneOf(Permission.class), false, false, 0);
+            EnumSet.noneOf(Permission.class), false, false);
 
     /**
      * Only available in guilds.
      */
     public static final AccessLevel GUILD_ONLY = new AccessLevel(
-            EnumSet.noneOf(Permission.class), true, false, 0);
+            EnumSet.noneOf(Permission.class), true, false);
 
     /**
      * Only available in private channels.
      */
     public static final AccessLevel PRIVATE_ONLY = new AccessLevel(
-            EnumSet.noneOf(Permission.class), false, true, 0);
+            EnumSet.noneOf(Permission.class), false, true);
 
     /**
      * In guilds, peoples who can delete messages.
      */
     public static final AccessLevel GUILD_MODERATOR = new AccessLevel(
-            EnumSet.of(Permission.MESSAGE_MANAGE), true, false, 0);
+            EnumSet.of(Permission.MESSAGE_MANAGE), true, false);
 
     /**
      * In guilds, those who have all of the permissions.
      */
     public static final AccessLevel GUILD_ADMINISTRATOR = new AccessLevel(
-            EnumSet.of(Permission.ADMINISTRATOR), true, false, 0);
+            EnumSet.of(Permission.ADMINISTRATOR), true, false);
 
     /**
      * Only the creator of the bot.
      */
-    public static final AccessLevel CREATOR = new AccessLevel(EnumSet.noneOf(Permission.class), false, false, CREATOR_ID);
+    public static final AccessLevel CREATOR = new AccessLevel(EnumSet.noneOf(Permission.class), false, false) {
+        @Override
+        public boolean check(@Nonnull CommandEvent event) {
+            return event.getAuthor().getIdLong() == CREATOR_ID;
+        }
+    };
 
     private final EnumSet<Permission> requiredPermissions;
     private final boolean onlyGuild;
     private final boolean onlyPrivate;
-    private final long user;
 
     /**
      * @param requiredPermissions   The permissions required if in a guild.
      * @param onlyGuild             Flag that indicate that this can only occur in a guild.
      * @param onlyPrivate           Flag that indicate that this can only occur in a private channel.
-     * @param user                  Flag that indicate that only this user can use this, /!\ overwrite every other flag /!\.
      */
-    public AccessLevel(@Nonnull EnumSet<Permission> requiredPermissions, boolean onlyGuild, boolean onlyPrivate, long user) {
+    public AccessLevel(@Nonnull EnumSet<Permission> requiredPermissions, boolean onlyGuild, boolean onlyPrivate) {
         this.requiredPermissions = requiredPermissions;
         this.onlyGuild = onlyGuild;
         this.onlyPrivate = onlyPrivate;
-        this.user = user;
     }
 
     /**
@@ -72,10 +74,6 @@ public class  AccessLevel {
      * @return
      */
     public boolean check(@Nonnull CommandEvent event) {
-        // Check user
-        if (user != 0)
-            return user == event.getAuthor().getIdLong();
-
         // If in a guild
         if (event.isFromType(ChannelType.TEXT)) {
             // Only private, eliminatory

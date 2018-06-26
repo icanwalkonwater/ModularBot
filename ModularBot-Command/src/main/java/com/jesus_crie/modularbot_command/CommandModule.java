@@ -75,7 +75,7 @@ public class CommandModule extends BaseModule {
     /**
      * Register a new prefix for a guild and override the old one if present.
      * Used by the config module.
-     *
+     * <p>
      * You can also delete the prefix by letting the prefix {@code null}.
      *
      * @param guildId The id of the targeted guild.

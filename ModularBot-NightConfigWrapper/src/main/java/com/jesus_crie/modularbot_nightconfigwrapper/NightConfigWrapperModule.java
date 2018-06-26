@@ -14,6 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.RegEx;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
@@ -74,19 +75,42 @@ public class NightConfigWrapperModule extends BaseModule {
             // Set the creator id from the config.
             Optional<Long> creator = primaryConfig.getOptional("creator_id");
             if (creator.isPresent()) {
-                final Method setCreatorId = commandModuleClass.getMethod("setCreatorId", Long.class);
+                final Method setCreatorId = commandModuleClass.getDeclaredMethod("setCreatorId", long.class);
+
+                LOG.debug("Setting creator id: " + creator.get());
                 setCreatorId.invoke(commandModule, creator.get());
             }
 
-            // Set the custom prefixes from the config.
-            Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
-            if (customPrefix.isPresent()) {
-                final Method addCustomPrefix = commandModuleClass.getMethod("addCustomPrefixForGuild", Long.class, String.class);
-                for (Config config : customPrefix.get())
-                    addCustomPrefix.invoke(commandModule, config.get("guild_id"), config.get("prefix"));
+            // Set the default prefix
+            Optional<String> prefix = primaryConfig.getOptional("prefix");
+            if (prefix.isPresent()) {
+                final Field prefixField = commandModuleClass.getDeclaredField("defaultPrefix");
+                prefixField.setAccessible(true);
+
+                LOG.debug("Setting default prefix: " + prefix.get());
+                prefixField.set(commandModule, prefix.get());
             }
 
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
+            // Set the custom prefixes from the config.
+
+            //Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
+            Optional<List<Object>> customPrefix = primaryConfig.getOptional("guild_prefix"); // TODO 27/06/2018 temporary fix
+            if (customPrefix.isPresent()) {
+                final Method addCustomPrefix = commandModuleClass.getMethod("addCustomPrefixForGuild", long.class, String.class);
+                //for (Config config : customPrefix.get()) {
+                for (Object v : customPrefix.get()) { // TODO 27/06/2018 temporary fix
+                    Config config;
+                    if (v instanceof Config)
+                        config = (Config) v;
+                    else continue;
+
+                    LOG.debug("Adding prefix: " + config.get("prefix") + " for guild " + config.get("guild_id"));
+                    addCustomPrefix.invoke(commandModule, config.get("guild_id"), config.get("prefix"));
+                }
+            }
+
+        } catch (ReflectiveOperationException ignore) {
+            ignore.printStackTrace();
         } // Should not occur.
     }
 
@@ -205,8 +229,8 @@ public class NightConfigWrapperModule extends BaseModule {
         if (secondaryConfigs.size() == 0)
             secondaryConfigs = new ConcurrentHashMap<>();
 
-        secondaryConfigs.computeIfPresent(configName, (key, old) -> {
-            old.close();
+        secondaryConfigs.compute(configName, (key, old) -> {
+            if (old != null) old.close();
             return config;
         });
     }
@@ -257,14 +281,15 @@ public class NightConfigWrapperModule extends BaseModule {
      * @throws IllegalArgumentException       If the provided directory isn't a folder.
      * @throws DirectoryAccessDeniedException If we can't create the directory.
      * @see #loadConfigGroup(String, String, boolean)
+     * @see #addSecondaryConfigToGroup(String, FileConfig)
      * @see #getConfigGroup(String)
      */
     public void loadConfigGroup(@Nullable String groupName, @Nonnull final File directory, boolean recursive,
                                 @Nonnull @RegEx final String includePattern) {
-        if (!directory.isDirectory())
+        if (!directory.isDirectory() && directory.exists())
             throw new IllegalArgumentException("The provided path isn't a directory !");
 
-        if (!(!directory.exists() && directory.mkdirs()))
+        if (!directory.exists() && !directory.mkdirs())
             throw new DirectoryAccessDeniedException("Can't create the given directory, maybe some permissions are missing.");
 
         if (groupName == null)
@@ -272,7 +297,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
         final File[] content = directory.listFiles(file -> {
             // If is file and there is a pattern for files to exclude.
-            if (file.isFile() && includePattern.length() == 0)
+            if (file.isFile() && includePattern.length() != 0)
                 return file.getName().matches(includePattern);
 
                 // Or there is just a file.
@@ -307,6 +332,45 @@ public class NightConfigWrapperModule extends BaseModule {
                 .filter(k -> k.startsWith(groupName + "."))
                 .map(k -> secondaryConfigs.get(k))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Overload of {@link #addSecondaryConfigToGroup(String, File)}.
+     *
+     * @param groupName The group that owns this config.
+     * @param path      The path to the config file.
+     * @see #addSecondaryConfigToGroup(String, File)
+     * @see #addSecondaryConfigToGroup(String, FileConfig)
+     */
+    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final String path) {
+        addSecondaryConfigToGroup(groupName, new File(path));
+    }
+
+    /**
+     * This method is similar to {@link #addSecondaryConfigToGroup(String, FileConfig)} and delegates to the method
+     * {@link #useSecondaryConfig(String, File)} to save the file.
+     *
+     * @param groupName The name of the group that owns the config.
+     * @param path      Represent the path of the config file.
+     * @see #useSecondaryConfig(String, FileConfig)
+     */
+    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final File path) {
+        useSecondaryConfig(groupName + "." + path.getName(), path);
+    }
+
+    /**
+     * Append a new config file to an existing or not, config group.
+     * This is an alternative to {@link #loadConfigGroup(String, File, boolean, String)} when the config file isn't in
+     * the same folder or if the config is created procedurally.
+     * <p>
+     * This method delegate to {@link #useSecondaryConfig(String, FileConfig)}.
+     *
+     * @param groupName The name of the group that owns this config.
+     * @param config    The actual config.
+     * @see #loadConfigGroup(String, File, boolean, String)
+     */
+    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final FileConfig config) {
+        useSecondaryConfig(groupName + "." + config.getFile().getName(), config);
     }
 
     /**
