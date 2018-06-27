@@ -67,8 +67,6 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.initialize();
 
         logger.info("ModularBot initialized !");
-
-        SecurityManager manager = new SecurityManager();
     }
 
     /**

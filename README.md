@@ -1,5 +1,6 @@
 # ModularBot 2 #
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.jesus-crie/modularbot-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.jesus-crie/modularbot-core)
+[![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#artifactdetails%7Ccom.jesus-crie%7Cmodularbot-core%7C2.1.0%7Cjar)
+[![Javadocs global](https://img.shields.io/badge/javadoc-latest-brightgreen.svg)](http://jesus-crie.com/modularbot/latest)
 
 > This project is at its early stage of development, so any bug reports are
 welcome.
@@ -86,6 +87,8 @@ the modules [Core](# core*), [Logger](#console-logger*) and [Command](#command*
 This is basically a shortcut to import these 3 modules in one line.
 
 #### Core* ####
+[![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
+
 > *Artifact: `com.jesus-crie:modularbot-core`.*
 
 If you want only the base code without any modules you can use this artifact.
@@ -94,6 +97,8 @@ Use it if you want to use another command system or another implementation
 of SLF4J. It only contains the classes necessary to use JDA and the module manager.
 
 #### Console Logger* ####
+[![Javadocs logger](http://www.javadoc.io/badge/com.jesus-crie/modularbot-logger.svg?label=javadoc-logger)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-logger)
+
 > *Artifact: `com.jesus-crie:modularbot-logger`.*
 
 Provides an implementation of [SLF4J](https://www.slf4j.org/).
@@ -118,6 +123,8 @@ the necessary information about a specific log. You can listen to them by
 registering a listener using `ModularLogger#addListener`.
 
 #### Command* ####
+[![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
+
 > *Artifact: `com.jesus-crie:modularbot-command`*
 
 This module provide a complete command system. Commands that looks like
@@ -200,6 +207,8 @@ Finally, you can listen to the success or the failure of a command typed by a
 user by registering your own `CommandListener` with `CommandModule#addListener`.
 
 #### Night Config Wrapper ####
+[![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
+
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
 This module uses [NightConfig 3.1.1](https://github.com/TheElectronWill/Night-Config)

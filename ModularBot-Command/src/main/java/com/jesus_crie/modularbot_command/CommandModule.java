@@ -22,7 +22,7 @@ public class CommandModule extends BaseModule {
     private Map<Long, String> customPrefix = Collections.emptyMap();
 
     // Command storing
-    private List<Command> commandStorage = new ArrayList<>();
+    private final List<Command> commandStorage = new ArrayList<>();
 
     // Command processor
     private CommandProcessor processor = new CommandProcessor();
