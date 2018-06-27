@@ -9,9 +9,11 @@ import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
-import com.jesus_crie.modularbot_nashornsupport.NashornSupportModule;
-import com.jesus_crie.modularbot_nashornsupport.module.JsModule;
-import com.jesus_crie.modularbot_nightconfigwrapper.NightConfigWrapperModule;
+import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
+import com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule;
+import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
+import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
+import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +27,18 @@ public class ModularTestRun extends BaseModule {
 
     public static void main(String[] args) {
         final ModularBot bot = new ModularBotBuilder(args[0])
-                .autoLoadBaseModules()
+                //.autoLoadBaseModules()
+                .registerModules(
+                        new ConsoleLoggerModule(),
+                        new CommandModule(),
+                        new NightConfigWrapperModule("./example/config.json"),
+                        new NashornSupportModule("./example/scripts/"),
+                        new NashornCommandSupportModule()
+                )
                 .useShutdownNow()
                 .build();
+
+        // ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.TRACE;
 
         /// Commands
 
@@ -46,10 +57,8 @@ public class ModularTestRun extends BaseModule {
         /// JS
 
         NashornSupportModule js = bot.getModuleManager().getModule(NashornSupportModule.class);
-        JsModule testModule = js.getModuleByName("test");
+        JavaScriptModule testModule = js.getModuleByName("test");
         LOG.info("Test module file: " + testModule.getScriptLocation().getName());
-
-        //ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.TRACE;
 
         try {
             bot.login();

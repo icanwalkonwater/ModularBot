@@ -188,7 +188,7 @@ public class ModularBotBuilder {
 
         // Try night config module
         try {
-            Class<? extends BaseModule> nightConfigModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nightconfigwrapper.NightConfigWrapperModule");
+            Class<? extends BaseModule> nightConfigModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule");
             moduleManager.registerModules(this, nightConfigModule);
         } catch (ClassNotFoundException e) {
             LOG.debug("Failed to autoload night config module.");
@@ -196,10 +196,18 @@ public class ModularBotBuilder {
 
         // Try nashorn module
         try {
-            Class<? extends BaseModule> nashornModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nashornsupport.NashornSupportModule");
+            Class<? extends BaseModule> nashornModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nashorn_support.NashornSupportModule");
             moduleManager.registerModules(this, nashornModule);
         } catch (ClassNotFoundException e) {
             LOG.debug("Failed to autoload nashorn module.");
+        }
+
+        // Try nashorn command module
+        try {
+            Class<? extends BaseModule> nashornCommandModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule");
+            moduleManager.registerModules(this, nashornCommandModule);
+        } catch (ClassNotFoundException e) {
+            LOG.debug("Failed to autoload nashorn command module.");
         }
 
         // TODO 16/06/18 remember to complete with new modules

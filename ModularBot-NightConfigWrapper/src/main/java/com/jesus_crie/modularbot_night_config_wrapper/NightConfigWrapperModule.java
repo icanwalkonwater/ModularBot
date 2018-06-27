@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot_nightconfigwrapper;
+package com.jesus_crie.modularbot_night_config_wrapper;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
@@ -6,7 +6,7 @@ import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
-import com.jesus_crie.modularbot_nightconfigwrapper.exception.DirectoryAccessDeniedException;
+import com.jesus_crie.modularbot_night_config_wrapper.exception.DirectoryAccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,9 +45,9 @@ public class NightConfigWrapperModule extends BaseModule {
                 .concurrent();
     }
 
-    public NightConfigWrapperModule(@Nonnull final String configPath) {
+    public NightConfigWrapperModule(@Nonnull final String primaryConfigPath) {
         super(INFO);
-        primaryConfigBuilder = FileConfig.builder(configPath);
+        primaryConfigBuilder = FileConfig.builder(primaryConfigPath);
     }
 
     @Override

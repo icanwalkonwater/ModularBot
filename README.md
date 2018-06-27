@@ -41,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.jesus-crie:modularbot-base:2.1.0'
+    compile 'com.jesus-crie:modularbot-base:2.2.0'
 }
 ```
 And now you can register commands and start your bot with:
@@ -275,6 +275,7 @@ This module is entirely based on [Night Config](https://github.com/TheElectronWi
 and I hardly recommend to read its documentation.
 
 #### JS Nashorn support
+[![Javadocs nashorn](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-support)
 > *Artifact: `com.jesus-crie:modularbot-nashorn-support`*
 
 This module allows you to load modules in JavaScript using the Nashorn
@@ -286,7 +287,7 @@ A module in JavaScript looks like this:
 with (baseImports) {
     var LOG = LoggerFactory.getLogger("JS TestModule");
 
-    var TestModule = Java.extend(BaseJsModule, {
+    var TestModule = Java.extend(BaseJavaScriptModule, {
         info: new ModuleInfo("TestModule", "Author", "URL", "1.0", 1),
 
         onLoad: function(moduleManager, builder) {
@@ -308,19 +309,88 @@ arguments that returns a `BaseJsModule` which is a `BaseModule` that allows
 an empty constructor and doesn't require a call to the super in
 `#onShardsReady()`.
 
-By default `BaseJSModule` and
-`ModuleInfo` are imported and `baseImports` can be used to import the
-basic packages of java (lang, io, util) alongside the core package of
-ModularBot and the entities of JDA.
+See [this section](#your-custom-module) for more information about the
+custom modules.
+
+For each script, a header is added that imports some essential classes.
+You can found this header [here](./ModularBot-NashornSupport/src/main/resources/script_header.js).
+It can be overridden if there is a file called `_script_header.js` in the
+scripts folder.
 
 You can use multiple files for your module if you put them in a subfolder
 of `./scripts/` or somewhere else but you need to keep your main file that
 contains the `#getModule()` function in the `./scripts/` folder.
 
 #### JS Nashorn Command Support
+[![Javadocs nashorn command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-command-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-command-support)
+> *Artifact: `com.jesus-crie:modularbot-nashorn-command-support`*
 
 An extension to the JS module that provide a way to use the command module
 in JavaScript.
+
+This module let you define a `#getCommands()` that returns an array of
+`JavaScriptCommand` that will be wrapped into real command objects and
+registered. But because of my poor skills in JavaScript you can't use the
+annotation system and you need to register your patterns explicitly like
+in the example below. Regardless of that, all of the other features are
+available.
+
+```javascript
+with (baseImports) {
+    with (commandImports) {
+        
+        /* Module declaration here */
+        
+        function getCommands() {
+            // Create a typed array
+            var commands = new JavaScriptCommandArray(1);
+            commands[0] = testJSCommand;
+            return commands;
+        }
+    
+        var testJSCommand = JavaScriptCommand.from({
+            aliases: ["testjs"],
+            description: "A demo command in JavaScript",
+            shortDescription: "A demo command",
+            accessLevel: AccessLevel.EVERYONE,
+            options: [Option.FORCE],
+            
+            // Create the patterns by hand
+            patterns: [
+                new CommandPattern(
+                    [
+                        Argument.forString("add"),
+                        Argument.STRING
+                    ], function (event, args, options) {
+                        event.fastReply("You wan to add: " + args[0]);
+                    }
+                ),
+                new CommandPattern(function (event, args, options) {
+                    if (options.has("force"))
+                        event.fastReply("Hi, i'm force");
+                    else event.fastReply("Hi");
+                })
+            ]
+        });
+    }
+}
+```
+
+Note that this code comes in addition to the module declaration. If a script
+doesn't contains a module, its entirely ignored.
+
+> You can also extends `JavaScriptCommand` but for some reason Nashorn do
+not evaluate the arrays correctly and messes up everything, but feel free
+to experiment and send me a pull request.
+
+For convenience you can add these imports to your custom header:
+```javascript
+var JavaScriptCommandArray = Java.type("com.jesus_crie.modularbot_nashorn_command_support.JavaScriptCommand[]");
+
+var commandImports = new JavaImporter(com.jesus_crie.modularbot_nashorn_command_support, 
+    com.jesus_crie.modularbot_command, 
+    com.jesus_crie.modularbot_command.processing);
+```
 
 #### Message Decorator
 
@@ -341,8 +411,8 @@ If you want to create your own module, you can by simply extending
 > Don't forget to enable it in with `ModularBotBuiler#registerModule()`.
 
 You can now implement the methods from `Lifecycle` to allow your module to
-be notify when something important happens. Every callback method is
-documented in the class.
+be notify when something important happens. **Every callback method is
+documented in the class.**
 
 > **Nothing can prevent a malicious module from stealing your token using
 reflection. And there are no efficient way to prevent reflection.**
