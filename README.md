@@ -1,5 +1,5 @@
 # ModularBot 2
-[![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#artifactdetails%7Ccom.jesus-crie%7Cmodularbot-core%7C2.1.0%7Cjar)
+[![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22)
 [![Javadocs global](https://img.shields.io/badge/javadoc-latest-brightgreen.svg)](http://jesus-crie.com/modularbot/latest)
 
 > This project is at its early stage of development, so any bug reports are
@@ -16,7 +16,7 @@ won't use.
 
 It's a v2 because there's been a long pause since v1 and JDA has changed a lot. 
 
-## Getting Started
+## Getting Started
 
 You can download each modules with gradle from maven central.
 ```groovy
@@ -44,7 +44,7 @@ bot.login();
 ```
 That's all the code required to make ModularBot work with commands.
 
-## Modules
+## Modules
 
 For simplicity, all of the modules (made by me) uses the same version
 name, so if version 2.1.0 is released for a module, **ALL** other modules
@@ -75,7 +75,7 @@ CommandModule module = moduleManager.getModule(CommandModule.class);
 
 For custom modules, look [here](#your-custom-module).
 
-### Available modules
+### Available modules
 
 > The modules with a * are included in the [Base](#Base) module
 
@@ -88,7 +88,7 @@ the modules [Core](# core*), [Logger](#console-logger*) and [Command](#command*
 
 This is basically a shortcut to import these 3 modules in one line.
 
-#### Core*
+#### Core*
 
 [![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
 
