@@ -11,4 +11,8 @@ include 'ModularBot-Config'
 findProject(':ModularBot-Config')?.name = 'modularbot-night-config-wrapper'
 include 'ModularBot-NightConfigWrapper'
 findProject(':ModularBot-NightConfigWrapper')?.name = 'modularbot-night-config-wrapper'
+include 'ModularBot-NashornSupport'
+findProject(':ModularBot-NashornSupport')?.name = 'modularbot-nashorn-support'
+include 'ModularBot-NashornCommandSupport'
+findProject(':ModularBot-NashornCommandSupport')?.name = 'modularbot-nashorn-command-support'
 

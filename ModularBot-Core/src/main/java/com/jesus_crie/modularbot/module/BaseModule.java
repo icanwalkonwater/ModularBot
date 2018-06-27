@@ -12,7 +12,7 @@ public abstract class BaseModule implements Lifecycle {
      */
     Lifecycle.State state = State.STOPPED;
 
-    protected final ModuleInfo info;
+    protected ModuleInfo info;
 
     /**
      * Reference to the instance of {@link ModularBot}.

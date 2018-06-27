@@ -16,6 +16,21 @@ won't use.
 
 It's a v2 because there's been a long pause since v1 and JDA has changed a lot. 
 
+1. [Getting Started](#getting-started)
+2. [Modules](#modules)
+    1. [Available Modules](#available-modules)
+        1. [Base](#base)
+        2. [Core](#core*)
+        3. [Console Logger](#console-logger*)
+        4. [Command](#command*)
+        5. [Night Config Wrapper](#night-config-wrapper)
+        6. [JS Nashorn Support](#js-nashorn-support)
+        7. [JS Nashorn Command Support](#js-nashorn-command-support)
+        8. [Message Decorator](#message-decorator)
+        9. [Audio](#audio)
+        10. [Eval](#eval)
+    2. [Your Custom Module](#your-custom-module)
+
 ## Getting Started
 
 You can download each modules with gradle from maven central.
@@ -80,7 +95,6 @@ For custom modules, look [here](#your-custom-module).
 > The modules with a * are included in the [Base](#Base) module
 
 #### Base
-
 > *Artifact: `com.jesus-crie:modularbot-base`.*
 
 There is no additional code in this module other than the code provided by
@@ -89,9 +103,7 @@ the modules [Core](# core*), [Logger](#console-logger*) and [Command](#command*
 This is basically a shortcut to import these 3 modules in one line.
 
 #### Core*
-
 [![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
-
 > *Artifact: `com.jesus-crie:modularbot-core`.*
 
 If you want only the base code without any modules you can use this artifact.
@@ -100,9 +112,7 @@ Use it if you want to use another command system or another implementation
 of SLF4J. It only contains the classes necessary to use JDA and the module manager.
 
 #### Console Logger*
-
 [![Javadocs logger](http://www.javadoc.io/badge/com.jesus-crie/modularbot-logger.svg?label=javadoc-logger)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-logger)
-
 > *Artifact: `com.jesus-crie:modularbot-logger`.*
 
 Provides an implementation of [SLF4J](https://www.slf4j.org/).
@@ -127,9 +137,7 @@ the necessary information about a specific log. You can listen to them by
 registering a listener using `ModularLogger#addListener`.
 
 #### Command*
-
 [![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
-
 > *Artifact: `com.jesus-crie:modularbot-command`*
 
 This module provide a complete command system. Commands that looks like
@@ -212,9 +220,7 @@ Finally, you can listen to the success or the failure of a command typed by a
 user by registering your own `CommandListener` with `CommandModule#addListener`.
 
 #### Night Config Wrapper
-
 [![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
-
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
 This module uses [NightConfig 3.1.1](https://github.com/TheElectronWill/Night-Config)
@@ -268,15 +274,63 @@ for the config file located at `./users/michel.json` and loaded by one of the
 This module is entirely based on [Night Config](https://github.com/TheElectronWill/Night-Config)
 and I hardly recommend to read its documentation.
 
+#### JS Nashorn support
+> *Artifact: `com.jesus-crie:modularbot-nashorn-support`*
+
+This module allows you to load modules in JavaScript using the Nashorn
+Script Engine. By default it will look for any `.js` file in the folder
+`./scripts/` and try to load them.
+
+A module in JavaScript looks like this:
+```javascript
+with (baseImports) {
+    var LOG = LoggerFactory.getLogger("JS TestModule");
+
+    var TestModule = Java.extend(BaseJsModule, {
+        info: new ModuleInfo("TestModule", "Author", "URL", "1.0", 1),
+
+        onLoad: function(moduleManager, builder) {
+            LOG.info("Module loaded !");
+        },
+        onUnload: function () {
+            LOG.info("Module unloaded !");
+        }
+    });
+}
+
+function getModule() {
+    return new TestModule();
+}
+```
+
+Note that the only requirement is a method called `getModule()` without
+arguments that returns a `BaseJsModule` which is a `BaseModule` that allows
+an empty constructor and doesn't require a call to the super in
+`#onShardsReady()`.
+
+By default `BaseJSModule` and
+`ModuleInfo` are imported and `baseImports` can be used to import the
+basic packages of java (lang, io, util) alongside the core package of
+ModularBot and the entities of JDA.
+
+You can use multiple files for your module if you put them in a subfolder
+of `./scripts/` or somewhere else but you need to keep your main file that
+contains the `#getModule()` function in the `./scripts/` folder.
+
+#### JS Nashorn Command Support
+
+An extension to the JS module that provide a way to use the command module
+in JavaScript.
+
+#### Message Decorator
+
+TODO
+
 #### Audio
 
 TODO
 
 #### Eval
-
-TODO
-
-#### JS Nashorn support
 
 TODO
 
