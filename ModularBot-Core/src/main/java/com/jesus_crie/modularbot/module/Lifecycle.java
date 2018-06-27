@@ -42,7 +42,7 @@ public interface Lifecycle {
      * Called right after all of the shards have received the {@link net.dv8tion.jda.core.events.ReadyEvent ReadyEvent}.
      * If you need to do things the the bot come online, put it here.
      *
-     * This method MUST call the {@link super}.
+     * This method MUST call the {@code super}.
      *
      * @param bot The associated instance of {@link ModularBot ModularBot}.
      */
