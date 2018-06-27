@@ -1,4 +1,4 @@
-# ModularBot 2 #
+# ModularBot 2
 [![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#artifactdetails%7Ccom.jesus-crie%7Cmodularbot-core%7C2.1.0%7Cjar)
 [![Javadocs global](https://img.shields.io/badge/javadoc-latest-brightgreen.svg)](http://jesus-crie.com/modularbot/latest)
 
@@ -16,7 +16,8 @@ won't use.
 
 It's a v2 because there's been a long pause since v1 and JDA has changed a lot. 
 
-## Getting Started ##
+## Getting Started
+
 You can download each modules with gradle from maven central.
 ```groovy
 repositories {
@@ -43,7 +44,7 @@ bot.login();
 ```
 That's all the code required to make ModularBot work with commands.
 
-## Modules ##
+## Modules
 
 For simplicity, all of the modules (made by me) uses the same version
 name, so if version 2.1.0 is released for a module, **ALL** other modules
@@ -74,11 +75,12 @@ CommandModule module = moduleManager.getModule(CommandModule.class);
 
 For custom modules, look [here](#your-custom-module).
 
-### Available modules ###
+### Available modules
 
 > The modules with a * are included in the [Base](#Base) module
 
-#### Base ####
+#### Base
+
 > *Artifact: `com.jesus-crie:modularbot-base`.*
 
 There is no additional code in this module other than the code provided by
@@ -86,7 +88,8 @@ the modules [Core](# core*), [Logger](#console-logger*) and [Command](#command*
 
 This is basically a shortcut to import these 3 modules in one line.
 
-#### Core* ####
+#### Core*
+
 [![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
 
 > *Artifact: `com.jesus-crie:modularbot-core`.*
@@ -96,7 +99,8 @@ If you want only the base code without any modules you can use this artifact.
 Use it if you want to use another command system or another implementation
 of SLF4J. It only contains the classes necessary to use JDA and the module manager.
 
-#### Console Logger* ####
+#### Console Logger*
+
 [![Javadocs logger](http://www.javadoc.io/badge/com.jesus-crie/modularbot-logger.svg?label=javadoc-logger)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-logger)
 
 > *Artifact: `com.jesus-crie:modularbot-logger`.*
@@ -122,7 +126,8 @@ With this module, each log is an instance of `ModularLog` that provide all of
 the necessary information about a specific log. You can listen to them by
 registering a listener using `ModularLogger#addListener`.
 
-#### Command* ####
+#### Command*
+
 [![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
 
 > *Artifact: `com.jesus-crie:modularbot-command`*
@@ -206,7 +211,8 @@ your're a volunteer you can fork this repo and send a pull request.
 Finally, you can listen to the success or the failure of a command typed by a
 user by registering your own `CommandListener` with `CommandModule#addListener`.
 
-#### Night Config Wrapper ####
+#### Night Config Wrapper
+
 [![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
 
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
@@ -262,16 +268,19 @@ for the config file located at `./users/michel.json` and loaded by one of the
 This module is entirely based on [Night Config](https://github.com/TheElectronWill/Night-Config)
 and I hardly recommend to read its documentation.
 
-#### Audio ####
+#### Audio
+
 TODO
 
-#### Eval ####
+#### Eval
+
 TODO
 
-#### JS Nashorn support ####
+#### JS Nashorn support
+
 TODO
 
-### Your custom module ###
+### Your custom module
 
 If you want to create your own module, you can by simply extending
 `BaseModule`, providing information about your module.
