@@ -1,0 +1,13 @@
+com.jesus_crie.modularbot
+com.jesus_crie.modularbot.exception
+com.jesus_crie.modularbot.module
+com.jesus_crie.modularbot.utils
+com.jesus_crie.modularbot_command
+com.jesus_crie.modularbot_command.annotations
+com.jesus_crie.modularbot_command.exception
+com.jesus_crie.modularbot_command.listener
+com.jesus_crie.modularbot_command.processing
+com.jesus_crie.modularbot_logger
+com.jesus_crie.modularbot_nightconfigwrapper
+com.jesus_crie.modularbot_nightconfigwrapper.exception
+org.slf4j.impl
