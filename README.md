@@ -53,7 +53,7 @@ on [Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-
 To enable a module, add the corresponding artifact (+ version) to your
 gradle/maven dependencies and enable it in the `ModularBotBuilder` with
 the method `ModularBotBuilder#autoLoadBaseModules()` that will look for the
-"official" modules and load them.
+"official" modules and load them automatically.
 
 Note that when the associated instance of `ModularBot` is created, you can't
 register modules anymore.
@@ -197,8 +197,59 @@ your're a volunteer you can fork this repo and send a pull request.
 Finally, you can listen to the success or the failure of a command typed by a
 user by registering your own `CommandListener` with `CommandModule#addListener`.
 
-#### Config ####
-TODO
+#### Night Config Wrapper ####
+> *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
+
+This module uses [NightConfig 3.1.1](https://github.com/TheElectronWill/Night-Config)
+to load, parse and save config files. You will be forces to have a "primary"
+config file and you can have multiple secondary config files.
+
+Note that the default config file contains information that will be delivered
+to the CommandModule like the "creator_id" and a list of custom prefixes for
+guilds. Note that the creator id will only be loaded whereas the custom
+prefixes will be loaded and saved when the module is unloaded.
+
+By default, the primary config will be created like this:
+```java
+FileConfigBuilder builder = FileConfig.builder("./config.json")
+        .defaultRessource("/default_json.json")
+        .autoReload()
+        .concurrent();
+FileConfig primaryConfig = builder.build();
+```
+
+But the `#build()` method will be called only at the initialisation so you
+can still customize the builder in the meantime using `NightConfigWrapperModule#customizePrimaryConfig()`
+
+You can also totally override this config by using the other constructor
+which will only create a builder with the given path without any alteration.
+
+There are also "secondary" config files that you can register and can exist
+alongside the primary config file. You can also load an entire folder of
+config file and it will create a "group" of config files that you can
+query back whenever you want but querying an entire group can be costly
+depending of how many files you have.
+
+You can use secondary config files like this:
+```java
+NightConfigWrapperModule module = ...;
+
+// Regular secondary config
+module.useSecondaryConfig("levels", "./levels.json");
+
+// Load an entire config group but only the .json files and not the subfolders
+module.loadConfigGroup("users", "./users/", false, "^.+\\.json$")
+// or simply
+module.loadConfigGroup("users", "./users/")
+```
+
+Then you can query the secondary configs by their names, the names for a
+config group will be `[group name].[filename]`, for exemple `users.michel.json`
+for the config file located at `./users/michel.json` and loaded by one of the
+`#loadConfigGroup()` methods.
+
+This module is entirely based on [Night Config](https://github.com/TheElectronWill/Night-Config)
+and I hardly recommend to read its documentation.
 
 #### Audio ####
 TODO

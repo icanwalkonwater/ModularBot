@@ -1,6 +1,7 @@
 dependencies {
     compile 'net.dv8tion:JDA:3.6.0_375'
 
-    testCompile project(':modularbot-command')
-    testCompile project(':modularbot-logger')
+    testImplementation project(':modularbot-command')
+    testImplementation project(':modularbot-logger')
+    testImplementation project(':modularbot-night-config-wrapper')
 }

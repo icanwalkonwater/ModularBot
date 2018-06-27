@@ -1,0 +1,8 @@
+dependencies {
+    compile project(':modularbot-core')
+
+    compile "com.github.TheElectronWill.Night-Config:core:$project.ext.nightConfigVersion"
+    compile "com.github.TheElectronWill.Night-Config:json:$project.ext.nightConfigVersion"
+
+    testImplementation project(':modularbot-base')
+}

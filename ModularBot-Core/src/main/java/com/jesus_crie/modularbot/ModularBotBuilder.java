@@ -5,6 +5,8 @@ import com.jesus_crie.modularbot.module.ModuleManager;
 import com.jesus_crie.modularbot.utils.IStateProvider;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.List;
 import java.util.function.IntFunction;
 
 public class ModularBotBuilder {
+
+    private static final Logger LOG = LoggerFactory.getLogger("ModularBotBuilder");
 
     protected final String token;
     protected int shards = -1;
@@ -171,7 +175,7 @@ public class ModularBotBuilder {
             Class<? extends BaseModule> loggerModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_logger.ConsoleLoggerModule");
             moduleManager.registerModules(this, loggerModule);
         } catch (ClassNotFoundException e) {
-            System.out.println("[Warn] Failed to autoload logger module.");
+            LOG.debug("Failed to autoload logger module.");
         }
 
         // Try command module
@@ -179,7 +183,15 @@ public class ModularBotBuilder {
             Class<? extends BaseModule> commandModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_command.CommandModule");
             moduleManager.registerModules(this, commandModule);
         } catch (ClassNotFoundException e) {
-            System.out.println("[Warn] Failed to autoload command module.");
+            LOG.debug("Failed to autoload command module.");
+        }
+
+        // Try night config module
+        try {
+            Class<? extends BaseModule> nightConfigModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nightconfigwrapper.NightConfigWrapperModule");
+            moduleManager.registerModules(this, nightConfigModule);
+        } catch (ClassNotFoundException e) {
+            LOG.debug("Failed to autoload night config module.");
         }
 
         // TODO 16/06/18 renember to complete with new modules

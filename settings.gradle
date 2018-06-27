@@ -7,4 +7,8 @@ include 'ModularBot-Logger'
 findProject(':ModularBot-Logger')?.name = 'modularbot-logger'
 include 'ModularBot-Base'
 findProject(':ModularBot-Base')?.name = 'modularbot-base'
+include 'ModularBot-Config'
+findProject(':ModularBot-Config')?.name = 'modularbot-night-config-wrapper'
+include 'ModularBot-NightConfigWrapper'
+findProject(':ModularBot-NightConfigWrapper')?.name = 'modularbot-night-config-wrapper'
 

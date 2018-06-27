@@ -1,5 +1,5 @@
 dependencies {
-    compile "com.jesus-crie:modularbot-core:$version"
-    compile "com.jesus-crie:modularbot-logger:$version"
-    compile "com.jesus-crie:modularbot-command:$version"
+    compile project(':modularbot-core')
+    compile project(':modularbot-logger')
+    compile project(':modularbot-command')
 }

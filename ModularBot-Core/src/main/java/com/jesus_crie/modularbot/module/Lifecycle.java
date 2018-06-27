@@ -11,9 +11,10 @@ public interface Lifecycle {
     /**
      * Called when the module is loaded in the first place, occurs when the module is registered.
      *
-     * @param builder The {@link ModularBotBuilder ModularBotBuilder} which is associated.
+     * @param moduleManager The current {@link ModuleManager ModuleManager}
+     * @param builder       The {@link ModularBotBuilder ModularBotBuilder} which is associated.
      */
-    default void onLoad(@Nonnull final ModularBotBuilder builder) {}
+    default void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {}
 
     /**
      * Called when the instance of {@link ModularBot ModularBot} is almost created and the {@link ModuleManager ModuleManager}
@@ -41,7 +42,7 @@ public interface Lifecycle {
      * Called right after all of the shards have received the {@link net.dv8tion.jda.core.events.ReadyEvent ReadyEvent}.
      * If you need to do things the the bot come online, put it here.
      *
-     * This method MUST call the {@link super}.
+     * This method MUST call the {@code super}.
      *
      * @param bot The associated instance of {@link ModularBot ModularBot}.
      */

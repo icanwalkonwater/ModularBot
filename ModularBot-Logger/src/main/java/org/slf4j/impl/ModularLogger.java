@@ -4,7 +4,6 @@ import org.slf4j.helpers.MarkerIgnoringBase;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 
