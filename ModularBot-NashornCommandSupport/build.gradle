@@ -1,0 +1,5 @@
+dependencies {
+    compile project(':modularbot-core')
+    compile project(':modularbot-command')
+    compile project(':modularbot-nashorn-support')
+}

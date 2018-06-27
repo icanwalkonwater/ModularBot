@@ -61,6 +61,8 @@ public class ConsoleLoggerModule extends BaseModule {
                     System.out.println(message);
                 } else {
                     System.err.println(message);
+                    if (log.error != null && log.level.getLevel() == ModularLog.Level.ERROR.getLevel())
+                        log.error.printStackTrace();
                 }
             }
         });

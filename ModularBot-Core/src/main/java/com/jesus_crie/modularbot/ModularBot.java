@@ -108,8 +108,10 @@ public class ModularBot extends DefaultShardManager {
      * Triggered when a shard is ready.
      */
     private void onReady() {
-        if (receivedReady.get() == shardsTotal)
+        if (receivedReady.get() == shardsTotal) {
+            logger.info("Shards ready !");
             moduleManager.finalizeInitialization(this);
+        }
     }
 
     /**
@@ -117,9 +119,17 @@ public class ModularBot extends DefaultShardManager {
      */
     @Override
     protected ScheduledExecutorService createExecutor(ThreadFactory threadFactory) {
+        logger.debug("Creating a new executor.");
         return Executors.newScheduledThreadPool(corePoolSize, r -> {
             Thread t = threadFactory.newThread(r);
             t.setPriority(Thread.NORM_PRIORITY + 1);
+
+            t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
+                @Override
+                public void uncaughtException(Thread t, Throwable e) {
+                    logger.error("Uncaught exception !", e);
+                }
+            });
             return t;
         });
     }

@@ -4,7 +4,7 @@ allprojects {
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version '2.1.1'
+    version '2.2.0'
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -76,7 +76,17 @@ project(':modularbot-command') {
 
 project(':modularbot-night-config-wrapper') {
     ext.name = 'ModularBot - Night Config Wrapper'
-    project.description = 'A wrapper of https://github.com/TheElectronWill/Night-Config'
+    project.description = 'A wrapper of https://github.com/TheElectronWill/Night-Config .'
+}
+
+project(':modularbot-nashorn-support') {
+    ext.name = 'ModularBot - JS Nashorn Support'
+    project.description = 'Module that can load modules in JavaScript.'
+}
+
+project(':modularbot-nashorn-command-support') {
+    ext.name = 'ModularBot - JS Nashorn Command Support'
+    project.description = 'Extension of the JS module that supports the command module.'
 }
 
 subprojects {
