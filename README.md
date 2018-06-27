@@ -1,4 +1,6 @@
 # ModularBot 2 #
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.jesus-crie/modularbot-core/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.jesus-crie/modularbot-core)
+
 > This project is at its early stage of development, so any bug reports are
 welcome.
 
@@ -22,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.jesus-crie:modularbot-base:2.0.1'
+    compile 'com.jesus-crie:modularbot-base:2.1.0'
 }
 ```
 And now you can register commands and start your bot with:
