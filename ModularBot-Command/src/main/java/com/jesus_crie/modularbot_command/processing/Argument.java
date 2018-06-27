@@ -129,7 +129,7 @@ public class Argument<T> implements Cloneable {
     /**
      * A mapper that maps everything to an empty {@link Object Object}.
      */
-    public static BiFunction<Matcher, CommandModule, ?> EMPTY_MAPPER = (m, b) -> new Object();
+    public static final BiFunction<Matcher, CommandModule, ?> EMPTY_MAPPER = (m, b) -> new Object();
 
     /**
      * Create an {@link Argument Argument} that just match a specific string.

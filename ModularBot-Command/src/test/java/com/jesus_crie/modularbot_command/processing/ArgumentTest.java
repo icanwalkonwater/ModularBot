@@ -5,7 +5,6 @@ import com.jesus_crie.modularbot_command.annotations.RegisterArgument;
 import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 
 class ArgumentTest {
@@ -34,7 +33,7 @@ class ArgumentTest {
     public static class TestArguments {
 
         @RegisterArgument
-        public static Argument TEST = new Argument(String.class, "", Argument.EMPTY_MAPPER);
+        public static final Argument TEST = new Argument(String.class, "", Argument.EMPTY_MAPPER);
         @RegisterArgument
         public static Argument HEY = new Argument(String.class, "", Argument.EMPTY_MAPPER);
         @RegisterArgument

@@ -12,8 +12,8 @@ import java.util.Map;
 
 public class Options {
 
-    private Map<Option, String> options = new HashMap<>();
-    private CommandModule module;
+    private final Map<Option, String> options = new HashMap<>();
+    private final CommandModule module;
 
     /**
      * Create a bundle containing utility methods for the {@link Option Option}.

@@ -2,7 +2,7 @@ package com.jesus_crie.modularbot_command.exception;
 
 public class CommandProcessingException extends Exception {
 
-    private int cursorPos;
+    private final int cursorPos;
 
     public CommandProcessingException(String message, int cursorPos) {
         super(message);
