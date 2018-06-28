@@ -117,7 +117,6 @@ public class NightConfigWrapperModule extends BaseModule {
     @SuppressWarnings("unchecked")
     @Override
     public void onUnload() {
-
         if (primaryConfig.getOptional("guild_prefix").isPresent()) {
             final BaseModule commandModule = moduleManager.getModuleByClassName("com.jesus_crie.modularbot_command.CommandModule");
             if (commandModule == null)

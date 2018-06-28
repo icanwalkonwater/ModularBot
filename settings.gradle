@@ -15,4 +15,6 @@ include 'ModularBot-NashornSupport'
 findProject(':ModularBot-NashornSupport')?.name = 'modularbot-nashorn-support'
 include 'ModularBot-NashornCommandSupport'
 findProject(':ModularBot-NashornCommandSupport')?.name = 'modularbot-nashorn-command-support'
+include 'ModularBot-MessageDecorator'
+findProject(':ModularBot-MessageDecorator')?.name = 'modularbot-message-decorator'
 
