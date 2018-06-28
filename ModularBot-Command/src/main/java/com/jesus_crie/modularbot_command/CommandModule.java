@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot_command;
 
+import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
@@ -14,8 +15,9 @@ import java.util.function.Consumer;
 
 public class CommandModule extends BaseModule {
 
-    private static final ModuleInfo INFO = new ModuleInfo("Command", "Jesus-Crie",
-            "https://github.com/JesusCrie/ModularBot", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo("Command",
+            ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
+            ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     // Prefix stuff
     private String defaultPrefix = "!";

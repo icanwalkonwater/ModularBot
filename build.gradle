@@ -1,10 +1,24 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+ext {
+    getBuildNumber = { ->
+        return file('./buildNumber.txt').text as Integer
+    }
+
+    incrementBuildNumber = { ->
+        File file = file('./buildNumber.txt')
+        int buildNumber = ++(file.text as Integer)
+        file.text = buildNumber
+    }
+}
+
 allprojects {
     apply plugin: 'java'
     apply plugin: 'maven'
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version '2.2.0'
+    version('2.2.0_' + getBuildNumber())
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -57,6 +71,20 @@ allprojects {
 project(':modularbot-core') {
     ext.name = 'ModularBot - Core'
     project.description = 'A java framework based on JDA that helps you create your discord bot.'
+
+    task sourcesForRelease(type: Copy) {
+        from './ModularBot-Core/src/main/java'
+        into './ModularBot-Core/build/filteredSrc'
+        filter(ReplaceTokens, tokens: [
+                versionName: version,
+                versionBuild: getBuildNumber()
+        ])
+    }
+
+    compileJava {
+        options.compilerArgs += ["-parameters"]
+        source = sourcesForRelease.destinationDir
+    }
 }
 
 project(':modularbot-base') {
@@ -87,6 +115,10 @@ project(':modularbot-nashorn-support') {
 project(':modularbot-nashorn-command-support') {
     ext.name = 'ModularBot - JS Nashorn Command Support'
     project.description = 'Extension of the JS module that supports the command module.'
+}
+
+uploadArchives.doFirst {
+    incrementBuildNumber()
 }
 
 subprojects {

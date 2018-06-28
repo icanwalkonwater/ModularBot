@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_night_config_wrapper;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
+import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
@@ -28,8 +29,8 @@ public class NightConfigWrapperModule extends BaseModule {
 
     private static final Logger LOG = LoggerFactory.getLogger("NightConfigWrapper");
 
-    private static final ModuleInfo INFO = new ModuleInfo("NightConfig Wrapper", "Jesus_Crie, TheElectronWill",
-            "https://github.com/TheElectronWill/Night-Config", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo("Message Decorator", ModularBotBuildInfo.AUTHOR + ", TheElectronWill",
+            ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     private ModuleManager moduleManager;
 

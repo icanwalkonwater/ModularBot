@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot_nashorn_support;
 
 import com.jesus_crie.modularbot.ModularBot;
+import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.Lifecycle;
@@ -34,8 +35,8 @@ public class NashornSupportModule extends BaseModule {
 
     private static final Logger LOG = LoggerFactory.getLogger("NashornSupportModule");
 
-    private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", "Jesus-Crie",
-            "https://github.com/JesusCrie/ModularBot", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", ModularBotBuildInfo.AUTHOR,
+            ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     private String SCRIPT_HEADER;
 
