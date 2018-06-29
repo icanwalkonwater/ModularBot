@@ -1,5 +1,3 @@
-import org.apache.tools.ant.filters.ReplaceTokens
-
 ext {
     getBuildNumber = { ->
         return file('./buildNumber.txt').text as Integer
@@ -29,7 +27,7 @@ allprojects {
 
     ext {
         name = 'ModularBot'
-        nightConfigVersion = '3.1.1' // Change in the readme too.
+        nightConfigVersion = '3.2.0' // Change in the readme too line 226.
     }
 
     repositories {
@@ -115,6 +113,11 @@ project(':modularbot-nashorn-support') {
 project(':modularbot-nashorn-command-support') {
     ext.name = 'ModularBot - JS Nashorn Command Support'
     project.description = 'Extension of the JS module that supports the command module.'
+}
+
+project(':modularbot-message-decorator') {
+    ext.name = 'ModularBot - Message Decorator'
+    project.description = 'Module that can bind to specific messages and extends their behaviour.'
 }
 
 uploadArchives.doFirst {

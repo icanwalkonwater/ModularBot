@@ -94,17 +94,10 @@ public class NightConfigWrapperModule extends BaseModule {
 
             // Set the custom prefixes from the config.
 
-            //Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
-            Optional<List<Object>> customPrefix = primaryConfig.getOptional("guild_prefix"); // TODO 27/06/2018 temporary fix
+            Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
             if (customPrefix.isPresent()) {
                 final Method addCustomPrefix = commandModuleClass.getMethod("addCustomPrefixForGuild", long.class, String.class);
-                //for (Config config : customPrefix.get()) {
-                for (Object v : customPrefix.get()) { // TODO 27/06/2018 temporary fix
-                    Config config;
-                    if (v instanceof Config)
-                        config = (Config) v;
-                    else continue;
-
+                for (Config config : customPrefix.get()) {
                     LOG.debug("Adding prefix: " + config.get("prefix") + " for guild " + config.get("guild_id"));
                     addCustomPrefix.invoke(commandModule, config.get("guild_id"), config.get("prefix"));
                 }

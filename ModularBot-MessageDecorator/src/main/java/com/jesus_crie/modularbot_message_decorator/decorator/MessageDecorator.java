@@ -1,34 +1,68 @@
 package com.jesus_crie.modularbot_message_decorator.decorator;
 
-import com.jesus_crie.modularbot.utils.Waiter;
-import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
+import com.electronwill.nightconfig.core.Config;
+import com.jesus_crie.modularbot_message_decorator.Cacheable;
+import com.jesus_crie.modularbot_message_decorator.DecoratorListener;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Collections;
+import java.util.List;
 
-public abstract class MessageDecorator {
+public abstract class MessageDecorator implements Cacheable {
 
-    protected Message bindTo;
-    protected final User target;
+    protected final Message binding;
+    protected final long creationTime = System.currentTimeMillis();
     protected final long timeout;
-    protected final Map<String, DecoratorButton> buttons = new HashMap<>();
-    protected Waiter.WaiterListener<? extends GenericMessageReactionEvent> listener = Waiter.WaiterListener.EMPTY;
-    /*protected DecoratorListener callback = null;*/
+    protected transient List<DecoratorListener> listeners = Collections.emptyList();
 
     protected boolean isAlive = true;
 
-    protected MessageDecorator(@Nonnull final Message bindTo, @Nullable final User target, final long timeout, @Nonnull final DecoratorButton... buttons) {
-        this.bindTo = bindTo;
-        this.target = target;
+    /**
+     * Build the base of a decorator.
+     *
+     * @param binding The message to bind to this decorator.
+     * @param timeout The amount of time before the decorator expire.
+     */
+    protected MessageDecorator(@Nonnull final Message binding, final long timeout) {
+        this.binding = binding;
         this.timeout = timeout;
+    }
 
-        for (DecoratorButton button : buttons) {
-            // TODO 28/06/2018 things
-        }
+    /**
+     * Used to check of
+     * @param timeout
+     * @return
+     */
+    protected boolean checkTimeout(final long timeout) {
+        return timeout >= 0 && isAlive;
+    }
+
+    public long getExpireTime() {
+        if (timeout == 0 || !isAlive) return 0;
+        return creationTime + timeout;
+    }
+
+    public boolean isAlive() {
+        return isAlive;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj.getClass().equals(getClass()) && ((MessageDecorator) obj).binding.equals(binding);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Nonnull
+    @Override
+    public Config serialize() {
+        final Config serialized = Config.inMemory();
+        serialized.set(Cacheable.KEY_CLASS, getClass().getName());
+        serialized.set(Cacheable.KEY_BINDING_ID, binding.getIdLong());
+        serialized.set(Cacheable.KEY_TIMEOUT, timeout);
+
+        return serialized;
     }
 }

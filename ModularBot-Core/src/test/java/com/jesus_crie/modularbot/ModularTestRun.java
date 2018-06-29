@@ -49,8 +49,8 @@ public class ModularTestRun extends BaseModule {
         /// Config
 
         NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
-        Optional<Long> startCount = config.getPrimaryConfig().getOptional("start_count");
-        long count = startCount.orElse(0L);
+        Optional<Integer> startCount = config.getPrimaryConfig().getOptional("start_count");
+        int count = startCount.orElse(0);
         count++;
         config.getPrimaryConfig().set("start_count", count);
 
