@@ -5,13 +5,14 @@ import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.core.requests.RestAction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class UnicodeDecoratorButton extends DecoratorButton {
 
     protected final String emote;
 
-    public UnicodeDecoratorButton(@Nonnull final String emote, @Nonnull final Consumer<GenericMessageReactionEvent> onTrigger) {
+    public UnicodeDecoratorButton(@Nonnull final String emote, @Nullable final Consumer<GenericMessageReactionEvent> onTrigger) {
         super(onTrigger);
         this.emote = emote;
     }

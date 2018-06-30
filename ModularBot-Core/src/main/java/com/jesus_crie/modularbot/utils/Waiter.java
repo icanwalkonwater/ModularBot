@@ -23,6 +23,9 @@ public class Waiter {
 
     private static final Logger LOG = LoggerFactory.getLogger("Waiter");
 
+    // Can't be instantiated.
+    private Waiter() {}
+
     /**
      * Create a listener with the given parameters and return immediately after.
      * <p>
@@ -33,7 +36,7 @@ public class Waiter {
     public static <T extends Event> void awaitEvent(@Nonnull final JDA shard, @Nonnull final Class<T> eventClass,
                                                     @Nullable final Predicate<T> checker, @Nullable final Consumer<T> onSuccess,
                                                     @Nullable final Runnable onTimeout, final long timeout, final boolean disposable) {
-        createListener(shard, eventClass, checker, onSuccess, onTimeout, timeout, disposable);
+        createListener(shard, eventClass, checker, onSuccess, onTimeout, timeout, disposable).register();
     }
 
     /**
@@ -49,6 +52,8 @@ public class Waiter {
     public static <T extends Event> T getNextEvent(@Nonnull final JDA shard, @Nonnull final Class<T> eventClass,
                                                    @Nullable final Predicate<T> checker, final long timeout) {
         final WaiterListener<T> listener = createListener(shard, eventClass, checker, null, null, timeout, true);
+        listener.register();
+
         try {
             return listener.get();
         } catch (CancellationException | InterruptedException expected) {
@@ -149,13 +154,22 @@ public class Waiter {
         public WaiterListener(@Nonnull final JDA shard, @Nonnull final Class<T> eventClass) {
             this.shard = shard;
             this.eventClass = eventClass;
-
-            shard.addEventListener(this);
         }
 
         private WaiterListener() {
             shard = null;
             eventClass = null;
+        }
+
+        public WaiterListener<T> register() {
+            if (shard != null)
+                shard.addEventListener(this);
+            return this;
+        }
+
+        public void unregister() {
+            if (shard != null)
+                shard.removeEventListener(this);
         }
 
         @SuppressWarnings("unchecked")
@@ -176,11 +190,6 @@ public class Waiter {
         public boolean cancel(boolean mayInterruptIfRunning) {
             unregister();
             return super.cancel(mayInterruptIfRunning);
-        }
-
-        public void unregister() {
-            if (shard != null)
-                shard.removeEventListener(this);
         }
     }
 }

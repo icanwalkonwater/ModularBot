@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot;
 
+import com.jesus_crie.modularbot.exception.ModuleAlreadyLoadedException;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
 import com.jesus_crie.modularbot.utils.IStateProvider;
@@ -7,6 +8,7 @@ import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -170,49 +172,31 @@ public class ModularBotBuilder {
     @SuppressWarnings("unchecked")
     public ModularBotBuilder autoLoadBaseModules() {
 
-        // Try logger module
-        try {
-            Class<? extends BaseModule> loggerModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_logger.ConsoleLoggerModule");
-            moduleManager.registerModules(this, loggerModule);
-        } catch (ClassNotFoundException e) {
-            LOG.debug("Failed to autoload logger module.");
-        }
-
-        // Try command module
-        try {
-            Class<? extends BaseModule> commandModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_command.CommandModule");
-            moduleManager.registerModules(this, commandModule);
-        } catch (ClassNotFoundException e) {
-            LOG.debug("Failed to autoload command module.");
-        }
-
-        // Try night config module
-        try {
-            Class<? extends BaseModule> nightConfigModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule");
-            moduleManager.registerModules(this, nightConfigModule);
-        } catch (ClassNotFoundException e) {
-            LOG.debug("Failed to autoload night config module.");
-        }
-
-        // Try nashorn module
-        try {
-            Class<? extends BaseModule> nashornModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nashorn_support.NashornSupportModule");
-            moduleManager.registerModules(this, nashornModule);
-        } catch (ClassNotFoundException e) {
-            LOG.debug("Failed to autoload nashorn module.");
-        }
-
-        // Try nashorn command module
-        try {
-            Class<? extends BaseModule> nashornCommandModule = (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule");
-            moduleManager.registerModules(this, nashornCommandModule);
-        } catch (ClassNotFoundException e) {
-            LOG.debug("Failed to autoload nashorn command module.");
-        }
+        tryLoadModule("com.jesus_crie.modularbot_logger.ConsoleLoggerModule");
+        tryLoadModule("com.jesus_crie.modularbot_command.CommandModule");
+        tryLoadModule("com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule");
+        tryLoadModule("com.jesus_crie.modularbot_nashorn_support.NashornSupportModule");
+        tryLoadModule("com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule");
+        tryLoadModule("com.jesus_crie.modularbot_message_decorator.MessageDecoratorModule");
 
         // TODO 16/06/18 remember to complete with new modules
 
         return this;
+    }
+
+    /**
+     * Internal method, tries to load the given class as a module with exception catching.
+     *
+     * @param className The name of the class to load.
+     */
+    @SuppressWarnings("unchecked")
+    private void tryLoadModule(@Nonnull final String className) {
+        try {
+            Class<? extends BaseModule> module = (Class<? extends BaseModule>) Class.forName(className);
+            moduleManager.registerModules(this, module);
+        } catch (ClassNotFoundException | ModuleAlreadyLoadedException e) {
+            LOG.debug("AUTOLOAD: Failed to load class " + className);
+        }
     }
 
     /**

@@ -6,13 +6,14 @@ import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.core.requests.RestAction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
 public class EmoteDecoratorButton extends DecoratorButton {
 
     private final Emote emote;
 
-    public EmoteDecoratorButton(@Nonnull final Emote emote, @Nonnull final Consumer<GenericMessageReactionEvent> onTrigger) {
+    public EmoteDecoratorButton(@Nonnull final Emote emote, @Nullable final Consumer<GenericMessageReactionEvent> onTrigger) {
         super(onTrigger);
         this.emote = emote;
     }

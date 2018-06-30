@@ -72,7 +72,10 @@ on [Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-
 To enable a module, add the corresponding artifact (+ version) to your
 gradle/maven dependencies and enable it in the `ModularBotBuilder` with
 the method `ModularBotBuilder#autoLoadBaseModules()` that will look for the
-"official" modules and load them automatically.
+"official" modules and load them automatically with their respective default
+settings, if you want to customize some parameters in those modules you need
+to register them one by one BEFORE calling `#autoLoadBaseModule()` (or not
+calling it at all).
 
 Note that when the associated instance of `ModularBot` is created, you can't
 register modules anymore.
@@ -91,8 +94,10 @@ CommandModule module = moduleManager.getModule(CommandModule.class);
 For custom modules, look [here](#your-custom-module).
 
 ### Available modules
-
 > The modules with a * are included in the [Base](#Base) module
+
+Here is a diagram of the dependencies between each modules.
+![Module Dependencies](./diagrams/module_dependencies.png)
 
 #### Base
 > *Artifact: `com.jesus-crie:modularbot-base`.*
