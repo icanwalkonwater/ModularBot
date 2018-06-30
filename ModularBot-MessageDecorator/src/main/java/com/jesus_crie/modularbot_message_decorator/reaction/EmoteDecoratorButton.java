@@ -25,6 +25,15 @@ public class EmoteDecoratorButton extends DecoratorButton {
     }
 
     @Override
+    public RestAction<Void> removeEmote(@Nonnull Message target) {
+        return target.getReactions().stream()
+                .filter(mr -> mr.getReactionEmote().getEmote().equals(emote))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("The reaction is missing on the bound message !"))
+                .removeReaction();
+    }
+
+    @Override
     protected boolean checkEmote(@Nonnull final GenericMessageReactionEvent event) {
         return event.getReactionEmote().isEmote() && event.getReactionEmote().getEmote().equals(emote);
     }

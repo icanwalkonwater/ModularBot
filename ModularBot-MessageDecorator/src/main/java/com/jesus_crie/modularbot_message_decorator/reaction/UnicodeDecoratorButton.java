@@ -24,6 +24,15 @@ public class UnicodeDecoratorButton extends DecoratorButton {
     }
 
     @Override
+    public RestAction<Void> removeEmote(@Nonnull Message target) {
+        return target.getReactions().stream()
+                .filter(mr -> mr.getReactionEmote().getName().equals(emote))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("The reaction is missing on the bound message !"))
+                .removeReaction();
+    }
+
+    @Override
     protected boolean checkEmote(@Nonnull GenericMessageReactionEvent event) {
         return !event.getReactionEmote().isEmote() && event.getReactionEmote().getName().equals(emote);
     }

@@ -97,6 +97,7 @@ public class Waiter {
 
     /**
      * Create a listener that will wait for a specific event and can perform various checks and action during this process.
+     * It uses the shard's pool to schedule the timeout.
      *
      * @param shard      The shard where the event is supposed to happen.
      * @param eventClass The class of the event to listen to.
@@ -145,7 +146,7 @@ public class Waiter {
 
     public static class WaiterListener<T extends Event> extends CompletableFuture<T> implements EventListener {
 
-        public static final WaiterListener EMPTY = new WaiterListener();
+        public static final WaiterListener<?> EMPTY = new WaiterListener<>();
 
         private final JDA shard;
         private final Class<T> eventClass;
@@ -175,7 +176,7 @@ public class Waiter {
         @SuppressWarnings("unchecked")
         @Override
         public void onEvent(Event event) {
-            if (event.getClass().isAssignableFrom(eventClass)) {
+            if (eventClass != null && event.getClass().isAssignableFrom(eventClass)) {
                 if (onTrigger == null)
                     return;
 

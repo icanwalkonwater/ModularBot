@@ -4,6 +4,8 @@ import com.jesus_crie.modularbot.utils.Waiter;
 import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -16,6 +18,8 @@ import java.util.List;
  * Decorator made to interact with the reactions of a message.
  */
 public abstract class ReactionDecorator extends MessageDecorator<GenericMessageReactionEvent> {
+
+    private static final Logger LOG = LoggerFactory.getLogger("ReactionDecorator");
 
     protected final List<DecoratorButton> buttons = new ArrayList<>();
 
@@ -40,6 +44,7 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
     @Override
     public void setup() {
         buttons.forEach(b -> b.setupEmote(binding).complete());
+        updateMessage();
         listener.register();
     }
 
@@ -70,6 +75,15 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
     @Override
     protected void onTimeout() {
         destroy();
+    }
+
+    /**
+     * Remove the reaction of the button.
+     * This method isn't called by default but some implementations might call it from {@link #destroy()}.
+     */
+    public void destroyButtons() {
+        for (DecoratorButton button : buttons)
+            button.removeEmote(binding).complete();
     }
 
     @Override

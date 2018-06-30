@@ -49,6 +49,14 @@ public abstract class DecoratorButton implements Cacheable {
     public abstract RestAction<Void> setupEmote(@Nonnull final Message target);
 
     /**
+     * Called when the decorator is destroying and need to remove the reactions.
+     *
+     * @param target The target message.
+     * @return A {@link RestAction RestAction} that will remove the emote from the target message.
+     */
+    public abstract RestAction<Void> removeEmote(@Nonnull final Message target);
+
+    /**
      * Used to check if an is eligible for this button.
      *
      * @param event The event to check.
