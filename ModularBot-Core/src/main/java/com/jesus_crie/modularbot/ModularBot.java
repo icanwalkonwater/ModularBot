@@ -123,13 +123,7 @@ public class ModularBot extends DefaultShardManager {
         return Executors.newScheduledThreadPool(corePoolSize, r -> {
             Thread t = threadFactory.newThread(r);
             t.setPriority(Thread.NORM_PRIORITY + 1);
-
-            t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    logger.error("Uncaught exception !", e);
-                }
-            });
+            t.setUncaughtExceptionHandler((t1, e) -> logger.error("Uncaught exception !", e));
             return t;
         });
     }

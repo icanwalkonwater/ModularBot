@@ -7,6 +7,7 @@ import com.jesus_crie.modularbot.module.ModuleManager;
 import com.jesus_crie.modularbot_command.listener.CommandListener;
 import com.jesus_crie.modularbot_command.listener.DiscordCommandListener;
 import com.jesus_crie.modularbot_command.processing.CommandProcessor;
+import net.dv8tion.jda.core.entities.Guild;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -104,8 +105,8 @@ public class CommandModule extends BaseModule {
     }
 
     @Nonnull
-    public String getPrefixForGuild(final long guildId) {
-        return customPrefix.getOrDefault(guildId, defaultPrefix);
+    public String getPrefixForGuild(@Nullable final Guild guild) {
+        return guild == null ? defaultPrefix : customPrefix.getOrDefault(guild.getIdLong(), defaultPrefix);
     }
 
     @Nullable

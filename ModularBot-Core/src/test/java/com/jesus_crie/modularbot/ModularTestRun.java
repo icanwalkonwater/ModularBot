@@ -1,7 +1,6 @@
 package com.jesus_crie.modularbot;
 
 import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.utils.Waiter;
 import com.jesus_crie.modularbot_command.AccessLevel;
 import com.jesus_crie.modularbot_command.Command;
 import com.jesus_crie.modularbot_command.CommandEvent;
@@ -14,23 +13,21 @@ import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertMessageDecorator;
-import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmMessageDecorator;
 import com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.TextChannel;
+import net.dv8tion.jda.core.events.Event;
+import net.dv8tion.jda.core.events.guild.GenericGuildEvent;
 import net.dv8tion.jda.core.events.message.GenericMessageEvent;
-import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
-import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.core.hooks.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.security.auth.login.LoginException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -79,9 +76,20 @@ public class ModularTestRun extends BaseModule {
         /// Decorator
 
         cmd.registerQuickCommand("dA10", e -> {
-            Message m = e.getTextChannel().sendMessage("dA10").complete();
+            Message m = e.getChannel().sendMessage("dA10").complete();
             AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, false);
             dec.setup();
+            LOG.info(String.valueOf(e.getJDA().getRegisteredListeners()));
+
+            e.getJDA().addEventListener(new EventListener() {
+                @Override
+                public void onEvent(Event event) {
+                    if (event instanceof GenericGuildEvent
+                            || event instanceof GenericMessageEvent) {
+                        LOG.info("Event: " + event);
+                    }
+                }
+            });
         });
 
         cmd.registerQuickCommand("dAD10", e -> {
