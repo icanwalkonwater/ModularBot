@@ -69,7 +69,7 @@ public abstract class MessageDecorator<T extends Event> implements Cacheable {
      * Used to check if the given timeout is valid or not.
      *
      * @param timeout The timeout to check.
-     * @return
+     * @return True if the timeout is valid, otherwise false.
      */
     protected boolean checkTimeout(final long timeout) {
         return timeout >= 0;
@@ -111,6 +111,13 @@ public abstract class MessageDecorator<T extends Event> implements Cacheable {
     @Override
     public boolean equals(Object obj) {
         return obj.getClass() == getClass() && ((MessageDecorator) obj).binding.equals(binding);
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName()
+                + "[" + binding.getChannel().getIdLong() + " / " + binding.getIdLong() + "]" +
+                "[" + (isAlive ? "alive" : "dead") + "]";
     }
 
     /**

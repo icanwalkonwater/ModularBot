@@ -37,6 +37,15 @@ public class AutoDestroyMessageDecorator extends MessageDecorator<ShutdownEvent>
                 timeout, true);
     }
 
+    /**
+     * Setup useless here.
+     * The only thing that matters is the timeout which is set when the listener is created.
+     */
+    @Override
+    public void setup() {
+        /* no-op */
+    }
+
     @Override
     protected void onTimeout() {
         destroy();

@@ -176,7 +176,7 @@ public class Waiter {
         @SuppressWarnings("unchecked")
         @Override
         public void onEvent(Event event) {
-            if (eventClass != null && event.getClass().isAssignableFrom(eventClass)) {
+            if (eventClass != null && eventClass.isInstance(event)) {
                 if (onTrigger == null)
                     return;
 
@@ -194,3 +194,4 @@ public class Waiter {
         }
     }
 }
+

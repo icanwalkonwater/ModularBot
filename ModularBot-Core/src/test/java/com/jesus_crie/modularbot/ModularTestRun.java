@@ -13,15 +13,12 @@ import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertMessageDecorator;
+import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmMessageDecorator;
 import com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.events.Event;
-import net.dv8tion.jda.core.events.guild.GenericGuildEvent;
-import net.dv8tion.jda.core.events.message.GenericMessageEvent;
-import net.dv8tion.jda.core.hooks.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,26 +72,44 @@ public class ModularTestRun extends BaseModule {
 
         /// Decorator
 
+        // Alert 10s
         cmd.registerQuickCommand("dA10", e -> {
-            Message m = e.getChannel().sendMessage("dA10").complete();
+            Message m = e.getChannel().sendMessage("dA 10").complete();
             AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, false);
             dec.setup();
-            LOG.info(String.valueOf(e.getJDA().getRegisteredListeners()));
-
-            e.getJDA().addEventListener(new EventListener() {
-                @Override
-                public void onEvent(Event event) {
-                    if (event instanceof GenericGuildEvent
-                            || event instanceof GenericMessageEvent) {
-                        LOG.info("Event: " + event);
-                    }
-                }
-            });
         });
 
+        // Alert 10s delete after
+        cmd.registerQuickCommand("dA10d", e -> {
+            Message m = e.getChannel().sendMessage("dA 10 d").complete();
+            AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, true);
+            dec.setup();
+        });
+
+        // Auto destroy 10s
         cmd.registerQuickCommand("dAD10", e -> {
             Message m = e.getChannel().sendMessage("dAD 10").complete();
             AutoDestroyMessageDecorator d = new AutoDestroyMessageDecorator(m, 10, TimeUnit.SECONDS, () -> LOG.info("Timeout"));
+        });
+
+        // Confirm 10s
+        cmd.registerQuickCommand("dC10", e -> {
+            Message m = e.getChannel().sendMessage("dC 10").complete();
+            ConfirmMessageDecorator dec = new ConfirmMessageDecorator(m, 1000 * 10,
+                    success -> e.fastReply("Choice: " + success),
+                    () -> LOG.info("Timeout"),
+                    false);
+            dec.setup();
+        });
+
+        // Confirm 10s delete after
+        cmd.registerQuickCommand("dC10d", e -> {
+            Message m = e.getChannel().sendMessage("dC 10 d").complete();
+            ConfirmMessageDecorator dec = new ConfirmMessageDecorator(m, 1000 * 10,
+                    success -> e.fastReply("Choice: " + success),
+                    () -> LOG.info("Timeout"),
+                    true);
+            dec.setup();
         });
 
         try {

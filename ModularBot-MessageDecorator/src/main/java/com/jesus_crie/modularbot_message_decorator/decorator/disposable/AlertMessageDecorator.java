@@ -39,6 +39,6 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
     public AlertMessageDecorator(@Nonnull final Message binding, final long timeout,
                                  @Nonnull final MessageReaction.ReactionEmote emote, boolean deleteAfter) {
         super(binding, timeout, deleteAfter);
-        buttons.add(DecoratorButton.fromReactionEmote(emote, e -> destroy()));
+        buttons.add(DecoratorButton.fromReactionEmote(emote, null));
     }
 }

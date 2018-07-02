@@ -4,13 +4,13 @@ import com.jesus_crie.modularbot.utils.Waiter;
 import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.core.exceptions.ErrorResponseException;
+import net.dv8tion.jda.core.requests.ErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,7 +52,7 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
     protected Waiter.WaiterListener<GenericMessageReactionEvent> createListener(@Nonnull Object... args) {
         return Waiter.createListener(binding.getJDA(),
                 GenericMessageReactionEvent.class,
-                event -> event.getMessageIdLong() == binding.getIdLong(),
+                event -> event.getMessageIdLong() == binding.getIdLong() && !event.getReaction().isSelf(),
                 this::onTrigger,
                 this::onTimeout,
                 timeout,
@@ -82,13 +82,20 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
      * This method isn't called by default but some implementations might call it from {@link #destroy()}.
      */
     public void destroyButtons() {
-        for (DecoratorButton button : buttons)
-            button.removeEmote(binding).complete();
+        try {
+            for (DecoratorButton button : buttons)
+                button.removeEmote(binding).complete();
+        } catch (ErrorResponseException e) {
+            if (e.getErrorResponse() != ErrorResponse.UNKNOWN_MESSAGE)
+                LOG.error("Failed to destroy buttons on [" + binding.getIdLong() + "].", e);
+        }
     }
 
     @Override
     public void destroy() {
-        listener.unregister();
+        if (!isAlive) return;
+
+        listener.cancel(true);
         isAlive = false;
     }
 }
