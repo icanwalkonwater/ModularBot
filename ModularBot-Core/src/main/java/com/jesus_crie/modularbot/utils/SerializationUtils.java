@@ -20,7 +20,7 @@ public class SerializationUtils {
         try (final ObjectOutputStream oos = new ObjectOutputStream(out)) {
             oos.writeObject(source);
         } catch (IOException e) {
-            throw new IllegalArgumentException("The provided object can't be serialized !");
+            throw new IllegalArgumentException("The provided object can't be serialized !", e);
         }
 
         return Base64.getEncoder().encodeToString(out.toByteArray());

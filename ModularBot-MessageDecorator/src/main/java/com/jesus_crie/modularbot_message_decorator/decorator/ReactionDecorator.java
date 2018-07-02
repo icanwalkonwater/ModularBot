@@ -1,7 +1,7 @@
 package com.jesus_crie.modularbot_message_decorator.decorator;
 
 import com.jesus_crie.modularbot.utils.Waiter;
-import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
+import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.core.exceptions.ErrorResponseException;

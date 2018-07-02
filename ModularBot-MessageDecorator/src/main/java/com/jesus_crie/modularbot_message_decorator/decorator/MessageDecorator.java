@@ -1,8 +1,6 @@
 package com.jesus_crie.modularbot_message_decorator.decorator;
 
-import com.electronwill.nightconfig.core.Config;
 import com.jesus_crie.modularbot.utils.Waiter;
-import com.jesus_crie.modularbot_message_decorator.Cacheable;
 import com.jesus_crie.modularbot_message_decorator.DecoratorListener;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.Event;
@@ -14,7 +12,7 @@ import java.util.List;
 /**
  * Class that can extends the behaviour of a discord {@link Message Message} by interacting in specific manners with it.
  */
-public abstract class MessageDecorator<T extends Event> implements Cacheable {
+public abstract class MessageDecorator<T extends Event> {
 
     protected Message binding;
     protected final long creationTime = System.currentTimeMillis();
@@ -118,19 +116,5 @@ public abstract class MessageDecorator<T extends Event> implements Cacheable {
         return getClass().getSimpleName()
                 + "[" + binding.getChannel().getIdLong() + " / " + binding.getIdLong() + "]" +
                 "[" + (isAlive ? "alive" : "dead") + "]";
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Nonnull
-    @Override
-    public Config serialize() {
-        final Config serialized = Config.inMemory();
-        serialized.set(Cacheable.KEY_CLASS, getClass().getName());
-        serialized.set(Cacheable.KEY_BINDING_ID, binding.getIdLong());
-        serialized.set(Cacheable.KEY_TIMEOUT, timeout);
-
-        return serialized;
     }
 }

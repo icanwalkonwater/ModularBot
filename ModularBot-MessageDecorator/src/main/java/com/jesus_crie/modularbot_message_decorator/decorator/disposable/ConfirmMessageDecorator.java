@@ -1,12 +1,13 @@
 package com.jesus_crie.modularbot_message_decorator.decorator.disposable;
 
-import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
+import com.jesus_crie.modularbot.utils.SerializableConsumer;
+import com.jesus_crie.modularbot.utils.SerializableRunnable;
+import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.Consumer;
 
 public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDecorator {
 
@@ -20,7 +21,7 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      */
     public static final MessageReaction.ReactionEmote DEFAULT_NO_EMOTE = new MessageReaction.ReactionEmote("\u274E", null, null);
 
-    private final Runnable onTimeout;
+    private final SerializableRunnable onTimeout;
 
     /**
      * Create a confirm decorator with the default emotes and custom actions for each choice.
@@ -33,9 +34,9 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
     public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final Runnable onYes,
-                                   @Nullable final Runnable onNo,
-                                   @Nullable final Runnable onTimeout,
+                                   @Nonnull final SerializableRunnable onYes,
+                                   @Nullable final SerializableRunnable onNo,
+                                   @Nullable final SerializableRunnable onTimeout,
                                    final boolean deleteAfter) {
         this(binding, timeout,
                 DecoratorButton.fromReactionEmote(DEFAULT_YES_EMOTE, e -> onYes.run()),
@@ -53,8 +54,8 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
     public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final Consumer<Boolean> onTrigger,
-                                   @Nonnull final Runnable onTimeout,
+                                   @Nonnull final SerializableConsumer<Boolean> onTrigger,
+                                   @Nonnull final SerializableRunnable onTimeout,
                                    final boolean deleteAfter) {
         this(binding, timeout, DEFAULT_YES_EMOTE, DEFAULT_NO_EMOTE, onTrigger, onTimeout, deleteAfter);
     }
@@ -73,8 +74,8 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
     public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
                                    @Nonnull final MessageReaction.ReactionEmote yesEmote,
                                    @Nonnull final MessageReaction.ReactionEmote noEmote,
-                                   @Nonnull final Consumer<Boolean> onTrigger,
-                                   @Nullable final Runnable onTimeout,
+                                   @Nonnull final SerializableConsumer<Boolean> onTrigger,
+                                   @Nullable final SerializableRunnable onTimeout,
                                    final boolean deleteAfter) {
         super(binding, timeout, deleteAfter);
         this.onTimeout = onTimeout;
@@ -96,7 +97,7 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
     public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
                                    @Nonnull final DecoratorButton yesButton,
                                    @Nonnull final DecoratorButton noButton,
-                                   @Nullable final Runnable onTimeout,
+                                   @Nullable final SerializableRunnable onTimeout,
                                    final boolean deleteAfter) {
         super(binding, timeout, deleteAfter, yesButton, noButton);
         this.onTimeout = onTimeout;

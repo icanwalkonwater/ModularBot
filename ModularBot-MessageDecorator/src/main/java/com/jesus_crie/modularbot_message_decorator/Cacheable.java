@@ -8,30 +8,18 @@ public interface Cacheable {
 
     // Constants //
 
-    /**
-     * Constant to define the name of a field containing the name of class.
-     */
     String KEY_CLASS = "_class";
-
-    /**
-     * Constant to define the name of a field containing the ID if the bound object.
-     */
     String KEY_BINDING_ID = "binding_id";
-
-    /**
-     * Constant to define the name of a field containing the timeout.
-     */
     String KEY_TIMEOUT = "timeout";
-
-    /**
-     * Constant to define the name of a field containing a serialized functional interface.
-     */
     String KEY_ACTION_FUNCTIONAL = "action_functional";
-
-    /**
-     * Constant to define the name of a field containing a JS script.
-     */
     String KEY_ACTION_SCRIPT = "action_js";
+    String KEY_BUTTONS = "buttons";
+    String KEY_DELETE_AFTER = "delete_after";
+    String KEY_EMOTE = "emote";
+    String KEY_BUTTON_YES = "button_yes";
+    String KEY_BUTTON_NO = "button_no";
+    String KEY_TIMEOUT_ACTION = "timeout_action";
+    String KEY_BINDING_CHANNEL_ID = "binding_channel_id";
 
     /**
      * Used to serialize the objet into a {@link Config Config} usable by the config module.

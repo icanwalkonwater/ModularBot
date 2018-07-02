@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot;
 
+import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot_command.AccessLevel;
 import com.jesus_crie.modularbot_command.Command;
@@ -72,6 +73,8 @@ public class ModularTestRun extends BaseModule {
 
         /// Decorator
 
+        config.useSecondaryConfig("deco", "./example/decorator.json");
+
         // Alert 10s
         cmd.registerQuickCommand("dA10", e -> {
             Message m = e.getChannel().sendMessage("dA 10").complete();
@@ -83,6 +86,23 @@ public class ModularTestRun extends BaseModule {
         cmd.registerQuickCommand("dA10d", e -> {
             Message m = e.getChannel().sendMessage("dA 10 d").complete();
             AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, true);
+            dec.setup();
+        });
+
+        cmd.registerQuickCommand("dA100", e -> {
+            Message m = e.getChannel().sendMessage("dA 100").complete();
+            AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 100, false);
+            dec.setup();
+
+            config.useSecondaryConfig("deco", "./example/decorator.json");
+            FileConfig cfg = config.getSecondaryConfig("deco");
+            cfg.set("dec100", dec.serialize());
+            cfg.save();
+        });
+
+        cmd.registerQuickCommand("ddA100", e -> {
+            FileConfig cfg = config.getSecondaryConfig("deco");
+            AlertMessageDecorator dec = AlertMessageDecorator.tryDeserialize(cfg.get("dec100"), bot);
             dec.setup();
         });
 

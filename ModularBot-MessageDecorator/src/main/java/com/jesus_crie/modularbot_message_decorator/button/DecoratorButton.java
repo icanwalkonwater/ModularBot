@@ -1,6 +1,7 @@
-package com.jesus_crie.modularbot_message_decorator.reaction;
+package com.jesus_crie.modularbot_message_decorator.button;
 
 import com.electronwill.nightconfig.core.Config;
+import com.jesus_crie.modularbot.utils.SerializableConsumer;
 import com.jesus_crie.modularbot.utils.SerializationUtils;
 import com.jesus_crie.modularbot_message_decorator.Cacheable;
 import net.dv8tion.jda.core.entities.Message;
@@ -11,13 +12,12 @@ import net.dv8tion.jda.core.requests.RestAction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.util.function.Consumer;
 
 public abstract class DecoratorButton implements Cacheable {
 
-    protected final Consumer<GenericMessageReactionEvent> onTrigger;
+    protected final SerializableConsumer<GenericMessageReactionEvent> onTrigger;
 
-    protected DecoratorButton(@Nullable final Consumer<GenericMessageReactionEvent> onTrigger) {
+    protected DecoratorButton(@Nullable final SerializableConsumer<GenericMessageReactionEvent> onTrigger) {
         this.onTrigger = onTrigger;
     }
 
@@ -32,10 +32,22 @@ public abstract class DecoratorButton implements Cacheable {
      */
     @Nonnull
     public static DecoratorButton fromReactionEmote(@Nonnull final MessageReaction.ReactionEmote emote,
-                                                    @Nullable final Consumer<GenericMessageReactionEvent> onTrigger) {
+                                                    @Nullable final SerializableConsumer<GenericMessageReactionEvent> onTrigger) {
         if (emote.isEmote())
             return new EmoteDecoratorButton(emote.getEmote(), onTrigger);
         else return new UnicodeDecoratorButton(emote.getName(), onTrigger);
+    }
+
+    /**
+     * Return a serialized version of the emote corresponding to this button.
+     *
+     * @return A string representing the associated emote.
+     */
+    @Nonnull
+    public abstract String getEmoteSerialized();
+
+    public Serializable getActionSerializable() {
+        return onTrigger;
     }
 
     /**
@@ -85,9 +97,9 @@ public abstract class DecoratorButton implements Cacheable {
     public Config serialize() {
         final Config serialized = Config.inMemory();
         serialized.set(Cacheable.KEY_CLASS, getClass().getName());
-        if (onTrigger instanceof Serializable)
-            serialized.set(Cacheable.KEY_ACTION_FUNCTIONAL,
-                    SerializationUtils.serializableToString((Serializable) onTrigger));
+        serialized.set(Cacheable.KEY_EMOTE, getEmoteSerialized());
+        if (onTrigger != null)
+            serialized.set(Cacheable.KEY_ACTION_FUNCTIONAL, SerializationUtils.serializableToString(onTrigger));
 
         return serialized;
     }

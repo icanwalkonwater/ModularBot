@@ -1,6 +1,6 @@
 package com.jesus_crie.modularbot_message_decorator.decorator.disposable;
 
-import com.jesus_crie.modularbot_message_decorator.reaction.DecoratorButton;
+import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 
 import javax.annotation.Nonnull;
@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
  */
 public abstract class SafeAutoDestroyDisposableMessageDecorator extends AutoDeleteDisposableMessageDecorator {
 
-    private final boolean deleteAfter;
+    protected final boolean deleteAfter;
 
     /**
      * Create an auto destroy disposable decorator.
