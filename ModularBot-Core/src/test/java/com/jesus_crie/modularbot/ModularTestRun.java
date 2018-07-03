@@ -10,12 +10,10 @@ import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
-import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmMessageDecorator;
-import com.jesus_crie.modularbot_nashorn_command_support.NashornCommandSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
@@ -35,45 +33,42 @@ public class ModularTestRun extends BaseModule {
     private static final Logger LOG = LoggerFactory.getLogger("TestBot");
 
     public static void main(String[] args) {
-        final ModularBot bot = new ModularBotBuilder(args[0])
-                .registerModules(
-                        new ConsoleLoggerModule(),
-                        new CommandModule(),
-                        new NightConfigWrapperModule("./example/config.json"),
-                        new NashornSupportModule("./example/scripts/"),
-                        new NashornCommandSupportModule(),
+        CommandModule cmd = new CommandModule();
+        NightConfigWrapperModule config = new NightConfigWrapperModule("./example/config.json");
+        NashornSupportModule js = new NashornSupportModule("./example/scripts/");
 
+        final ModularBotBuilder botBuilder = new ModularBotBuilder(args[0])
+                .registerModules(
+                        cmd, config, js,
                         new ModularTestRun()
                 )
                 .autoLoadBaseModules()
-                .useShutdownNow()
-                .build();
+                .useShutdownNow();
 
         // ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.TRACE;
 
         /// Commands
 
-        CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
         //cmd.setCreatorId(182547138729869314L);
         cmd.registerCommands(new StopCommand());
 
+        /// JS
+
+        JavaScriptModule testModule = js.getModuleByName("test");
+        LOG.info("Test module file: " + testModule.getScriptLocation().getName());
+
+        /// Decorator cache
+        config.useSecondaryConfig("deco", "./example/decorator.json");
+
+        /* #### BUILD #### */
+        ModularBot bot = botBuilder.build();
+
         /// Config
 
-        NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
         Optional<Integer> startCount = config.getPrimaryConfig().getOptional("start_count");
         int count = startCount.orElse(0);
         count++;
         config.getPrimaryConfig().set("start_count", count);
-
-        /// JS
-
-        NashornSupportModule js = bot.getModuleManager().getModule(NashornSupportModule.class);
-        JavaScriptModule testModule = js.getModuleByName("test");
-        LOG.info("Test module file: " + testModule.getScriptLocation().getName());
-
-        /// Decorator
-
-        config.useSecondaryConfig("deco", "./example/decorator.json");
 
         // Alert 10s
         cmd.registerQuickCommand("dA10", e -> {

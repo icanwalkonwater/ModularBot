@@ -10,6 +10,7 @@ import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageReaction;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 /**
@@ -48,17 +49,25 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
         buttons.add(DecoratorButton.fromReactionEmote(emote, null));
     }
 
+    /**
+     * Deserialize an {@link AlertMessageDecorator AlertMessageDecorator} from a config object.
+     *
+     * @param config
+     * @param bot
+     * @return
+     */
+    @Nullable
     public static AlertMessageDecorator tryDeserialize(@Nonnull final Config config, @Nonnull final ModularBot bot) {
         // Assuming that the KEY_CLASS field is correct.
 
         final Long chanId = config.get(KEY_BINDING_CHANNEL_ID);
         final Long bindingId = config.get(KEY_BINDING_ID);
         final Long expireTime = config.get(KEY_TIMEOUT);
-        final Boolean deleteAfter = config.get(KEY_DELETE_AFTER);
+        final boolean deleteAfter = config.getOrElse(KEY_DELETE_AFTER, false);
         final String emoteSerialized = config.get(KEY_EMOTE);
 
         // Check the essential fields.
-        if (chanId == null || bindingId == null || expireTime == null || deleteAfter == null)
+        if (chanId == null || bindingId == null || expireTime == null)
             throw new IllegalArgumentException("One or more field are missing !");
 
         // Retrieve the bound message.
@@ -76,11 +85,19 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
             else rEmote = new MessageReaction.ReactionEmote(emoteSerialized, null, null);
         } else rEmote = DEFAULT_REACTION;
 
-        // Build that.
-        return new AlertMessageDecorator(binding,
-                expireTime - System.currentTimeMillis(),
-                rEmote,
-                deleteAfter);
+        try {
+            // Build that.
+            return new AlertMessageDecorator(binding,
+                    expireTime - System.currentTimeMillis(),
+                    rEmote,
+                    deleteAfter);
+        } catch (IllegalArgumentException expected) {
+            // The timeout is invalid, clear the message or destroy it.
+            if (deleteAfter) binding.delete().complete();
+            else binding.clearReactions().complete();
+
+            return null;
+        }
     }
 
     @Nonnull

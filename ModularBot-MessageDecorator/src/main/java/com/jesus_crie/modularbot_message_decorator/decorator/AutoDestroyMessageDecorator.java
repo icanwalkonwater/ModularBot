@@ -27,6 +27,7 @@ public class AutoDestroyMessageDecorator extends MessageDecorator<ShutdownEvent>
         listener = createListener(onTimeout);
     }
 
+    @Nonnull
     @Override
     protected Waiter.WaiterListener<ShutdownEvent> createListener(@Nonnull Object... args) {
         return Waiter.createListener(binding.getJDA(), ShutdownEvent.class, null, null,

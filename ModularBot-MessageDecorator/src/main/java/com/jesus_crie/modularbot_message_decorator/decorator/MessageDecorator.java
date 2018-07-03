@@ -11,6 +11,7 @@ import java.util.List;
 
 /**
  * Class that can extends the behaviour of a discord {@link Message Message} by interacting in specific manners with it.
+ * Some of the methods of this class aren't required by every type of decorator so they will throw exceptions.
  */
 public abstract class MessageDecorator<T extends Event> {
 
@@ -24,8 +25,12 @@ public abstract class MessageDecorator<T extends Event> {
 
     /**
      * Build the base of a decorator.
-     *  @param binding The message to bind to this decorator.
+     * If the given timeout isn't valid (base on {@link #checkTimeout(long)}) the decorator will call {@link #destroy()}
+     * and throw an exception right after.
+     *
+     * @param binding The message to bind to this decorator.
      * @param timeout The amount of time before the decorator expire.
+     * @throws IllegalArgumentException If the given timeout is invalid.
      */
     protected MessageDecorator(@Nonnull final Message binding, final long timeout) {
         if (!checkTimeout(timeout))
@@ -37,7 +42,9 @@ public abstract class MessageDecorator<T extends Event> {
 
     /**
      * Used to create the listener.
+     * By default, no listener is created and an exception is thrown instead.
      */
+    @Nonnull
     protected Waiter.WaiterListener<T> createListener(@Nonnull final Object... args) {
         throw new AbstractMethodError();
     }
@@ -45,11 +52,15 @@ public abstract class MessageDecorator<T extends Event> {
     /**
      * Used to setup the decorator, this must be triggered out of the constructor.
      */
-    public void setup() {}
+    public void setup() {
+    }
 
     /**
      * Triggered when the decorator times out.
-     * Some implementation might alter the way that this method is called but most of them will call {@link #destroy()}.
+     * If this method isn't overridden, it will throw an exception but this method isn't called by default.
+     * <p>
+     * On the other hand, an implementation like {@link ReactionDecorator ReactionDecorator} will call {@link #destroy()}
+     * on timeout which is an expected behaviour.
      */
     protected void onTimeout() {
         throw new AbstractMethodError();
@@ -57,7 +68,7 @@ public abstract class MessageDecorator<T extends Event> {
 
     /**
      * Destroy the decorator.
-     *
+     * <p>
      * The effect of this method might depend of the implementation.
      * Depending of the implementation this method can also be called as a result of {@link #onTimeout()}.
      */

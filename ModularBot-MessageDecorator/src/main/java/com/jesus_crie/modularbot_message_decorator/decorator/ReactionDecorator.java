@@ -48,6 +48,7 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
         listener.register();
     }
 
+    @Nonnull
     @Override
     protected Waiter.WaiterListener<GenericMessageReactionEvent> createListener(@Nonnull Object... args) {
         return Waiter.createListener(binding.getJDA(),
@@ -95,7 +96,7 @@ public abstract class ReactionDecorator extends MessageDecorator<GenericMessageR
     public void destroy() {
         if (!isAlive) return;
 
-        listener.cancel(true);
+        if (listener != null) listener.cancel(true);
         isAlive = false;
     }
 }
