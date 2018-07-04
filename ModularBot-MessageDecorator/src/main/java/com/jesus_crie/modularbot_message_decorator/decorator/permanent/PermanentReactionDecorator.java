@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
  * Mark the decorator as permanent.
  * Has no real effect, it's just a {@link ReactionDecorator ReactionDecorator}.
  */
-public abstract class PermanentMessageDecorator extends ReactionDecorator {
+public abstract class PermanentReactionDecorator extends ReactionDecorator {
 
-    protected PermanentMessageDecorator(@Nonnull Message binding, long timeout, @Nonnull DecoratorButton... buttons) {
+    protected PermanentReactionDecorator(@Nonnull Message binding, long timeout, @Nonnull DecoratorButton... buttons) {
         super(binding, timeout, buttons);
     }
 }
