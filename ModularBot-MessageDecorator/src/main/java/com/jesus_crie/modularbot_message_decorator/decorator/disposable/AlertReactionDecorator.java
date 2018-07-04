@@ -4,14 +4,11 @@ import com.electronwill.nightconfig.core.Config;
 import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot_message_decorator.Cacheable;
 import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
-import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
-import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.MessageReaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 
 /**
  * Decorator with a single button that will delete the message when clicked or when it times out.
@@ -52,9 +49,11 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
     /**
      * Deserialize an {@link AlertReactionDecorator AlertReactionDecorator} from a config object.
      *
-     * @param config
-     * @param bot
-     * @return
+     * @param config The serialized version of the decorator.
+     * @param bot    The current instance of the bot, used to retrieve the binding.
+     * @return The deserialized {@link AlertReactionDecorator AlertReactionDecorator} or {@code null} if it failed.
+     * @throws IllegalArgumentException If a required field is missing.
+     * @throws IllegalStateException    If the bound message no longer exists.
      */
     @Nullable
     public static AlertReactionDecorator tryDeserialize(@Nonnull final Config config, @Nonnull final ModularBot bot) {
@@ -68,22 +67,15 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
 
         // Check the essential fields.
         if (chanId == null || bindingId == null || expireTime == null)
-            throw new IllegalArgumentException("One or more field are missing !");
+            throw new IllegalArgumentException("One or more fields are missing !");
 
         // Retrieve the bound message.
-        final MessageChannel channel = Optional.ofNullable((MessageChannel) bot.getTextChannelById(chanId))
-                .orElseGet(() -> bot.getPrivateChannelById(chanId));
-        final Message binding = Optional.ofNullable(channel.getMessageById(bindingId).complete())
-                .orElseThrow(() -> new IllegalStateException("The bound message no longer exist !"));
+        final Message binding = Cacheable.getBinding(chanId, bindingId, bot);
 
         // Retrieve the emote if set, otherwise default emote.
-        final MessageReaction.ReactionEmote rEmote;
-        if (emoteSerialized != null) {
-            final Emote emote = bot.getEmoteById(emoteSerialized);
-            if (emote != null)
-                rEmote = new MessageReaction.ReactionEmote(emote);
-            else rEmote = new MessageReaction.ReactionEmote(emoteSerialized, null, null);
-        } else rEmote = DEFAULT_REACTION;
+        final MessageReaction.ReactionEmote rEmote = emoteSerialized != null
+                ? Cacheable.deserializeReactionEmote(emoteSerialized, bot)
+                : DEFAULT_REACTION;
 
         try {
             // Build that.

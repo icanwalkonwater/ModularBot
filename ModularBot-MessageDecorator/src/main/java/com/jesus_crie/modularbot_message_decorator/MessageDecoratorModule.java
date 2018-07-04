@@ -64,6 +64,11 @@ public class MessageDecoratorModule extends BaseModule {
         super.onShardsReady(bot);
 
         List<Config> data = cache.get(CACHE_MAIN_PATH);
+        if (data == null)
+            return;
+
+        LOG.info("Deserializing " + data.size() + " decorators...");
+
         for (Config serialized : data) {
             String clazzS = serialized.get(Cacheable.KEY_CLASS);
             if (clazzS == null) {
@@ -77,6 +82,11 @@ public class MessageDecoratorModule extends BaseModule {
                 final Method tryDeserialize = clazz.getMethod("tryDeserialize", Config.class, ModularBot.class);
                 final MessageDecorator<?> decorator = (MessageDecorator<?>) tryDeserialize.invoke(null, serialized, bot);
 
+                if (decorator == null) {
+                    LOG.debug("Deserialized decorator is null, assuming timeout was reached, ignoring silently.");
+                    continue;
+                }
+
                 registerDecorator(decorator);
 
             } catch (ClassNotFoundException e) {
@@ -89,6 +99,8 @@ public class MessageDecoratorModule extends BaseModule {
                 LOG.warn("An exception was thrown while trying to deserialize a cached decorator, skipping. Reason: " + e.getTargetException());
             }
         }
+
+        LOG.info("Successfully deserialized " + decorators.size() + " decorators.");
     }
 
     @Override
