@@ -1,7 +1,9 @@
 package com.jesus_crie.modularbot_message_decorator.decorator;
 
+import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot.utils.Waiter;
 import com.jesus_crie.modularbot_message_decorator.DecoratorListener;
+import com.jesus_crie.modularbot_message_decorator.MessageDecoratorModule;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.Event;
 
@@ -56,6 +58,29 @@ public abstract class MessageDecorator<T extends Event> {
     }
 
     /**
+     * Register this decorator.
+     * You need to invoke this if you want it to be correctly handled and especially if you want it to be serialized.
+     *
+     * @param bot The current instance of {@link ModularBot ModularBot}.
+     * @see #register(MessageDecoratorModule)
+     */
+    @SuppressWarnings("ConstantConditions")
+    public void register(@Nonnull final ModularBot bot) {
+        register(bot.getModuleManager().getModule(MessageDecoratorModule.class));
+    }
+
+    /**
+     * Register this decorator.
+     * You need to invoke this if you want it to be correctly handled and especially if you want it to be serialized.
+     *
+     * @param module The current {@link MessageDecoratorModule MessageDecoratorModule}.
+     * @see #register(ModularBot)
+     */
+    public void register(@Nonnull final MessageDecoratorModule module) {
+        module.registerDecorator(this);
+    }
+
+    /**
      * Triggered when the decorator times out.
      * If this method isn't overridden, it will throw an exception but this method isn't called by default.
      * <p>
@@ -93,6 +118,15 @@ public abstract class MessageDecorator<T extends Event> {
     public long getExpireTime() {
         if (timeout == 0 || !isAlive) return 0;
         return creationTime + timeout;
+    }
+
+    /**
+     * Get the bound message.
+     *
+     * @return The bound message.
+     */
+    public Message getBinding() {
+        return binding;
     }
 
     /**

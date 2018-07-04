@@ -9,7 +9,7 @@ import net.dv8tion.jda.core.entities.MessageReaction;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDecorator {
+public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionDecorator {
 
     /**
      * The default "yes" emote. Correspond to the unicode character "✅".
@@ -33,11 +33,11 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param onTimeout   (Optional) The action to perform when the decorator times out.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final SerializableRunnable onYes,
-                                   @Nullable final SerializableRunnable onNo,
-                                   @Nullable final SerializableRunnable onTimeout,
-                                   final boolean deleteAfter) {
+    public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                    @Nonnull final SerializableRunnable onYes,
+                                    @Nullable final SerializableRunnable onNo,
+                                    @Nullable final SerializableRunnable onTimeout,
+                                    final boolean deleteAfter) {
         this(binding, timeout,
                 DecoratorButton.fromReactionEmote(DEFAULT_YES_EMOTE, e -> onYes.run()),
                 DecoratorButton.fromReactionEmote(DEFAULT_NO_EMOTE, onNo != null ? e -> onNo.run() : null),
@@ -53,10 +53,10 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param onTimeout   The action to perform when the decorator times out.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final SerializableConsumer<Boolean> onTrigger,
-                                   @Nonnull final SerializableRunnable onTimeout,
-                                   final boolean deleteAfter) {
+    public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                    @Nonnull final SerializableConsumer<Boolean> onTrigger,
+                                    @Nonnull final SerializableRunnable onTimeout,
+                                    final boolean deleteAfter) {
         this(binding, timeout, DEFAULT_YES_EMOTE, DEFAULT_NO_EMOTE, onTrigger, onTimeout, deleteAfter);
     }
 
@@ -71,12 +71,12 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param onTimeout   The action to perform when the decorator times out.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final MessageReaction.ReactionEmote yesEmote,
-                                   @Nonnull final MessageReaction.ReactionEmote noEmote,
-                                   @Nonnull final SerializableConsumer<Boolean> onTrigger,
-                                   @Nullable final SerializableRunnable onTimeout,
-                                   final boolean deleteAfter) {
+    public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                    @Nonnull final MessageReaction.ReactionEmote yesEmote,
+                                    @Nonnull final MessageReaction.ReactionEmote noEmote,
+                                    @Nonnull final SerializableConsumer<Boolean> onTrigger,
+                                    @Nullable final SerializableRunnable onTimeout,
+                                    final boolean deleteAfter) {
         super(binding, timeout, deleteAfter);
         this.onTimeout = onTimeout;
 
@@ -94,11 +94,11 @@ public class ConfirmMessageDecorator extends SafeAutoDestroyDisposableMessageDec
      * @param onTimeout   The action to perform when the decorator times out.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public ConfirmMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                   @Nonnull final DecoratorButton yesButton,
-                                   @Nonnull final DecoratorButton noButton,
-                                   @Nullable final SerializableRunnable onTimeout,
-                                   final boolean deleteAfter) {
+    public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                    @Nonnull final DecoratorButton yesButton,
+                                    @Nonnull final DecoratorButton noButton,
+                                    @Nullable final SerializableRunnable onTimeout,
+                                    final boolean deleteAfter) {
         super(binding, timeout, deleteAfter, yesButton, noButton);
         this.onTimeout = onTimeout;
     }

@@ -12,8 +12,8 @@ import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator;
-import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertMessageDecorator;
-import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmMessageDecorator;
+import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator;
+import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
@@ -73,20 +73,20 @@ public class ModularTestRun extends BaseModule {
         // Alert 10s
         cmd.registerQuickCommand("dA10", e -> {
             Message m = e.getChannel().sendMessage("dA 10").complete();
-            AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, false);
+            AlertReactionDecorator dec = new AlertReactionDecorator(m, 1000 * 10, false);
             dec.setup();
         });
 
         // Alert 10s delete after
         cmd.registerQuickCommand("dA10d", e -> {
             Message m = e.getChannel().sendMessage("dA 10 d").complete();
-            AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 10, true);
+            AlertReactionDecorator dec = new AlertReactionDecorator(m, 1000 * 10, true);
             dec.setup();
         });
 
         cmd.registerQuickCommand("dA100", e -> {
             Message m = e.getChannel().sendMessage("dA 100").complete();
-            AlertMessageDecorator dec = new AlertMessageDecorator(m, 1000 * 100, false);
+            AlertReactionDecorator dec = new AlertReactionDecorator(m, 1000 * 100, false);
             dec.setup();
 
             config.useSecondaryConfig("deco", "./example/decorator.json");
@@ -97,7 +97,7 @@ public class ModularTestRun extends BaseModule {
 
         cmd.registerQuickCommand("ddA100", e -> {
             FileConfig cfg = config.getSecondaryConfig("deco");
-            AlertMessageDecorator dec = AlertMessageDecorator.tryDeserialize(cfg.get("dec100"), bot);
+            AlertReactionDecorator dec = AlertReactionDecorator.tryDeserialize(cfg.get("dec100"), bot);
             dec.setup();
         });
 
@@ -110,7 +110,7 @@ public class ModularTestRun extends BaseModule {
         // Confirm 10s
         cmd.registerQuickCommand("dC10", e -> {
             Message m = e.getChannel().sendMessage("dC 10").complete();
-            ConfirmMessageDecorator dec = new ConfirmMessageDecorator(m, 1000 * 10,
+            ConfirmReactionDecorator dec = new ConfirmReactionDecorator(m, 1000 * 10,
                     success -> e.fastReply("Choice: " + success),
                     () -> LOG.info("Timeout"),
                     false);
@@ -120,7 +120,7 @@ public class ModularTestRun extends BaseModule {
         // Confirm 10s delete after
         cmd.registerQuickCommand("dC10d", e -> {
             Message m = e.getChannel().sendMessage("dC 10 d").complete();
-            ConfirmMessageDecorator dec = new ConfirmMessageDecorator(m, 1000 * 10,
+            ConfirmReactionDecorator dec = new ConfirmReactionDecorator(m, 1000 * 10,
                     success -> e.fastReply("Choice: " + success),
                     () -> LOG.info("Timeout"),
                     true);
@@ -158,19 +158,19 @@ public class ModularTestRun extends BaseModule {
         Message confirmInfinite = channel.sendMessage("Confirm infinite").complete();
         Message destroy10s = channel.sendMessage("Destroy 10s").complete();
 
-        AlertMessageDecorator alert10sDecorator = new AlertMessageDecorator(alert10s, 1000 * 10, false);
-        AlertMessageDecorator alert10sDestroyDecorator = new AlertMessageDecorator(alert10sDestroy, 1000 * 10, true);
-        AlertMessageDecorator alertInfiniteDecorator = new AlertMessageDecorator(alertInfinite, 0, false);
+        AlertReactionDecorator alert10sDecorator = new AlertReactionDecorator(alert10s, 1000 * 10, false);
+        AlertReactionDecorator alert10sDestroyDecorator = new AlertReactionDecorator(alert10sDestroy, 1000 * 10, true);
+        AlertReactionDecorator alertInfiniteDecorator = new AlertReactionDecorator(alertInfinite, 0, false);
 
-        ConfirmMessageDecorator confirm10sDecorator = new ConfirmMessageDecorator(confirm10s, 1000 * 10,
+        ConfirmReactionDecorator confirm10sDecorator = new ConfirmReactionDecorator(confirm10s, 1000 * 10,
                 b -> LOG.info("Result 10s: " + b),
                 () -> LOG.info("Time out 10s"),
                 false);
-        ConfirmMessageDecorator confirm10sDestroyDecorator = new ConfirmMessageDecorator(confirm10sDestroy, 1000 * 10,
+        ConfirmReactionDecorator confirm10sDestroyDecorator = new ConfirmReactionDecorator(confirm10sDestroy, 1000 * 10,
                 b -> LOG.info("Result 10sD: " + b),
                 () -> LOG.info("Time out 10sD"),
                 true);
-        ConfirmMessageDecorator confirmInfiniteDecorator = new ConfirmMessageDecorator(confirmInfinite, 0,
+        ConfirmReactionDecorator confirmInfiniteDecorator = new ConfirmReactionDecorator(confirmInfinite, 0,
                 b -> LOG.info("Result I: " + b),
                 () -> LOG.info("Will never happen"),
                 false);

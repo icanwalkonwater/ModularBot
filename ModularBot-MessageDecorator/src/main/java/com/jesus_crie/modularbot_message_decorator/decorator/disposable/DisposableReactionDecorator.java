@@ -10,9 +10,9 @@ import javax.annotation.Nonnull;
 /**
  * An implementation of {@link ReactionDecorator ReactionDecorator} that can be successfully triggered only one time.
  */
-public abstract class DisposableMessageDecorator extends ReactionDecorator {
+public abstract class DisposableReactionDecorator extends ReactionDecorator {
 
-    public DisposableMessageDecorator(@Nonnull final Message binding, final long timeout, @Nonnull final DecoratorButton... buttons) {
+    public DisposableReactionDecorator(@Nonnull final Message binding, final long timeout, @Nonnull final DecoratorButton... buttons) {
         super(binding, timeout, buttons);
     }
 

@@ -6,9 +6,9 @@ import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 
 import javax.annotation.Nonnull;
 
-public abstract class AutoDeleteDisposableMessageDecorator extends DisposableMessageDecorator {
+public abstract class AutoDeleteDisposableReactionDecorator extends DisposableReactionDecorator {
 
-    protected AutoDeleteDisposableMessageDecorator(@Nonnull Message binding, long timeout, @Nonnull DecoratorButton... buttons) {
+    protected AutoDeleteDisposableReactionDecorator(@Nonnull Message binding, long timeout, @Nonnull DecoratorButton... buttons) {
         super(binding, timeout, buttons);
     }
 

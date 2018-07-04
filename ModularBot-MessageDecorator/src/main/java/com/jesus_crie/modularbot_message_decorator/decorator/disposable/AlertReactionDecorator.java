@@ -17,7 +17,7 @@ import java.util.Optional;
  * Decorator with a single button that will delete the message when clicked or when it times out.
  * Made for informative messages that can be dismissed.
  */
-public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecorator implements Cacheable {
+public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDecorator implements Cacheable {
 
     /**
      * The default emote. Correspond to the unicde character "❌".
@@ -31,7 +31,7 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
      * @param timeout     The amount of time in milliseconds before the decorator times out, or 0 for infinite.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public AlertMessageDecorator(@Nonnull final Message binding, final long timeout, final boolean deleteAfter) {
+    public AlertReactionDecorator(@Nonnull final Message binding, final long timeout, final boolean deleteAfter) {
         this(binding, timeout, DEFAULT_REACTION, deleteAfter);
     }
 
@@ -43,21 +43,21 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
      * @param emote       The emote to use.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
-    public AlertMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                 @Nonnull final MessageReaction.ReactionEmote emote, boolean deleteAfter) {
+    public AlertReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                  @Nonnull final MessageReaction.ReactionEmote emote, boolean deleteAfter) {
         super(binding, timeout, deleteAfter);
         buttons.add(DecoratorButton.fromReactionEmote(emote, null));
     }
 
     /**
-     * Deserialize an {@link AlertMessageDecorator AlertMessageDecorator} from a config object.
+     * Deserialize an {@link AlertReactionDecorator AlertReactionDecorator} from a config object.
      *
      * @param config
      * @param bot
      * @return
      */
     @Nullable
-    public static AlertMessageDecorator tryDeserialize(@Nonnull final Config config, @Nonnull final ModularBot bot) {
+    public static AlertReactionDecorator tryDeserialize(@Nonnull final Config config, @Nonnull final ModularBot bot) {
         // Assuming that the KEY_CLASS field is correct.
 
         final Long chanId = config.get(KEY_BINDING_CHANNEL_ID);
@@ -87,7 +87,7 @@ public class AlertMessageDecorator extends SafeAutoDestroyDisposableMessageDecor
 
         try {
             // Build that.
-            return new AlertMessageDecorator(binding,
+            return new AlertReactionDecorator(binding,
                     expireTime - System.currentTimeMillis(),
                     rEmote,
                     deleteAfter);

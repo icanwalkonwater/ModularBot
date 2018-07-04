@@ -9,7 +9,7 @@ import javax.annotation.Nonnull;
  * A disposable decorator that can auto destroy after being triggered.
  * If it's not set to auto destroy, it will simply remove the buttons.
  */
-public abstract class SafeAutoDestroyDisposableMessageDecorator extends AutoDeleteDisposableMessageDecorator {
+public abstract class SafeAutoDestroyDisposableReactionDecorator extends AutoDeleteDisposableReactionDecorator {
 
     protected final boolean deleteAfter;
 
@@ -21,8 +21,8 @@ public abstract class SafeAutoDestroyDisposableMessageDecorator extends AutoDele
      * @param deleteAfter Whether or not to delete the bound message after.
      * @param buttons     The buttons (reaction) that can trigger this decorator.
      */
-    protected SafeAutoDestroyDisposableMessageDecorator(@Nonnull final Message binding, final long timeout,
-                                                        final boolean deleteAfter, @Nonnull final DecoratorButton... buttons) {
+    protected SafeAutoDestroyDisposableReactionDecorator(@Nonnull final Message binding, final long timeout,
+                                                         final boolean deleteAfter, @Nonnull final DecoratorButton... buttons) {
         super(binding, timeout, buttons);
         this.deleteAfter = deleteAfter;
     }
