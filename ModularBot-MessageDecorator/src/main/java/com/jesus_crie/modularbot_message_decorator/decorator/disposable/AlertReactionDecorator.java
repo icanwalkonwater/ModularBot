@@ -69,6 +69,10 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
         if (chanId == null || bindingId == null || expireTime == null)
             throw new IllegalArgumentException("One or more fields are missing !");
 
+        // Check if expired, should never happen but who knows ?
+        if (expireTime < 0)
+            throw new IllegalStateException("Trying to deserialize a decorator that is marked as expired ! (timeout < 0)");
+
         // Retrieve the bound message.
         final Message binding = Cacheable.getBinding(chanId, bindingId, bot);
 
@@ -95,6 +99,10 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
     @Nonnull
     @Override
     public Config serialize() {
+        // Check if alive, should never trigger because it's checked but who knows.
+        if (!isAlive)
+            throw new IllegalStateException("Can't serialize an expired decorator !");
+
         final Config serialized = Config.inMemory();
         serialized.set(KEY_CLASS, getClass().getName());
         serialized.set(KEY_BINDING_CHANNEL_ID, binding.getChannel().getIdLong());

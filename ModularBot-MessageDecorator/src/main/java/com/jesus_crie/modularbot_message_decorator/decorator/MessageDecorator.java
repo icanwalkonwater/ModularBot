@@ -110,13 +110,14 @@ public abstract class MessageDecorator<T extends Event> {
     }
 
     /**
-     * Get the timestamp in milliseconds where the decorator will have expired or 0 for infinite or if the decorator is
+     * Get the timestamp in milliseconds where the decorator will have expired or 0 for infinite or -1 if the decorator is
      * dead.
      *
      * @return A timestamp in milliseconds or 0.
      */
     public long getExpireTime() {
-        if (timeout == 0 || !isAlive) return 0;
+        if (!isAlive) return 0;
+        else if (timeout == 0) return 0;
         return creationTime + timeout;
     }
 

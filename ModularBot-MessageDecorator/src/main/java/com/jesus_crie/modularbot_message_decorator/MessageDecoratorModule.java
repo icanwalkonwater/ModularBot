@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public class MessageDecoratorModule extends BaseModule {
@@ -107,7 +108,7 @@ public class MessageDecoratorModule extends BaseModule {
     public void onShutdownShards() {
         decorators.values().forEach(MessageDecorator::destroy);
         final List<Config> serializedDecorators = decorators.values().stream()
-                .filter(decorator -> decorator instanceof Cacheable)
+                .filter(decorator -> decorator instanceof Cacheable && decorator.isAlive())
                 .map(decorator -> ((Cacheable) decorator).serialize())
                 .collect(Collectors.toList());
 
@@ -115,6 +116,9 @@ public class MessageDecoratorModule extends BaseModule {
     }
 
     public void registerDecorator(@Nonnull final MessageDecorator<?> decorator) {
+        if (decorators.size() == 0)
+            decorators = new ConcurrentHashMap<>();
+
         decorators.put(decorator.getBinding().getIdLong(), decorator);
     }
 }

@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Command {
 
@@ -95,6 +96,14 @@ public abstract class Command {
         this.description = description;
 
         registerCommandPatterns();
+    }
+
+    void normalizeAliases() {
+        final List<String> cleanAliases = aliases.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+        aliases.clear();
+        aliases.addAll(cleanAliases);
     }
 
     private void registerCommandPatterns() {

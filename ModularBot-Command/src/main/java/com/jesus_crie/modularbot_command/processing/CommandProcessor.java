@@ -10,6 +10,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.jesus_crie.modularbot_command.CommandModule.*;
+
 public class CommandProcessor {
 
     private static final char PREFIX_OPTION = '-';
@@ -17,24 +19,6 @@ public class CommandProcessor {
     private static final char ESCAPE_CHAR = '\\';
     private static final char SINGLE_QUOTE = '\'';
     private static final char DOUBLE_QUOTE = '"';
-
-    // EXPERIMENTAL, very little tested so might not work as expected.
-
-    /**
-     * Allow duplicates of options, the argument will be the last parsed.
-     * Can save computing power because the options aren't checked each time.
-     */
-    public static final int FLAG_ALLOW_DUPLICATE_OPTION = 0x01;
-
-    /**
-     * It will still parse the arguments as usual but they will not be in the final map.
-     */
-    public static final int FLAG_IGNORE_OPTIONS_ARGUMENTS = 0x02;
-
-    /**
-     * Escape characters are just not treated at all.
-     */
-    public static final int FLAG_IGNORE_ESCAPE_CHARACTER = 0x04;
 
     private final int flags;
 
@@ -80,7 +64,23 @@ public class CommandProcessor {
         return Pair.of(arguments, options);
     }
 
-    public String processArgument(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Parse a single argument from the current position of the cursor until a separator is reached.
+     * Can escape characters and quoted strings.
+     *
+     * Ex: The underlined strings are those who will be parsed and returned by this method.
+     * <pre>
+     * {@code
+     * !command an argument "you see ?"
+     *          ^^ ^^^^^^^^  ^^^^^^^^^
+     * }
+     * </pre>
+     *
+     * @param cursor The cursor which is set just before the starting point of the argument.
+     * @return A string representing the parsed argument.
+     * @throws CommandProcessingException If a syntax error is detected.
+     */
+    public String processArgument(@Nonnull final Cursor cursor) throws CommandProcessingException {
         StringBuilder buffer = new StringBuilder();
         char n;
         while (cursor.hasNext() && (n = cursor.nextToken()) != WORD_SEPARATOR) {
@@ -100,7 +100,23 @@ public class CommandProcessor {
         return buffer.toString();
     }
 
-    public char processEscapeCharacter(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Just a commodity method that will return the next character regardless of its value or throw an exception if not
+     * characters are left in the current cursor.
+     *
+     * Ex: The underlined characters are those who will be parsed and returned by this method.
+     * <pre>
+     * {@code
+     * !command "hi i\'m here \!"
+     *                ^        ^
+     * }
+     * </pre>
+     *
+     * @param cursor The current cursor starting just before the character to escape.
+     * @return A {@code char} representing the next character.
+     * @throws CommandProcessingException If no characters are left to be escaped.
+     */
+    public char processEscapeCharacter(@Nonnull final Cursor cursor) throws CommandProcessingException {
         try {
             return cursor.nextToken();
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -108,7 +124,24 @@ public class CommandProcessor {
         }
     }
 
-    public String processQuotedString(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Parse an argument that is quoted so it can contains spaces.
+     * If the quotes are double quotes, the single quotes inside will not be treated as a quoted string, you don't need
+     * to escape them.
+     *
+     * Ex: The underlined strings are those who will be parsed and returned by this method.
+     * <pre>
+     * {@code
+     * !command hey "how are you ?" 'me' fine "i'm jeff"
+     *               ^^^^^^^^^^^^^   ^^        ^^^^^^^^^
+     * }
+     * </pre>
+     *
+     * @param cursor The current cursor starting just before the quote.
+     * @return A string containing the quoted string
+     * @throws CommandProcessingException If the quote isn't closed or if an underlying method throws this exception.
+     */
+    public String processQuotedString(@Nonnull final Cursor cursor) throws CommandProcessingException {
         final StringBuilder quote = new StringBuilder();
 
         final short startPos = cursor.position;
@@ -138,7 +171,15 @@ public class CommandProcessor {
         throw new CommandProcessingException("Quote not closed !", startPos);
     }
 
-    public Map<String, String> processOptions(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Process the complete set of options that is provided at the end of the command.
+     * When this method is called the rest of the cursor will be consumed and no other arguments are parsed.
+     *
+     * @param cursor The current cursor starting just before the start of the options.
+     * @return A map containing the options string and there associated argument.
+     * @throws CommandProcessingException If a syntax error is thrown.
+     */
+    public Map<String, String> processOptions(@Nonnull final Cursor cursor) throws CommandProcessingException {
 
         final Map<String, String> options = new LinkedHashMap<>();
 
@@ -161,6 +202,8 @@ public class CommandProcessor {
                             throw new CommandProcessingException("Duplicate long option !", startPos);
                     }
                     options.put(option.getLeft(), option.getRight());
+
+                    // Check for invalid characters in the option string
                 } else if ((n == ESCAPE_CHAR && (flags & FLAG_IGNORE_ESCAPE_CHARACTER) == 0)
                         || n == WORD_SEPARATOR
                         || n == SINGLE_QUOTE
@@ -189,16 +232,29 @@ public class CommandProcessor {
                     // Prefix mode
                     prevWasPrefix = true;
 
-                } else {
-                    throw new CommandProcessingException("Not the option prefix !", cursor.position);
-                }
+                } else throw new CommandProcessingException("Not the option prefix !", cursor.position);
             }
         }
 
         return options;
     }
 
-    public Pair<String, String> processLongOption(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Parse an explicit option starting with two times the option prefix (--) and its argument if found.
+     *
+     * Ex: The underlined pairs of strings are those who will be parsed and returned by this method.
+     * <pre>
+     * {@code
+     * !command hey -a nope --force --name "a name"
+     *                        ^^^^^   ^^^^--^^^^^^
+     * }
+     * </pre>
+     *
+     * @param cursor The current cursor starting just before the name of the option.
+     * @return A pair of two strings, the name of the option and its argument if present.
+     * @throws CommandProcessingException If a syntax error is detected.
+     */
+    public Pair<String, String> processLongOption(@Nonnull final Cursor cursor) throws CommandProcessingException {
         final StringBuilder buffer = new StringBuilder();
         String name;
         String argument = "";
@@ -215,6 +271,7 @@ public class CommandProcessor {
             buffer.append(n);
         }
 
+        // Nothing (or a word separator) was found after the cursor
         if (buffer.length() == 0)
             throw new CommandProcessingException("Anonymous long option !", cursor.position);
 
@@ -235,7 +292,22 @@ public class CommandProcessor {
         return Pair.of(name, argument);
     }
 
-    public Map<String, String> processShortOptions(@Nonnull Cursor cursor) throws CommandProcessingException {
+    /**
+     * Parse a short option that is a concatenation of multiple options and the optional argument of the last option.
+     *
+     * Ex: The underlined pairs of strings are those who will be parsed and returned by this method.
+     * <pre>
+     * {@code
+     * !command hey -abc name -h "my name jeff" -v --name hi
+     *               ^^^-^^^^  ^--^^^^^^^^^^^^   ^
+     * }
+     * </pre>
+     *
+     * @param cursor The current cursor starting just before the first short option.
+     * @return A map containing each short option and its argument (but only the last can actually have an argument).
+     * @throws CommandProcessingException If a syntax error is reached.
+     */
+    public Map<String, String> processShortOptions(@Nonnull final Cursor cursor) throws CommandProcessingException {
         final LinkedHashMap<String, String> map = new LinkedHashMap<>();
 
         char lastOption = 0;
@@ -272,48 +344,98 @@ public class CommandProcessor {
         return map;
     }
 
+    /**
+     * A commodity class that helps us navigating through a string by storing our current position.
+     */
     public static class Cursor {
 
         private short position = -1;
         private int size;
         private String payload;
 
-        public Cursor(@Nonnull String payload) {
+        /**
+         * Initialize a new cursor with the given payload.
+         *
+         * @param payload The non-null payload to bind the cursor to.
+         */
+        public Cursor(@Nonnull final String payload) {
             this.payload = payload;
             size = payload.length();
         }
 
+        /**
+         * Overload of {@link #reset(String)} with a null parameter.
+         */
         public void reset() {
             reset(null);
         }
 
-        public void reset(@Nullable String newPayload) {
+        /**
+         * Reset the current cursor to the start of the new payload if provided or just reset the position if the provided
+         * payload is {@code null}.
+         *
+         * @param newPayload The optional new payload.
+         */
+        public void reset(@Nullable final String newPayload) {
             if (newPayload != null) payload = newPayload;
             position = -1;
             size = payload.length();
         }
 
+        /**
+         * Make the cursor move ahead and get the token were it has moved.
+         *
+         * @return The next character of the payload.
+         * @throws StringIndexOutOfBoundsException If the end of the payload was reached.
+         */
         public char nextToken() throws StringIndexOutOfBoundsException {
             position++;
             return payload.charAt(position);
         }
 
+        /**
+         * Check if there is another character after the current one.
+         * Used has a check before calling {@link #nextToken()}.
+         *
+         * @return True if we can move forward without raising an exception, otherwise false.
+         */
         public boolean hasNext() {
             return position + 1 < size;
         }
 
-        public void setPosition(short position) {
+        /**
+         * Set the position of the cursor.
+         * No checks or performed so it can be any position including out of bounds ones.
+         *
+         * @param position The position to move to.
+         */
+        public void setPosition(final short position) {
             this.position = position;
         }
 
+        /**
+         * Get the current position of the cursor.
+         *
+         * @return The position of the cursor in the payload.
+         */
         public int getPosition() {
             return position;
         }
 
+        /**
+         * Get the current payload of the cursor.
+         * Can't be null.
+         *
+         * @return The current payload.
+         */
+        @Nonnull
         public String getPayload() {
             return payload;
         }
 
+        /**
+         * Move the cursor back to the previous position.
+         */
         public void backward() {
             if (position > -1) position--;
         }

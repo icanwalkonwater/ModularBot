@@ -20,6 +20,35 @@ public class CommandModule extends BaseModule {
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
             ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
+    // EXPERIMENTAL flags, very little tested so might not work as expected.
+
+    /**
+     * This constant will force the command processor to be case sensitive everywhere.
+     */
+    public static int FLAG_CASE_SENSITIVE = 0x01;
+
+    /**
+     * This constant will automatically normalize the newly registered commands by mapping all of the aliases to their
+     * lowercase equivalent.
+     */
+    public static int FLAG_NORMALIZE_ALIASES = 0x02;
+
+    /**
+     * Allow duplicates of options, the argument will be the last parsed.
+     * Can save computing power because the options aren't checked each time.
+     */
+    public static final int FLAG_ALLOW_DUPLICATE_OPTION = 0x04;
+
+    /**
+     * It will still parse the arguments as usual but they will not be in the final map.
+     */
+    public static final int FLAG_IGNORE_OPTIONS_ARGUMENTS = 0x08;
+
+    /**
+     * Escape characters are just not treated at all.
+     */
+    public static final int FLAG_IGNORE_ESCAPE_CHARACTER = 0x10;
+
     // Prefix stuff
     private String defaultPrefix = "!";
     private Map<Long, String> customPrefix = Collections.emptyMap();
@@ -29,6 +58,7 @@ public class CommandModule extends BaseModule {
 
     // Command processor
     private CommandProcessor processor = new CommandProcessor();
+    private int flags = 0;
 
     private List<CommandListener> listeners = new ArrayList<>();
 
@@ -43,6 +73,8 @@ public class CommandModule extends BaseModule {
 
     public void registerCommands(@Nonnull final Command... commands) {
         Collections.addAll(commandStorage, commands);
+        for (Command command : commands) {
+        }
     }
 
     public void registerQuickCommand(@Nonnull final String name, @Nonnull final Consumer<CommandEvent> action) {
@@ -57,12 +89,20 @@ public class CommandModule extends BaseModule {
         return processor;
     }
 
-    public void setCommandProcessorFlags(int... flags) {
+    /**
+     * Set the experimental flags of the module and the {@link CommandProcessor CommandProcessor}.
+     */
+    public void setFlags(int... flags) {
         int flag = 0;
         for (int f : flags)
             flag |= f;
 
-        processor = new CommandProcessor(flag);
+        setFlags(flag);
+    }
+
+    public void setFlags(int flags) {
+        this.flags = flags;
+        processor = new CommandProcessor(flags);
     }
 
     /**
@@ -110,7 +150,7 @@ public class CommandModule extends BaseModule {
     }
 
     @Nullable
-    public Command getCommand(@Nonnull String name) {
+    public Command getCommand(@Nonnull final String name) {
         return commandStorage.stream()
                 .filter(c -> c.getAliases().contains(name))
                 .findAny()

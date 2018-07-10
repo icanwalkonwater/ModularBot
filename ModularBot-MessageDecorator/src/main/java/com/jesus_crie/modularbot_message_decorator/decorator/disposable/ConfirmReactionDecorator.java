@@ -1,7 +1,7 @@
 package com.jesus_crie.modularbot_message_decorator.decorator.disposable;
 
+import com.jesus_crie.modularbot.utils.SerializableBiConsumer;
 import com.jesus_crie.modularbot.utils.SerializableConsumer;
-import com.jesus_crie.modularbot.utils.SerializableRunnable;
 import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
@@ -21,7 +21,7 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
      */
     public static final MessageReaction.ReactionEmote DEFAULT_NO_EMOTE = new MessageReaction.ReactionEmote("\u274E", null, null);
 
-    private final SerializableRunnable onTimeout;
+    private final SerializableConsumer<ConfirmReactionDecorator> onTimeout;
 
     /**
      * Create a confirm decorator with the default emotes and custom actions for each choice.
@@ -34,13 +34,15 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
     public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
-                                    @Nonnull final SerializableRunnable onYes,
-                                    @Nullable final SerializableRunnable onNo,
-                                    @Nullable final SerializableRunnable onTimeout,
+                                    @Nonnull final SerializableConsumer<ConfirmReactionDecorator> onYes,
+                                    @Nullable final SerializableConsumer<ConfirmReactionDecorator> onNo,
+                                    @Nullable final SerializableConsumer<ConfirmReactionDecorator> onTimeout,
                                     final boolean deleteAfter) {
         this(binding, timeout,
-                DecoratorButton.fromReactionEmote(DEFAULT_YES_EMOTE, e -> onYes.run()),
-                DecoratorButton.fromReactionEmote(DEFAULT_NO_EMOTE, onNo != null ? e -> onNo.run() : null),
+                (dec, res) -> {
+                    if (res) onYes.accept(dec);
+                    else if (onNo != null) onNo.accept(dec);
+                },
                 onTimeout, deleteAfter);
     }
 
@@ -49,13 +51,13 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
      *
      * @param binding     The bound message.
      * @param timeout     The amount of time in milliseconds before the decorator times out, or 0 for infinite.
-     * @param onTrigger   The action to trigger when one of the buttons is triggered.
+     * @param onTrigger   The action to perform when one of the buttons is triggered.
      * @param onTimeout   The action to perform when the decorator times out.
      * @param deleteAfter Whether the message should be deleted when the decorator is being destroyed.
      */
     public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
-                                    @Nonnull final SerializableConsumer<Boolean> onTrigger,
-                                    @Nonnull final SerializableRunnable onTimeout,
+                                    @Nonnull final SerializableBiConsumer<ConfirmReactionDecorator, Boolean> onTrigger,
+                                    @Nullable final SerializableConsumer<ConfirmReactionDecorator> onTimeout,
                                     final boolean deleteAfter) {
         this(binding, timeout, DEFAULT_YES_EMOTE, DEFAULT_NO_EMOTE, onTrigger, onTimeout, deleteAfter);
     }
@@ -74,14 +76,14 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
     public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
                                     @Nonnull final MessageReaction.ReactionEmote yesEmote,
                                     @Nonnull final MessageReaction.ReactionEmote noEmote,
-                                    @Nonnull final SerializableConsumer<Boolean> onTrigger,
-                                    @Nullable final SerializableRunnable onTimeout,
+                                    @Nonnull final SerializableBiConsumer<ConfirmReactionDecorator, Boolean> onTrigger,
+                                    @Nullable final SerializableConsumer<ConfirmReactionDecorator> onTimeout,
                                     final boolean deleteAfter) {
         super(binding, timeout, deleteAfter);
         this.onTimeout = onTimeout;
 
-        buttons.add(DecoratorButton.fromReactionEmote(yesEmote, e -> onTrigger.accept(true)));
-        buttons.add(DecoratorButton.fromReactionEmote(noEmote, e -> onTrigger.accept(false)));
+        buttons.add(DecoratorButton.fromReactionEmote(yesEmote, e -> onTrigger.accept(this, true)));
+        buttons.add(DecoratorButton.fromReactionEmote(noEmote, e -> onTrigger.accept(this, false)));
     }
 
     /**
@@ -97,7 +99,7 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
     public ConfirmReactionDecorator(@Nonnull final Message binding, final long timeout,
                                     @Nonnull final DecoratorButton yesButton,
                                     @Nonnull final DecoratorButton noButton,
-                                    @Nullable final SerializableRunnable onTimeout,
+                                    @Nullable final SerializableConsumer<ConfirmReactionDecorator> onTimeout,
                                     final boolean deleteAfter) {
         super(binding, timeout, deleteAfter, yesButton, noButton);
         this.onTimeout = onTimeout;
@@ -105,7 +107,7 @@ public class ConfirmReactionDecorator extends SafeAutoDestroyDisposableReactionD
 
     @Override
     protected void onTimeout() {
-        if (onTimeout != null) onTimeout.run();
+        if (onTimeout != null) onTimeout.accept(this);
         super.onTimeout();
     }
 }

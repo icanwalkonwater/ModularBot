@@ -116,8 +116,8 @@ public class ModularTestRun extends BaseModule {
         cmd.registerQuickCommand("dC10", e -> {
             Message m = e.getChannel().sendMessage("dC 10").complete();
             ConfirmReactionDecorator dec = new ConfirmReactionDecorator(m, 1000 * 10,
-                    success -> e.fastReply("Choice: " + success),
-                    () -> LOG.info("Timeout"),
+                    (deco, success) -> e.fastReply("Choice: " + success),
+                    deco -> LOG.info("Timeout"),
                     false);
             dec.setup();
         });
@@ -126,17 +126,17 @@ public class ModularTestRun extends BaseModule {
         cmd.registerQuickCommand("dC10d", e -> {
             Message m = e.getChannel().sendMessage("dC 10 d").complete();
             ConfirmReactionDecorator dec = new ConfirmReactionDecorator(m, 1000 * 10,
-                    success -> e.fastReply("Choice: " + success),
-                    () -> LOG.info("Timeout"),
+                    (deco, success) -> e.fastReply("Choice: " + success),
+                    deco -> LOG.info("Timeout"),
                     true);
             dec.setup();
         });
 
-        // Poll 10s
+        // Poll 100s, register
         cmd.registerQuickCommand("dP100", e -> {
             Message m = e.getChannel().sendMessage("dP 100").complete();
-            PollReactionDecorator dec = new PollReactionDecorator(m, 1000 * 100,
-                    () -> System.out.println("Timed out !"),
+            PollReactionDecorator dec = new PollReactionDecorator(m, 1000 * 100, null,
+                    deco -> deco.getBinding().getChannel().sendMessage("Time out, votes: " + deco.collectVotesByName()).queue(),
                     "\u0031\u20E3", "\u0032\u20E3", "\u0033\u20E3");
             dec.setup();
             dec.register(decorator);

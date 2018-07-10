@@ -34,6 +34,7 @@ public interface Cacheable {
      * Used to serialize the objet into a {@link Config Config} usable by the config module.
      *
      * @return A {@link Config Config} containing the information necessary to restore the object.
+     * @throws IllegalStateException If you try to serialize an expired decorator.
      */
     @Nonnull
     Config serialize();

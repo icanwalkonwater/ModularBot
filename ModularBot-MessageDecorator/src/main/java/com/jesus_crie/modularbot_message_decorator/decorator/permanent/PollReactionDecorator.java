@@ -2,8 +2,8 @@ package com.jesus_crie.modularbot_message_decorator.decorator.permanent;
 
 import com.electronwill.nightconfig.core.Config;
 import com.jesus_crie.modularbot.ModularBot;
+import com.jesus_crie.modularbot.utils.SerializableBiConsumer;
 import com.jesus_crie.modularbot.utils.SerializableConsumer;
-import com.jesus_crie.modularbot.utils.SerializableRunnable;
 import com.jesus_crie.modularbot.utils.SerializationUtils;
 import com.jesus_crie.modularbot_message_decorator.Cacheable;
 import com.jesus_crie.modularbot_message_decorator.button.DecoratorButton;
@@ -27,8 +27,8 @@ import java.util.stream.Collectors;
  */
 public class PollReactionDecorator extends PermanentReactionDecorator implements Cacheable {
 
-    protected final SerializableConsumer<GenericMessageReactionEvent> onVote;
-    protected final SerializableRunnable onTimeout;
+    protected final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote;
+    protected final SerializableConsumer<PollReactionDecorator> onTimeout;
 
     /**
      *
@@ -39,8 +39,8 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
      * @param votes
      */
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
-                                 @Nullable final SerializableConsumer<GenericMessageReactionEvent> onVote,
-                                 @Nullable final SerializableRunnable onTimeout,
+                                 @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
+                                 @Nullable final SerializableConsumer<PollReactionDecorator> onTimeout,
                                  @Nonnull final MessageReaction.ReactionEmote... votes) {
         super(binding, timeout,
                 Arrays.stream(votes)
@@ -51,8 +51,8 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     }
 
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
-                                 @Nullable final SerializableConsumer<GenericMessageReactionEvent> onVote,
-                                 @Nullable final SerializableRunnable onTimeout,
+                                 @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
+                                 @Nullable final SerializableConsumer<PollReactionDecorator> onTimeout,
                                  @Nonnull final String... emotes) {
         super(binding, timeout,
                 Arrays.stream(emotes)
@@ -63,8 +63,8 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     }
 
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
-                                 @Nullable final SerializableConsumer<GenericMessageReactionEvent> onVote,
-                                 @Nullable final SerializableRunnable onTimeout,
+                                 @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
+                                 @Nullable final SerializableConsumer<PollReactionDecorator> onTimeout,
                                  @Nonnull final Emote... emotes) {
         super(binding, timeout,
                 Arrays.stream(emotes)
@@ -75,18 +75,19 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     }
 
     @Override
-    public void setup() {
-        super.setup();
-    }
-
-    @Override
     protected boolean onTrigger(@Nonnull GenericMessageReactionEvent event) {
         if (super.onTrigger(event)) {
-            if (onVote != null) onVote.accept(event);
+            if (onVote != null) onVote.accept(this, event);
             return true;
         }
 
         return false;
+    }
+
+    @Override
+    protected void onTimeout() {
+        if (onTimeout != null) onTimeout.accept(this);
+        super.onTimeout();
     }
 
     /**
@@ -101,7 +102,7 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         return binding.getReactions().stream()
                 .filter(MessageReaction::isSelf)
                 .collect(HashMap::new,
-                        (map, reaction) -> map.put(reaction.getReactionEmote(), reaction.getCount()),
+                        (map, reaction) -> map.put(reaction.getReactionEmote(), reaction.getCount() - 1),
                         HashMap::putAll);
     }
 
@@ -136,14 +137,19 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         final Long bindingId = serialized.get(KEY_BINDING_ID);
         final Long expireTime = serialized.get(KEY_TIMEOUT);
         final List<String> votes = serialized.get(KEY_POLL_VOTES);
-        final SerializableConsumer<GenericMessageReactionEvent> onVote = serialized.get(KEY_POLL_VOTE_ACTION);
-        final SerializableRunnable onTimeout = serialized.get(KEY_TIMEOUT_ACTION);
+        final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote =
+                SerializationUtils.deserializeFromString(serialized.get(KEY_POLL_VOTE_ACTION));
+        final SerializableConsumer<PollReactionDecorator> onTimeout = serialized.get(KEY_TIMEOUT_ACTION);
 
         if (chanId == null || bindingId == null || expireTime == null)
             throw new IllegalArgumentException("One or more fields are missing !");
 
         // Retrieve the binding.
         final Message binding = Cacheable.getBinding(chanId, bindingId, bot);
+
+        // Check if expired, should never happen but who knows ?
+        if (expireTime < 0)
+            throw new IllegalStateException("Trying to deserialize a decorator that is marked as expired ! (timeout < 0)");
 
         final long timeout = expireTime - System.currentTimeMillis();
 
@@ -166,6 +172,10 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     @Nonnull
     @Override
     public Config serialize() {
+        // Check if alive, should never trigger because it's checked but who knows.
+        if (!isAlive)
+            throw new IllegalStateException("Can't serialize an expired decorator !");
+
         final Config serialized = Config.inMemory();
         serialized.set(KEY_CLASS, getClass().getName());
         serialized.set(KEY_BINDING_CHANNEL_ID, binding.getChannel().getIdLong());
