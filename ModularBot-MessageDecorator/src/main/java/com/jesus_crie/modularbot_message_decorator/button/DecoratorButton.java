@@ -11,7 +11,6 @@ import net.dv8tion.jda.core.requests.RestAction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.io.Serializable;
 
 public abstract class DecoratorButton implements Cacheable {
 
@@ -46,7 +45,17 @@ public abstract class DecoratorButton implements Cacheable {
     @Nonnull
     public abstract String getEmoteSerialized();
 
-    public Serializable getActionSerializable() {
+    /**
+     * Get a {@link net.dv8tion.jda.core.entities.MessageReaction.ReactionEmote ReactionEmote} representing the associated
+     * emote.
+     *
+     * @return The associated emote as a {@link net.dv8tion.jda.core.entities.MessageReaction.ReactionEmote ReactionEmote}.
+     */
+    @Nonnull
+    public abstract MessageReaction.ReactionEmote getReactionEmote();
+
+    @Nullable
+    public SerializableConsumer<GenericMessageReactionEvent> getActionSerializable() {
         return onTrigger;
     }
 
@@ -66,6 +75,7 @@ public abstract class DecoratorButton implements Cacheable {
      * @param target The target message.
      * @return A {@link RestAction RestAction} that will remove the emote from the target message.
      */
+    @Nonnull
     public abstract RestAction<Void> removeEmote(@Nonnull final Message target);
 
     /**

@@ -68,7 +68,12 @@ public interface Cacheable {
      */
     @Nonnull
     static MessageReaction.ReactionEmote deserializeReactionEmote(@Nonnull final String serializedEmote, @Nonnull final ModularBot bot) {
-        final Emote emote = bot.getEmoteById(serializedEmote);
+        Emote emote;
+        try {
+            emote = bot.getEmoteById(serializedEmote);
+        } catch (NumberFormatException e) {
+            emote = null;
+        }
         return emote == null
                 ? new MessageReaction.ReactionEmote(serializedEmote, null, null)
                 : new MessageReaction.ReactionEmote(emote);

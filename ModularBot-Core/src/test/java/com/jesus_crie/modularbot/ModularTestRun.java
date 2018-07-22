@@ -2,6 +2,7 @@ package com.jesus_crie.modularbot;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.module.BaseModule;
+import com.jesus_crie.modularbot.utils.SerializableConsumer;
 import com.jesus_crie.modularbot_command.AccessLevel;
 import com.jesus_crie.modularbot_command.Command;
 import com.jesus_crie.modularbot_command.CommandEvent;
@@ -19,12 +20,17 @@ import com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReact
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
+import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.security.auth.login.LoginException;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,12 +54,12 @@ public class ModularTestRun extends BaseModule {
                 .autoLoadBaseModules()
                 .useShutdownNow();
 
-        // ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.TRACE;
+        //ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.DEBUG;
 
         /// Commands
 
         //cmd.setCreatorId(182547138729869314L);
-        cmd.registerCommands(new StopCommand());
+        cmd.registerCommands(new StopCommand(), new EvalCommand());
 
         /// JS
 
@@ -61,7 +67,7 @@ public class ModularTestRun extends BaseModule {
         LOG.info("Test module file: " + testModule.getScriptLocation().getName());
 
         /// Decorator cache
-        config.useSecondaryConfig("deco", "./example/decorator.json");
+        //config.useSecondaryConfig("deco", "./example/decorator.json");
 
         /* #### BUILD #### */
         ModularBot bot = botBuilder.build();
@@ -132,11 +138,12 @@ public class ModularTestRun extends BaseModule {
             dec.setup();
         });
 
-        // Poll 100s, register
-        cmd.registerQuickCommand("dP100", e -> {
-            Message m = e.getChannel().sendMessage("dP 100").complete();
-            PollReactionDecorator dec = new PollReactionDecorator(m, 1000 * 100, null,
-                    deco -> deco.getBinding().getChannel().sendMessage("Time out, votes: " + deco.collectVotesByName()).queue(),
+        // Poll 60s, register
+        cmd.registerQuickCommand("dP60", e -> {
+            Message m = e.getChannel().sendMessage("dP 60").complete();
+            PollReactionDecorator dec = new PollReactionDecorator(m, 1000 * 60, null,
+                    (SerializableConsumer<PollReactionDecorator>) deco ->
+                            deco.getBinding().getChannel().sendMessage("Time out, votes: " + deco.collectVotesByName()).queue(),
                     "\u0031\u20E3", "\u0032\u20E3", "\u0033\u20E3");
             dec.setup();
             dec.register(decorator);
@@ -147,8 +154,6 @@ public class ModularTestRun extends BaseModule {
         } catch (LoginException e) {
             e.printStackTrace();
         }
-
-        // Test waiter
     }
 
     private final List<MessageDecorator<?>> decorators = new ArrayList<>();
@@ -217,7 +222,6 @@ public class ModularTestRun extends BaseModule {
 
         public StopCommand() {
             super(AccessLevel.CREATOR);
-            LOG.info(String.valueOf(patterns));
         }
 
         @RegisterPattern
@@ -236,6 +240,39 @@ public class ModularTestRun extends BaseModule {
             }
 
             event.getModule().getBot().shutdown();
+        }
+    }
+
+    @CommandInfo(
+            name = "eval",
+            shortDescription = "Evaluate some js code"
+    )
+    public static class EvalCommand extends Command {
+
+        public EvalCommand() {
+            super(AccessLevel.CREATOR);
+        }
+
+        @RegisterPattern(arguments = "STRING")
+        public void execute(@Nonnull final CommandEvent event, @Nonnull final String script) {
+            ScriptEngine engine = new ScriptEngineManager().getEngineByExtension("js");
+            engine.put("event", event);
+            engine.put("deco", event.getModule().getBot().getModuleManager().getModule(MessageDecoratorModule.class));
+
+            Object res;
+            try {
+                res = engine.eval(script);
+            } catch (ScriptException e) {
+                res = e;
+            }
+
+            EmbedBuilder builder = new EmbedBuilder();
+            builder.setTitle("Eval");
+            builder.setColor(Color.WHITE);
+            builder.addField("To evaluate", "```js\n" + script + "```", false);
+            builder.addField("Result", "```js\n" + res + "```", false);
+
+            event.getChannel().sendMessage(builder.build()).queue();
         }
     }
 }

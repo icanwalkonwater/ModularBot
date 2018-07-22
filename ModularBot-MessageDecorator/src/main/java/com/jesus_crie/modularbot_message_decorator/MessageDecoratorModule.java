@@ -16,10 +16,12 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class MessageDecoratorModule extends BaseModule {
@@ -30,7 +32,8 @@ public class MessageDecoratorModule extends BaseModule {
 
     private static final Logger LOG = LoggerFactory.getLogger("MessageDecoratorModule");
 
-    private static final String CONFIG_DECORATOR_CACHE = "modularDecoratorCache";
+    private static final int CLEANUP_PERIOD_SECOND = 1800; // 30min
+    private static final String CONFIG_DECORATOR_CACHE = "_modularDecoratorCache";
     private static final String CACHE_MAIN_PATH = "decorators";
 
     private Map<Long, MessageDecorator<?>> decorators = Collections.emptyMap();
@@ -59,18 +62,43 @@ public class MessageDecoratorModule extends BaseModule {
         cache = config.getSecondaryConfig(CONFIG_DECORATOR_CACHE);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void onShardsReady(@Nonnull final ModularBot bot) {
         super.onShardsReady(bot);
 
-        List<Config> data = cache.get(CACHE_MAIN_PATH);
+        loadCachedDecorators();
+
+        bot.getMainPool().scheduleAtFixedRate(() -> LOG.info("Cleaned up " + cleanup() + " decorators"),
+                CLEANUP_PERIOD_SECOND, CLEANUP_PERIOD_SECOND, TimeUnit.SECONDS);
+    }
+
+    @Override
+    public void onShutdownShards() {
+        cleanup();
+
+        final List<Config> serializedDecorators = decorators.values().stream()
+                .filter(decorator -> decorator instanceof Cacheable && decorator.isAlive())
+                .map(decorator -> ((Cacheable) decorator).serialize())
+                .collect(Collectors.toList());
+        decorators.values().forEach(MessageDecorator::destroy);
+
+        cache.set(CACHE_MAIN_PATH, serializedDecorators);
+
+        LOG.info("Successfully serialized " + serializedDecorators.size() + " of " + decorators.size() + " registered decorators.");
+    }
+
+    /**
+     * Load the cached decorators from the config.
+     */
+    @SuppressWarnings("unchecked")
+    private void loadCachedDecorators() {
+        final List<Config> data = cache.get(CACHE_MAIN_PATH);
         if (data == null)
             return;
 
         LOG.info("Deserializing " + data.size() + " decorators...");
 
-        for (Config serialized : data) {
+        for (final Config serialized : data) {
             String clazzS = serialized.get(Cacheable.KEY_CLASS);
             if (clazzS == null) {
                 LOG.warn("Found cached decorator without class, skipping.");
@@ -101,24 +129,51 @@ public class MessageDecoratorModule extends BaseModule {
             }
         }
 
-        LOG.info("Successfully deserialized " + decorators.size() + " decorators.");
+        LOG.info("Successfully deserialized " + decorators.size() + " valid decorators.");
     }
 
-    @Override
-    public void onShutdownShards() {
-        decorators.values().forEach(MessageDecorator::destroy);
-        final List<Config> serializedDecorators = decorators.values().stream()
-                .filter(decorator -> decorator instanceof Cacheable && decorator.isAlive())
-                .map(decorator -> ((Cacheable) decorator).serialize())
-                .collect(Collectors.toList());
-
-        cache.set(CACHE_MAIN_PATH, serializedDecorators);
-    }
-
+    /**
+     * Register a decorator in this module.
+     * If you want your decorator to be serialized and restored after a shutdown, you need to register it.
+     *
+     * Can also be performed by {@link MessageDecorator#register(MessageDecoratorModule)}.
+     *
+     * @param decorator The decorator to register.
+     * @see MessageDecorator#register(MessageDecoratorModule)
+     * @see MessageDecorator#register(ModularBot)
+     */
     public void registerDecorator(@Nonnull final MessageDecorator<?> decorator) {
         if (decorators.size() == 0)
             decorators = new ConcurrentHashMap<>();
 
-        decorators.put(decorator.getBinding().getIdLong(), decorator);
+        decorators.compute(decorator.getBinding().getIdLong(), (key, old) -> {
+            if (old != null) old.destroy();
+            return decorator;
+        });
+    }
+
+    /**
+     * Destroy and unregister a bound decorator by its binding's id.
+     * If the binding has not registered decorator attached, it will be ignored.
+     *
+     * @param bindingId The id of the decorator's binding.
+     */
+    public void unregisterBoundDecorator(final long bindingId) {
+        decorators.computeIfPresent(bindingId, (key, val) -> {
+            if (val.isAlive()) val.destroy();
+            return null;
+        });
+    }
+
+    public Collection<MessageDecorator<?>> getDecorators() {
+        return Collections.unmodifiableCollection(decorators.values());
+    }
+
+    public int cleanup() {
+        final int prev = decorators.size();
+        decorators.entrySet().stream()
+                .filter(e -> !e.getValue().isAlive())
+                .forEach(e -> unregisterBoundDecorator(e.getKey()));
+        return prev - decorators.size();
     }
 }

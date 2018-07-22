@@ -73,8 +73,7 @@ public class CommandModule extends BaseModule {
 
     public void registerCommands(@Nonnull final Command... commands) {
         Collections.addAll(commandStorage, commands);
-        for (Command command : commands) {
-        }
+        for (Command command : commands) command.normalizeAliases();
     }
 
     public void registerQuickCommand(@Nonnull final String name, @Nonnull final Consumer<CommandEvent> action) {
@@ -149,8 +148,23 @@ public class CommandModule extends BaseModule {
         return guild == null ? defaultPrefix : customPrefix.getOrDefault(guild.getIdLong(), defaultPrefix);
     }
 
+    /**
+     * Get a command by one if its aliases.
+     * Used internally.
+     *
+     * @param name The command's alias to find.
+     * @return The corresponding {@link Command Command} or {@code null} if nothing has been found.
+     */
     @Nullable
     public Command getCommand(@Nonnull final String name) {
+        if ((flags & FLAG_CASE_SENSITIVE) == 0) {
+            return commandStorage.stream()
+                    .filter(c -> c.getAliases().stream()
+                            .anyMatch(a -> a.equalsIgnoreCase(name)))
+                    .findAny()
+                    .orElse(null);
+        }
+
         return commandStorage.stream()
                 .filter(c -> c.getAliases().contains(name))
                 .findAny()

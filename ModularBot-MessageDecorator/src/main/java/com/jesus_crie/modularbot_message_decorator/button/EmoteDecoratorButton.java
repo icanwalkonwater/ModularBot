@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_message_decorator.button;
 import com.jesus_crie.modularbot.utils.SerializableConsumer;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.entities.MessageReaction;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import net.dv8tion.jda.core.requests.RestAction;
 
@@ -24,6 +25,7 @@ public class EmoteDecoratorButton extends DecoratorButton {
         return target.addReaction(emote);
     }
 
+    @Nonnull
     @Override
     public RestAction<Void> removeEmote(@Nonnull Message target) {
         return target.getReactions().stream()
@@ -42,5 +44,11 @@ public class EmoteDecoratorButton extends DecoratorButton {
     @Override
     public String getEmoteSerialized() {
         return emote.getId();
+    }
+
+    @Nonnull
+    @Override
+    public MessageReaction.ReactionEmote getReactionEmote() {
+        return new MessageReaction.ReactionEmote(emote);
     }
 }

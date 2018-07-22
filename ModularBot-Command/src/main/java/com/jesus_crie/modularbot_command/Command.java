@@ -98,6 +98,9 @@ public abstract class Command {
         registerCommandPatterns();
     }
 
+    /**
+     * Convert all registered aliases to lowercase.
+     */
     void normalizeAliases() {
         final List<String> cleanAliases = aliases.stream()
                 .map(String::toLowerCase)

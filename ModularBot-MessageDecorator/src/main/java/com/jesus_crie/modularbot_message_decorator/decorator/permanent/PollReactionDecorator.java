@@ -23,7 +23,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * A persistent decorator
+ * A persistent decorator that can retrieve the amount of the desired emotes under a specific message, like a poll.
+ * It will collect only the emote that are specified in the constructor that are added during the setup.
  */
 public class PollReactionDecorator extends PermanentReactionDecorator implements Cacheable {
 
@@ -31,12 +32,13 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     protected final SerializableConsumer<PollReactionDecorator> onTimeout;
 
     /**
+     * Create a poll decorator using {@link net.dv8tion.jda.core.entities.MessageReaction.ReactionEmote ReactionEmote} for the votes.
      *
-     * @param binding
-     * @param timeout
-     * @param onVote
-     * @param onTimeout
-     * @param votes
+     * @param binding   The bound message.
+     * @param timeout   The amount of time in milliseconds before the decorator times out, or 0 for infinite.
+     * @param onVote    (Optional) The action to perform when a vote is added or removed.
+     * @param onTimeout (Optional) The action to perform when the decorator times out.
+     * @param votes     The emotes that corresponds at the votes that will be counted by the decorator.
      */
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
                                  @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
@@ -99,10 +101,15 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     @Nonnull
     public Map<MessageReaction.ReactionEmote, Integer> collectVotes() {
         updateMessage();
-        return binding.getReactions().stream()
-                .filter(MessageReaction::isSelf)
+
+        return buttons.stream()
                 .collect(HashMap::new,
-                        (map, reaction) -> map.put(reaction.getReactionEmote(), reaction.getCount() - 1),
+                        (map, btn) ->
+                                map.put(btn.getReactionEmote(), binding.getReactions().stream()
+                                        .filter(r -> btn.getReactionEmote().equals(r.getReactionEmote()))
+                                        .findAny()
+                                        .map(r -> r.getCount() - (r.isSelf() ? 1 : 0))
+                                        .orElse(0)),
                         HashMap::putAll);
     }
 
@@ -114,11 +121,11 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
     @Nonnull
     public Map<String, Integer> collectVotesByName() {
         updateMessage();
-        return binding.getReactions().stream()
-                .filter(MessageReaction::isSelf)
-                .collect(HashMap::new,
-                        (map, reaction) -> map.put(reaction.getReactionEmote().getName(), reaction.getCount()),
-                        HashMap::putAll);
+
+        final Map<String, Integer> out = new HashMap<>();
+        collectVotes().forEach((r, i) -> out.put(r.getName(), i));
+
+        return out;
     }
 
     /**
@@ -137,9 +144,16 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         final Long bindingId = serialized.get(KEY_BINDING_ID);
         final Long expireTime = serialized.get(KEY_TIMEOUT);
         final List<String> votes = serialized.get(KEY_POLL_VOTES);
-        final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote =
-                SerializationUtils.deserializeFromString(serialized.get(KEY_POLL_VOTE_ACTION));
-        final SerializableConsumer<PollReactionDecorator> onTimeout = serialized.get(KEY_TIMEOUT_ACTION);
+
+        final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote;
+        if (serialized.contains(KEY_POLL_VOTE_ACTION))
+            onVote = SerializationUtils.deserializeFromString(serialized.get(KEY_POLL_VOTE_ACTION));
+        else onVote = null;
+
+        final SerializableConsumer<PollReactionDecorator> onTimeout;
+        if (serialized.contains(KEY_TIMEOUT_ACTION))
+            onTimeout = SerializationUtils.deserializeFromString(serialized.get(KEY_TIMEOUT_ACTION));
+        else onTimeout = null;
 
         if (chanId == null || bindingId == null || expireTime == null)
             throw new IllegalArgumentException("One or more fields are missing !");
@@ -179,9 +193,10 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         final Config serialized = Config.inMemory();
         serialized.set(KEY_CLASS, getClass().getName());
         serialized.set(KEY_BINDING_CHANNEL_ID, binding.getChannel().getIdLong());
-        serialized.set(KEY_BINDING_ID, binding.getChannel().getIdLong());
+        serialized.set(KEY_BINDING_ID, binding.getIdLong());
         serialized.set(KEY_TIMEOUT, getExpireTime());
 
+        if (onVote != null) serialized.set(KEY_POLL_VOTE_ACTION, SerializationUtils.serializableToString(onVote));
         if (onTimeout != null) serialized.set(KEY_TIMEOUT_ACTION, SerializationUtils.serializableToString(onTimeout));
 
         if (buttons.size() != 0) {
