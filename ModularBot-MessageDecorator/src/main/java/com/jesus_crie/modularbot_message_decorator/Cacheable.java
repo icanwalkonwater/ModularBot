@@ -20,15 +20,13 @@ public interface Cacheable {
     String KEY_TIMEOUT = "timeout";
     String KEY_ACTION_FUNCTIONAL = "action_functional";
     String KEY_ACTION_SCRIPT = "action_js";
-    String KEY_BUTTONS = "buttons";
     String KEY_DELETE_AFTER = "delete_after";
     String KEY_EMOTE = "emote";
-    String KEY_BUTTON_YES = "button_yes";
-    String KEY_BUTTON_NO = "button_no";
     String KEY_TIMEOUT_ACTION = "timeout_action";
     String KEY_BINDING_CHANNEL_ID = "binding_channel_id";
     String KEY_POLL_VOTES = "poll_votes";
     String KEY_POLL_VOTE_ACTION = "poll_vote_action";
+    String KEY_CLASS_UNDERLYING = "class_underlying";
 
     /**
      * Used to serialize the objet into a {@link Config Config} usable by the config module.

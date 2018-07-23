@@ -160,7 +160,7 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
 
         final Long chanId = serialized.get(KEY_BINDING_CHANNEL_ID);
         final Long bindingId = serialized.get(KEY_BINDING_ID);
-        final Long expireTime = serialized.get(KEY_TIMEOUT);
+        final long expireTime = ((Number) serialized.getOrElse(KEY_TIMEOUT, 1)).longValue(); // 1 means its expired.
         final List<String> votes = serialized.get(KEY_POLL_VOTES);
 
         final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote;
@@ -173,7 +173,7 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
             onTimeout = SerializationUtils.deserializeFromString(serialized.get(KEY_TIMEOUT_ACTION));
         else onTimeout = null;
 
-        if (chanId == null || bindingId == null || expireTime == null)
+        if (chanId == null || bindingId == null)
             throw new IllegalArgumentException("One or more fields are missing !");
 
         // Retrieve the binding.
@@ -183,7 +183,7 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         if (expireTime < 0)
             throw new IllegalStateException("Trying to deserialize a decorator that is marked as expired ! (timeout < 0)");
 
-        final long timeout = expireTime - System.currentTimeMillis();
+        final long timeout = expireTime == 0 ? 0 : expireTime - System.currentTimeMillis();
 
         try {
 

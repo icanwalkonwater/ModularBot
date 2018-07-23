@@ -61,12 +61,12 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
 
         final Long chanId = config.get(KEY_BINDING_CHANNEL_ID);
         final Long bindingId = config.get(KEY_BINDING_ID);
-        final Long expireTime = config.get(KEY_TIMEOUT);
+        final long expireTime = ((Number) config.getOrElse(KEY_TIMEOUT, 1)).longValue(); // 1 will be an expired decorator.
         final boolean deleteAfter = config.getOrElse(KEY_DELETE_AFTER, false);
         final String emoteSerialized = config.get(KEY_EMOTE);
 
         // Check the essential fields.
-        if (chanId == null || bindingId == null || expireTime == null)
+        if (chanId == null || bindingId == null)
             throw new IllegalArgumentException("One or more fields are missing !");
 
         // Check if expired, should never happen but who knows ?
@@ -76,6 +76,8 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
         // Retrieve the bound message.
         final Message binding = Cacheable.getBinding(chanId, bindingId, bot);
 
+        final long timeout = expireTime == 0 ? 0 : expireTime - System.currentTimeMillis();
+
         // Retrieve the emote if set, otherwise default emote.
         final MessageReaction.ReactionEmote rEmote = emoteSerialized != null
                 ? Cacheable.deserializeReactionEmote(emoteSerialized, bot)
@@ -84,7 +86,7 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
         try {
             // Build that.
             return new AlertReactionDecorator(binding,
-                    expireTime - System.currentTimeMillis(),
+                    timeout,
                     rEmote,
                     deleteAfter);
         } catch (IllegalArgumentException expected) {

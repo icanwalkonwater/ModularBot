@@ -13,15 +13,16 @@ import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
 import com.jesus_crie.modularbot_message_decorator.MessageDecoratorModule;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
-import com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator;
+import com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
 import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +32,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.security.auth.login.LoginException;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
@@ -149,6 +148,13 @@ public class ModularTestRun extends BaseModule {
             dec.register(decorator);
         });
 
+        cmd.registerQuickCommand("dPa", e -> {
+            Message m = e.getChannel().sendMessage("\uD83D\uDCD6 Print books\n \uD83C\uDF7A Print beer\n <:roucool:347030179589390338> Print roucool").complete();
+            PanelReactionDecorator dec = new TestPanelDecorator(m, 0);
+            dec.setup();
+            dec.register(decorator);
+        });
+
         try {
             bot.login();
         } catch (LoginException e) {
@@ -156,7 +162,33 @@ public class ModularTestRun extends BaseModule {
         }
     }
 
-    private final List<MessageDecorator<?>> decorators = new ArrayList<>();
+    public static class TestPanelDecorator extends PanelReactionDecorator {
+
+        public TestPanelDecorator(@Nonnull final Message binding, final long timeout) {
+            super(binding, timeout);
+        }
+
+        @RegisterPanelAction(position = 0, emote = "\uD83D\uDCD6")
+        public void bookPanel(GenericMessageReactionEvent e) {
+            e.getChannel().sendMessage("\uD83D\uDCD6 BOOKS EVERYWHERE !").queue();
+        }
+
+        @RegisterPanelAction(position = 1, emote = "\uD83C\uDF7A")
+        public void beerPanel(GenericMessageReactionEvent e) {
+            e.getChannel().sendMessage("\uD83C\uDF7A BEER EVERYWHERE !").queue();
+        }
+
+        @RegisterPanelAction(position = 2, emoteId = 347030179589390338L)
+        public void roucoolPanel(GenericMessageReactionEvent e) {
+            e.getChannel().sendMessage("<:roucool:347030179589390338> ROUCOOL EVERYWHERE !").queue();
+        }
+
+        @RegisterPanelAction(position = 0, emote = "\uD83D\uDD11")
+        public void removePanel(GenericMessageReactionEvent e) {
+            e.getChannel().sendMessage("Okay, let s remove that").queue();
+            destroy();
+        }
+    }
 
     protected ModularTestRun() {
         super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
@@ -165,53 +197,7 @@ public class ModularTestRun extends BaseModule {
     @Override
     public void onShardsReady(final @Nonnull ModularBot bot) {
         super.onShardsReady(bot);
-        LOG.info("Bot ready !");
-
-        /// Decorator
-        /*TextChannel channel = bot.getTextChannelById(264001800686796800L);
-
-        Message alert10s = channel.sendMessage("Alert 10s").complete();
-        Message alert10sDestroy = channel.sendMessage("Alert 10s destroy").complete();
-        Message alertInfinite = channel.sendMessage("Alert infinite").complete();
-        Message confirm10s = channel.sendMessage("Confirm 10s").complete();
-        Message confirm10sDestroy = channel.sendMessage("Confirm 10s destroy").complete();
-        Message confirmInfinite = channel.sendMessage("Confirm infinite").complete();
-        Message destroy10s = channel.sendMessage("Destroy 10s").complete();
-
-        AlertReactionDecorator alert10sDecorator = new AlertReactionDecorator(alert10s, 1000 * 10, false);
-        AlertReactionDecorator alert10sDestroyDecorator = new AlertReactionDecorator(alert10sDestroy, 1000 * 10, true);
-        AlertReactionDecorator alertInfiniteDecorator = new AlertReactionDecorator(alertInfinite, 0, false);
-
-        ConfirmReactionDecorator confirm10sDecorator = new ConfirmReactionDecorator(confirm10s, 1000 * 10,
-                b -> LOG.info("Result 10s: " + b),
-                () -> LOG.info("Time out 10s"),
-                false);
-        ConfirmReactionDecorator confirm10sDestroyDecorator = new ConfirmReactionDecorator(confirm10sDestroy, 1000 * 10,
-                b -> LOG.info("Result 10sD: " + b),
-                () -> LOG.info("Time out 10sD"),
-                true);
-        ConfirmReactionDecorator confirmInfiniteDecorator = new ConfirmReactionDecorator(confirmInfinite, 0,
-                b -> LOG.info("Result I: " + b),
-                () -> LOG.info("Will never happen"),
-                false);
-
-        AutoDestroyMessageDecorator destroy10sDecorator = new AutoDestroyMessageDecorator(destroy10s, 10, TimeUnit.SECONDS, null);
-
-        Collections.addAll(decorators,
-                alert10sDecorator,
-                alert10sDestroyDecorator,
-                alertInfiniteDecorator,
-                confirm10sDecorator,
-                confirm10sDestroyDecorator,
-                confirmInfiniteDecorator,
-                destroy10sDecorator);
-
-        decorators.forEach(MessageDecorator::setup);*/
-    }
-
-    @Override
-    public void onShutdownShards() {
-        decorators.forEach(MessageDecorator::destroy);
+        LOG.info("Module initialized !");
     }
 
     @CommandInfo(

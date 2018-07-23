@@ -116,6 +116,8 @@ public class MessageDecoratorModule extends BaseModule {
                     continue;
                 }
 
+                // Setup decorator and register.
+                decorator.setup();
                 registerDecorator(decorator);
 
             } catch (ClassNotFoundException e) {
