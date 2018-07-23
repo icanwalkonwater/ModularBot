@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_night_config_wrapper;
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
+import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
@@ -28,8 +29,8 @@ public class NightConfigWrapperModule extends BaseModule {
 
     private static final Logger LOG = LoggerFactory.getLogger("NightConfigWrapper");
 
-    private static final ModuleInfo INFO = new ModuleInfo("NightConfig Wrapper", "Jesus_Crie, TheElectronWill",
-            "https://github.com/TheElectronWill/Night-Config", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo("Message Decorator", ModularBotBuildInfo.AUTHOR + ", TheElectronWill",
+            ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     private ModuleManager moduleManager;
 
@@ -39,7 +40,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
     public NightConfigWrapperModule() {
         super(INFO);
-        primaryConfigBuilder = FileConfig.builder("./config.json")
+        primaryConfigBuilder = (FileConfigBuilder) FileConfig.builder("./config.json")
                 .defaultResource("/default_config.json")
                 .autoreload()
                 .concurrent();
@@ -93,17 +94,10 @@ public class NightConfigWrapperModule extends BaseModule {
 
             // Set the custom prefixes from the config.
 
-            //Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
-            Optional<List<Object>> customPrefix = primaryConfig.getOptional("guild_prefix"); // TODO 27/06/2018 temporary fix
+            Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
             if (customPrefix.isPresent()) {
                 final Method addCustomPrefix = commandModuleClass.getMethod("addCustomPrefixForGuild", long.class, String.class);
-                //for (Config config : customPrefix.get()) {
-                for (Object v : customPrefix.get()) { // TODO 27/06/2018 temporary fix
-                    Config config;
-                    if (v instanceof Config)
-                        config = (Config) v;
-                    else continue;
-
+                for (Config config : customPrefix.get()) {
                     LOG.debug("Adding prefix: " + config.get("prefix") + " for guild " + config.get("guild_id"));
                     addCustomPrefix.invoke(commandModule, config.get("guild_id"), config.get("prefix"));
                 }
@@ -117,7 +111,6 @@ public class NightConfigWrapperModule extends BaseModule {
     @SuppressWarnings("unchecked")
     @Override
     public void onUnload() {
-
         if (primaryConfig.getOptional("guild_prefix").isPresent()) {
             final BaseModule commandModule = moduleManager.getModuleByClassName("com.jesus_crie.modularbot_command.CommandModule");
             if (commandModule == null)

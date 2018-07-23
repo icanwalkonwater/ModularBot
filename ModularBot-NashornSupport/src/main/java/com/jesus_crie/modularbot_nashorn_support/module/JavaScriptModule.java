@@ -21,7 +21,7 @@ public class JavaScriptModule {
      *
      * @param engine         The script engine that runs the code of the module.
      * @param scriptLocation The location of the entry point of the module.
-     * @throws ScriptException
+     * @throws ScriptException If it fails to get the module from the script.
      */
     public JavaScriptModule(@Nonnull final NashornScriptEngine engine, @Nonnull final File scriptLocation) throws ScriptException {
         this.engine = engine;

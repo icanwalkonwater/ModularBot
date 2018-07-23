@@ -31,6 +31,12 @@ public class ModularBot extends DefaultShardManager {
     private final AtomicInteger receivedReady = new AtomicInteger();
 
     protected final ModuleManager moduleManager;
+    protected final ScheduledExecutorService mainPool = Executors.newScheduledThreadPool(1, r -> {
+        final Thread t = new Thread(r);
+        t.setDaemon(true);
+        t.setName("Main Pool #" + t.getId());
+        return t;
+    });
 
     /**
      * @param token                     The token
@@ -111,7 +117,21 @@ public class ModularBot extends DefaultShardManager {
         if (receivedReady.get() == shardsTotal) {
             logger.info("Shards ready !");
             moduleManager.finalizeInitialization(this);
+
+            logger.info("Modules initialization finalized.");
+            logger.info("ModularBot successfully started and ready !");
         }
+    }
+
+    /**
+     * Get a scheduled executor service that can be used without risks.
+     * Every thread in this pool is a daemon thread.
+     * This thread pool is initialized with a corePoolSize of 1.
+     *
+     * @return A {@link ScheduledExecutorService ScheduledExecutorService} that can be used to execute tasks.
+     */
+    public ScheduledExecutorService getMainPool() {
+        return mainPool;
     }
 
     /**
@@ -123,13 +143,7 @@ public class ModularBot extends DefaultShardManager {
         return Executors.newScheduledThreadPool(corePoolSize, r -> {
             Thread t = threadFactory.newThread(r);
             t.setPriority(Thread.NORM_PRIORITY + 1);
-
-            t.setUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
-                @Override
-                public void uncaughtException(Thread t, Throwable e) {
-                    logger.error("Uncaught exception !", e);
-                }
-            });
+            t.setUncaughtExceptionHandler((t1, e) -> logger.error("Uncaught exception !", e));
             return t;
         });
     }
@@ -169,6 +183,10 @@ public class ModularBot extends DefaultShardManager {
         logger.info("Shutting down...");
         moduleManager.preUnload();
         receivedReady.set(0);
+
+        if (useShutdownNow) mainPool.shutdownNow();
+        else mainPool.shutdown();
+
         super.shutdown();
         moduleManager.unload();
 

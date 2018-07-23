@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class Command {
 
@@ -97,6 +98,17 @@ public abstract class Command {
         registerCommandPatterns();
     }
 
+    /**
+     * Convert all registered aliases to lowercase.
+     */
+    void normalizeAliases() {
+        final List<String> cleanAliases = aliases.stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
+        aliases.clear();
+        aliases.addAll(cleanAliases);
+    }
+
     private void registerCommandPatterns() {
         // For each class starting from the lower to the Object class
         for (Class<?> current = getClass(); current != null; current = current.getSuperclass()) {
@@ -105,7 +117,7 @@ public abstract class Command {
             for (Method method : current.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(RegisterPattern.class)) {
 
-                    // Only accept methods with parameters [CommandEvent, List, Options]
+                    // Get type of parameters
                     Class<?>[] params = method.getParameterTypes();
 
                     // Only event parameter

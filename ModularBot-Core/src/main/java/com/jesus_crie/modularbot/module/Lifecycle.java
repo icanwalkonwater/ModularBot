@@ -29,12 +29,12 @@ public interface Lifecycle {
     default void onPostInitialization() {}
 
     /**
-     * Called just before the shards are being created.
+     * Called just before the shards are being created. (Just before the login).
      */
     default void onPrepareShards() {}
 
     /**
-     * Called right after the shards have been created.
+     * Called right after the shards have been created. (Just after the login).
      */
     default void onShardsCreated() {}
 

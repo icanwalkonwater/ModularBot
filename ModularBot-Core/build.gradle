@@ -1,9 +1,10 @@
 dependencies {
-    compile 'net.dv8tion:JDA:3.6.0_375'
+    api 'net.dv8tion:JDA:3.6.0_375'
 
     testImplementation project(':modularbot-logger')
     testImplementation project(':modularbot-command')
     testImplementation project(':modularbot-night-config-wrapper')
     testImplementation project(':modularbot-nashorn-support')
     testImplementation project(':modularbot-nashorn-command-support')
+    testImplementation project(':modularbot-message-decorator')
 }

@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot_nashorn_support;
 
 import com.jesus_crie.modularbot.ModularBot;
+import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.Lifecycle;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.script.CompiledScript;
 import javax.script.ScriptException;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -33,12 +35,14 @@ public class NashornSupportModule extends BaseModule {
 
     private static final Logger LOG = LoggerFactory.getLogger("NashornSupportModule");
 
-    private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", "Jesus-Crie",
-            "https://github.com/JesusCrie/ModularBot", "1.0", 1);
+    private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", ModularBotBuildInfo.AUTHOR,
+            ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     private String SCRIPT_HEADER;
 
     private NashornScriptEngineFactory engineFactory = new NashornScriptEngineFactory();
+    private NashornScriptEngine globalEngine = (NashornScriptEngine) engineFactory.getScriptEngine();
+
     private final File scriptDirectory;
     private Map<String, JavaScriptModule> modules = Collections.emptyMap();
 
@@ -119,6 +123,43 @@ public class NashornSupportModule extends BaseModule {
                 LOG.error("Failed to load script: " + file, e);
             }
         }
+    }
+
+    /**
+     * Compile an arbitrary script that can be evaluated whenever you want.
+     * Not that all of the arbitrary scripts are loaded with the same engine so the code from the previous scripts is
+     * still here.
+     *
+     * @param script The script to execute.
+     * @return A {@link CompiledScript CompiledScript} that can be executed at any time on the global engine.
+     * @throws ScriptException If the script fail to compile.
+     */
+    @Nonnull
+    public CompiledScript compileArbitraryScript(@Nonnull final String script) throws ScriptException {
+        return globalEngine.compile(script);
+    }
+
+    /**
+     * Compile an arbitrary script that can be evaluated whenever you want.
+     * Not that the script is compiled in a dedicated engine so there is no interference possible with another script.
+     *
+     * @param script The script to compile.
+     * @return A {@link CompiledScript CompiledScript} ready.
+     * @throws ScriptException If the script fail to compile.
+     */
+    @Nonnull
+    public CompiledScript compileIsolatedScript(@Nonnull final String script) throws ScriptException {
+        return ((NashornScriptEngine) engineFactory.getScriptEngine()).compile(script);
+    }
+
+    /**
+     * Create a new {@link NashornScriptEngine NashornScriptEngine}.
+     *
+     * @return A new {@link NashornScriptEngine NashornScriptEngine}.
+     */
+    @Nonnull
+    public NashornScriptEngine newNashornEngine() {
+        return (NashornScriptEngine) engineFactory.getScriptEngine();
     }
 
     /**

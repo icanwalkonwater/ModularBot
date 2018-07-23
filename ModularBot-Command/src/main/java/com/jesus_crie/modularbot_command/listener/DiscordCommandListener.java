@@ -28,7 +28,7 @@ public class DiscordCommandListener extends ListenerAdapter {
         if (event.getAuthor().getIdLong() == event.getJDA().getSelfUser().getIdLong())
             return;
 
-        final String prefix = module.getPrefixForGuild(event.getGuild().getIdLong());
+        final String prefix = module.getPrefixForGuild(event.getGuild());
         if (!event.getMessage().getContentRaw().startsWith(prefix))
             return;
 
