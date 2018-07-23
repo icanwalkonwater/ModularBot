@@ -8,6 +8,11 @@ com.jesus_crie.modularbot_command.exception
 com.jesus_crie.modularbot_command.listener
 com.jesus_crie.modularbot_command.processing
 com.jesus_crie.modularbot_logger
+com.jesus_crie.modularbot_message_decorator
+com.jesus_crie.modularbot_message_decorator.button
+com.jesus_crie.modularbot_message_decorator.decorator
+com.jesus_crie.modularbot_message_decorator.decorator.disposable
+com.jesus_crie.modularbot_message_decorator.decorator.permanent
 com.jesus_crie.modularbot_nashorn_command_support
 com.jesus_crie.modularbot_nashorn_support
 com.jesus_crie.modularbot_nashorn_support.module
