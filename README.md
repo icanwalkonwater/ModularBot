@@ -398,7 +398,7 @@ var commandImports = new JavaImporter(com.jesus_crie.modularbot_nashorn_command_
 ```
 
 #### Message Decorator
-[![Javadocs nashorn command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-message-decorator.svg?label=javadoc-message-decorator)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-message-decorator)
+[![Javadocs message decorator](http://www.javadoc.io/badge/com.jesus-crie/modularbot-message-decorator.svg?label=javadoc-message-decorator)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-message-decorator)
 > *Artifact: `com.jesus-crie:modularbot-message-decorator`*
 
 Decorators are objects that can be bound to a specific message to extend their
