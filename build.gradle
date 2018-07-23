@@ -14,16 +14,18 @@ ext {
 
 allprojects {
     apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'maven'
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version('2.2.0_' + getBuildNumber())
+    version('2.3.0_' + getBuildNumber())
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
     compileJava.options.encoding = 'UTF-8'
+    javadoc.options.encoding = 'UTF-8'
 
     archivesBaseName = name
 
@@ -83,7 +85,6 @@ project(':modularbot-core') {
 
     compileJava {
         options.compilerArgs += ["-parameters"]
-        source = sourcesForRelease.destinationDir
     }
 }
 

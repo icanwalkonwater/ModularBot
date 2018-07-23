@@ -49,21 +49,21 @@ public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDec
     /**
      * Deserialize an {@link AlertReactionDecorator AlertReactionDecorator} from a config object.
      *
-     * @param config The serialized version of the decorator.
+     * @param serialized The serialized version of the decorator.
      * @param bot    The current instance of the bot, used to retrieve the binding.
      * @return The deserialized {@link AlertReactionDecorator AlertReactionDecorator} or {@code null} if it failed.
      * @throws IllegalArgumentException If a required field is missing.
      * @throws IllegalStateException    If the bound message no longer exists.
      */
     @Nullable
-    public static AlertReactionDecorator tryDeserialize(@Nonnull final Config config, @Nonnull final ModularBot bot) {
+    public static AlertReactionDecorator tryDeserialize(@Nonnull final Config serialized, @Nonnull final ModularBot bot) {
         // Assuming that the KEY_CLASS field is correct.
 
-        final Long chanId = config.get(KEY_BINDING_CHANNEL_ID);
-        final Long bindingId = config.get(KEY_BINDING_ID);
-        final long expireTime = ((Number) config.getOrElse(KEY_TIMEOUT, 1)).longValue(); // 1 will be an expired decorator.
-        final boolean deleteAfter = config.getOrElse(KEY_DELETE_AFTER, false);
-        final String emoteSerialized = config.get(KEY_EMOTE);
+        final Long chanId = serialized.get(KEY_BINDING_CHANNEL_ID);
+        final Long bindingId = serialized.get(KEY_BINDING_ID);
+        final long expireTime = serialized.<Number>getOrElse(KEY_TIMEOUT, 1).longValue(); // 1 will be an expired decorator.
+        final boolean deleteAfter = serialized.getOrElse(KEY_DELETE_AFTER, false);
+        final String emoteSerialized = serialized.get(KEY_EMOTE);
 
         // Check the essential fields.
         if (chanId == null || bindingId == null)

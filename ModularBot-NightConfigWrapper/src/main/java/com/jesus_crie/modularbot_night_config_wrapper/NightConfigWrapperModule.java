@@ -40,7 +40,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
     public NightConfigWrapperModule() {
         super(INFO);
-        primaryConfigBuilder = FileConfig.builder("./config.json")
+        primaryConfigBuilder = (FileConfigBuilder) FileConfig.builder("./config.json")
                 .defaultResource("/default_config.json")
                 .autoreload()
                 .concurrent();

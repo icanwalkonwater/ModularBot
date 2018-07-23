@@ -173,7 +173,7 @@ public abstract class PanelReactionDecorator extends PermanentReactionDecorator 
 
         final Long chanId = serialized.get(KEY_BINDING_CHANNEL_ID);
         final Long bindingId = serialized.get(KEY_BINDING_ID);
-        final long expireTime = ((Number) serialized.getOrElse(KEY_TIMEOUT, 1)).longValue();
+        final long expireTime = serialized.<Number>getOrElse(KEY_TIMEOUT, 1).longValue();
         final String underlying = serialized.get(KEY_CLASS_UNDERLYING);
 
         if (chanId == null || bindingId == null || underlying == null)

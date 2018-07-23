@@ -1,5 +1,5 @@
 dependencies {
-    compile project(':modularbot-core')
-    compile project(':modularbot-command')
-    compile project(':modularbot-nashorn-support')
+    implementation project(':modularbot-core')
+    implementation project(':modularbot-command')
+    implementation project(':modularbot-nashorn-support')
 }
