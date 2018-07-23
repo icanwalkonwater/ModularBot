@@ -2,6 +2,7 @@ package com.jesus_crie.modularbot_message_decorator;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
+import com.electronwill.nightconfig.json.JsonFormat;
 import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
@@ -56,10 +57,16 @@ public class MessageDecoratorModule extends BaseModule {
     @Override
     public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {
         NightConfigWrapperModule config = moduleManager.getModule(NightConfigWrapperModule.class);
-        if (config == null) throw new IllegalStateException("You need to register the module NightConfigWrapperModule prior to this module !");
+        if (config == null)
+            throw new IllegalStateException("You need to register the module NightConfigWrapperModule prior to this module !");
 
-        config.useSecondaryConfig(CONFIG_DECORATOR_CACHE, cacheFile);
+        // Disable pretty print
+        config.useSecondaryConfig(CONFIG_DECORATOR_CACHE, FileConfig.builder(cacheFile, JsonFormat.minimalInstance())
+                .autoreload()
+                .concurrent()
+                .build());
         cache = config.getSecondaryConfig(CONFIG_DECORATOR_CACHE);
+
     }
 
     @Override
@@ -137,7 +144,7 @@ public class MessageDecoratorModule extends BaseModule {
     /**
      * Register a decorator in this module.
      * If you want your decorator to be serialized and restored after a shutdown, you need to register it.
-     *
+     * <p>
      * Can also be performed by {@link MessageDecorator#register(MessageDecoratorModule)}.
      *
      * @param decorator The decorator to register.
