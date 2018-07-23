@@ -117,7 +117,7 @@ public abstract class Command {
             for (Method method : current.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(RegisterPattern.class)) {
 
-                    // Only accept methods with parameters [CommandEvent, List, Options]
+                    // Get type of parameters
                     Class<?>[] params = method.getParameterTypes();
 
                     // Only event parameter

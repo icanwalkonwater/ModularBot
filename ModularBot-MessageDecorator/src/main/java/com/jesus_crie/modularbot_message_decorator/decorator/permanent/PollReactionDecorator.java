@@ -52,6 +52,15 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         this.onTimeout = onTimeout;
     }
 
+    /**
+     * Constructor that allows only unicode emotes for votes.
+     *
+     * @param binding   The bound message.
+     * @param timeout   The amount of time in milliseconds before the decorator times out, or 0 for infinite.
+     * @param onVote    (Optional) The action to perform when a vote is added or removed.
+     * @param onTimeout (Optional) The action to perform when the decorator times out.
+     * @param emotes    The unicode emotes that will be used for votes.
+     */
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
                                  @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
                                  @Nullable final SerializableConsumer<PollReactionDecorator> onTimeout,
@@ -64,6 +73,15 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
         this.onTimeout = onTimeout;
     }
 
+    /**
+     * Constructor that allows only custom server emotes for votes.
+     *
+     * @param binding   The bound message.
+     * @param timeout   The amount of time in milliseconds before the decorator times out, or 0 for infinite.
+     * @param onVote    (Optional) The action to perform when a vote is added or removed.
+     * @param onTimeout (Optional) The action to perform when the decorator times out.
+     * @param emotes    The custom emotes that will be used for votes.
+     */
     public PollReactionDecorator(@Nonnull final Message binding, final long timeout,
                                  @Nullable final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote,
                                  @Nullable final SerializableConsumer<PollReactionDecorator> onTimeout,
