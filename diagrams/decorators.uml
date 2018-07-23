@@ -3,83 +3,83 @@
   <ID>JAVA</ID>
   <OriginalElement>com.jesus_crie.modularbot_message_decorator.decorator</OriginalElement>
   <nodes>
-    <node x="980.4791666666666" y="388.0">com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator</node>
-    <node x="1026.6785714285716" y="812.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PermanentReactionDecorator</node>
-    <node x="31.625" y="577.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator</node>
-    <node x="607.0" y="924.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator</node>
-    <node x="0.0" y="979.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator</node>
-    <node x="500.27083333333337" y="779.0">com.jesus_crie.modularbot_message_decorator.Cacheable</node>
-    <node x="803.4791666666666" y="0.0">com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator</node>
-    <node x="1008.0" y="924.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator</node>
-    <node x="31.625" y="678.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator</node>
-    <node x="54.125" y="801.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator</node>
-    <node x="511.47916666666663" y="366.0">com.jesus_crie.modularbot_message_decorator.decorator.ReactionDecorator</node>
-    <node x="210.0" y="968.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator</node>
+    <node x="888.5208333333333" y="388.0">com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator</node>
+    <node x="149.32142857142856" y="812.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PermanentReactionDecorator</node>
+    <node x="1012.375" y="577.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator</node>
+    <node x="392.0" y="924.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator</node>
+    <node x="1190.0" y="979.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator</node>
+    <node x="485.72916666666663" y="779.0">com.jesus_crie.modularbot_message_decorator.Cacheable</node>
+    <node x="711.5208333333334" y="0.0">com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator</node>
+    <node x="0.0" y="924.0">com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator</node>
+    <node x="1012.375" y="678.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator</node>
+    <node x="1034.875" y="801.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator</node>
+    <node x="419.5208333333333" y="366.0">com.jesus_crie.modularbot_message_decorator.decorator.ReactionDecorator</node>
+    <node x="793.0" y="968.0">com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator</node>
   </nodes>
   <notes />
   <edges>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.ReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator">
       <point x="0.0" y="-80.5" />
-      <point x="735.9791666666666" y="341.0" />
-      <point x="877.2291666666666" y="341.0" />
+      <point x="644.0208333333333" y="341.0" />
+      <point x="785.2708333333334" y="341.0" />
       <point x="-73.75" y="158.0" />
+    </edge>
+    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
+      <point x="-94.25" y="-36.5" />
+      <point x="887.25" y="904.0" />
+      <point x="814.0625" y="904.0" />
+      <point x="131.33333333333337" y="47.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator">
       <point x="0.0" y="-25.5" />
       <point x="0.0" y="25.5" />
     </edge>
-    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
-      <point x="94.25" y="-36.5" />
-      <point x="492.75" y="904.0" />
-      <point x="565.9375" y="904.0" />
-      <point x="-131.33333333333337" y="47.5" />
-    </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
-      <point x="-93.0" y="-80.5" />
-      <point x="1101.0" y="894.0" />
-      <point x="828.6041666666667" y="894.0" />
-      <point x="131.33333333333337" y="47.5" />
+      <point x="93.0" y="-80.5" />
+      <point x="279.0" y="904.0" />
+      <point x="551.3958333333333" y="904.0" />
+      <point x="-131.33333333333337" y="47.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator">
       <point x="0.0" y="-25.5" />
-      <point x="95.0" y="904.0" />
-      <point x="126.875" y="904.0" />
-      <point x="-72.75" y="25.5" />
+      <point x="1285.0" y="904.0" />
+      <point x="1253.125" y="904.0" />
+      <point x="72.75" y="25.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator">
-      <point x="-94.25" y="-36.5" />
-      <point x="304.25" y="904.0" />
-      <point x="272.375" y="904.0" />
-      <point x="72.75" y="25.5" />
+      <point x="94.25" y="-36.5" />
+      <point x="1075.75" y="904.0" />
+      <point x="1107.625" y="904.0" />
+      <point x="-72.75" y="25.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PermanentReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.ReactionDecorator">
       <point x="0.0" y="-14.5" />
-      <point x="1128.6785714285716" y="552.0" />
-      <point x="848.2291666666666" y="552.0" />
-      <point x="112.25" y="80.5" />
+      <point x="251.32142857142856" y="552.0" />
+      <point x="531.7708333333333" y="552.0" />
+      <point x="-112.25" y="80.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.ReactionDecorator">
       <point x="0.0" y="-25.5" />
-      <point x="199.625" y="552.0" />
-      <point x="623.7291666666666" y="552.0" />
-      <point x="-112.25" y="80.5" />
+      <point x="1180.375" y="552.0" />
+      <point x="756.2708333333333" y="552.0" />
+      <point x="112.25" y="80.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PermanentReactionDecorator">
-      <point x="93.0" y="-80.5" />
-      <point x="1287.0" y="904.0" />
-      <point x="1179.6785714285716" y="904.0" />
-      <point x="51.0" y="14.5" />
+      <point x="-93.0" y="-80.5" />
+      <point x="93.0" y="904.0" />
+      <point x="200.32142857142856" y="904.0" />
+      <point x="-51.0" y="14.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator">
       <point x="0.0" y="-58.5" />
-      <point x="1165.9791666666665" y="341.0" />
-      <point x="1024.7291666666665" y="341.0" />
-      <point x="73.75" y="158.0" />
+      <point x="1074.0208333333333" y="341.0" />
+      <point x="932.7708333333333" y="341.0" />
+      <point x="73.74999999999989" y="158.0" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
-      <point x="-95.25" y="-80.5" />
-      <point x="702.25" y="904.0" />
-      <point x="697.2708333333334" y="904.0" />
+      <point x="95.25" y="-80.5" />
+      <point x="677.75" y="904.0" />
+      <point x="682.7291666666666" y="904.0" />
       <point x="0.0" y="47.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator">
@@ -87,18 +87,18 @@
       <point x="0.0" y="25.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PermanentReactionDecorator">
-      <point x="95.25" y="-80.5" />
-      <point x="892.75" y="904.0" />
-      <point x="1077.6785714285716" y="904.0" />
-      <point x="-51.0" y="14.5" />
+      <point x="-95.25" y="-80.5" />
+      <point x="487.25" y="894.0" />
+      <point x="302.32142857142856" y="894.0" />
+      <point x="51.0" y="14.5" />
     </edge>
   </edges>
-  <settings layout="Hierarchic Group" zoom="0.7628959276018099" x="690.0" y="542.5" />
+  <settings layout="Hierarchic Group" zoom="0.6744" x="690.0" y="615.0" />
   <SelectedNodes />
   <Categories>
     <Category>Methods</Category>
-    <Category>Inner Classes</Category>
     <Category>Properties</Category>
+    <Category>Inner Classes</Category>
   </Categories>
   <SCOPE>All</SCOPE>
   <VISIBILITY>private</VISIBILITY>

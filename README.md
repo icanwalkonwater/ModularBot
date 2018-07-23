@@ -228,7 +228,7 @@ user by registering your own `CommandListener` with `CommandModule#addListener`.
 [![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
-This module uses [NightConfig 3.2.0](https://github.com/TheElectronWill/Night-Config)
+This module uses [NightConfig 3.3.0](https://github.com/TheElectronWill/Night-Config)
 to load, parse and save config files. You will be forces to have a "primary"
 config file and you can have multiple secondary config files.
 
@@ -398,8 +398,54 @@ var commandImports = new JavaImporter(com.jesus_crie.modularbot_nashorn_command_
 ```
 
 #### Message Decorator
+[![Javadocs nashorn command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-message-decorator.svg?label=javadoc-message-decorator)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-message-decorator)
+> *Artifact: `com.jesus-crie:modularbot-message-decorator`*
 
-TODO
+Decorators are objects that can be bound to a specific message to extend their
+behaviour by listening to specific events regarding this message.
+This module is mainly made to allow a bunch of interactions using the
+message's reactions.
+
+Every decorator extends `MessageDecorator` which stores the bound message
+and its timeout.
+When a decorator is triggered, `MessageDecorator#onTrigger` is called and
+when it times out, it will call `MessageDecorator#onTimeout` which will call
+`MessageDecorator#destroy` in most implementations.
+
+Certain decorators implements `Cacheable` which allows them to be saved in
+a cache file when the bot is down and reloaded when the bot wake up. 
+> Note that all of the lambdas that you can provide are serializable and will
+be serialized and this means that if your lambda uses variables that aren't
+in the lambda's parameters, they will be serialized too and can lead to
+unexpected errors.
+
+From there you can use the `AutoDestroyMessageDecorator` which allows you to
+delete the bound message automatically after a certain period of time or when
+the bot is shutting down.
+
+The other decorators extends `ReactionDecorator` which allows interactions
+by the intermediate of message reactions. These reactions are wrapped in
+`DecoratorButton`s that also contains an action to perform when the button
+is triggered.
+
+They are 2 kind of reaction decorator, permanent ones and dismissible ones.
+
+In the dismissible ones you can find `AlertReactionDecorator` which acts a
+bit like the `AutoDestroyMessageDecorator` but you can delete it earlier
+by clicking a reaction under the message. `ConfirmReactionDecorator` acts
+like a yes/no dialog box for the user.
+
+In the permanent decorators you can find the `PollReactionDecorator` which
+allows you to turn a message into a poll by providing the allowed "votes"
+to it, then you can query the votes at any times.
+> Querying the votes can be expensive if there are too many emotes.
+
+There is also the `PanelReactionDecorator` which, like the poll, allows you
+to set a bunch of reactions under the message. But the panel decorator is
+made too handle more complex operations for each buttons. You need to
+extend this class before using it and create a method per button that you
+want and annotate it with `@RegisterPanelAction(...)`. More details can be
+found in the javadoc of the class.
 
 #### Audio
 
