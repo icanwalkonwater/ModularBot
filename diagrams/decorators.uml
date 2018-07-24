@@ -24,15 +24,15 @@
       <point x="785.2708333333334" y="341.0" />
       <point x="-73.75" y="158.0" />
     </edge>
+    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator">
+      <point x="0.0" y="-25.5" />
+      <point x="0.0" y="25.5" />
+    </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
       <point x="-94.25" y="-36.5" />
       <point x="887.25" y="904.0" />
       <point x="814.0625" y="904.0" />
       <point x="131.33333333333337" y="47.5" />
-    </edge>
-    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.DisposableReactionDecorator">
-      <point x="0.0" y="-25.5" />
-      <point x="0.0" y="25.5" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
       <point x="93.0" y="-80.5" />
@@ -70,17 +70,17 @@
       <point x="200.32142857142856" y="904.0" />
       <point x="-51.0" y="14.5" />
     </edge>
-    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator">
-      <point x="0.0" y="-58.5" />
-      <point x="1074.0208333333333" y="341.0" />
-      <point x="932.7708333333333" y="341.0" />
-      <point x="73.74999999999989" y="158.0" />
-    </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.Cacheable">
       <point x="95.25" y="-80.5" />
       <point x="677.75" y="904.0" />
       <point x="682.7291666666666" y="904.0" />
       <point x="0.0" y="47.5" />
+    </edge>
+    <edge source="com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.MessageDecorator">
+      <point x="0.0" y="-58.5" />
+      <point x="1074.0208333333333" y="341.0" />
+      <point x="932.7708333333333" y="341.0" />
+      <point x="73.74999999999989" y="158.0" />
     </edge>
     <edge source="com.jesus_crie.modularbot_message_decorator.decorator.disposable.SafeAutoDestroyDisposableReactionDecorator" target="com.jesus_crie.modularbot_message_decorator.decorator.disposable.AutoDeleteDisposableReactionDecorator">
       <point x="0.0" y="-25.5" />

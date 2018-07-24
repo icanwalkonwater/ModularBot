@@ -5,6 +5,7 @@ import com.jesus_crie.modularbot_command.exception.CommandProcessingException;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 import com.jesus_crie.modularbot_command.processing.Options;
 import net.dv8tion.jda.core.entities.Message;
+import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.utils.tuple.Pair;
 
 import javax.annotation.Nonnull;
@@ -16,8 +17,10 @@ public interface CommandListener {
 
     /**
      * Triggered every time a command is typed (= any message that starts with the prefix
+     *
+     * @param event The event that has triggered the listener.
      */
-    void onCommandReceived();
+    void onCommandReceived(@Nonnull final MessageReceivedEvent event);
 
     /**
      * Triggered when a command was typed and it was a real command.

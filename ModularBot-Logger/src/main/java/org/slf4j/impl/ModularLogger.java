@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import static com.jesus_crie.modularbot.utils.F.f;
+import static com.jesus_crie.modularbot.utils.Utils.f;
 
 /**
  * Implementation of SLF4J {@link org.slf4j.Logger} for ModularBot.

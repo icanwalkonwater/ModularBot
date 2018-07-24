@@ -73,7 +73,8 @@ public class CommandModule extends BaseModule {
 
     public void registerCommands(@Nonnull final Command... commands) {
         Collections.addAll(commandStorage, commands);
-        for (Command command : commands) command.normalizeAliases();
+        if ((flags & FLAG_NORMALIZE_ALIASES) != 0)
+            for (Command command : commands) command.normalizeAliases();
     }
 
     public void registerQuickCommand(@Nonnull final String name, @Nonnull final Consumer<CommandEvent> action) {
