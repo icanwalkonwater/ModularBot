@@ -1,8 +1,8 @@
 dependencies {
     implementation project(':modularbot-core')
 
-    api "com.github.TheElectronWill.Night-Config:core:$project.ext.nightConfigVersion"
-    api "com.github.TheElectronWill.Night-Config:json:$project.ext.nightConfigVersion"
+    api "com.electronwill.night-config:core:$project.ext.nightConfigVersion"
+    api "com.electronwill.night-config:json:$project.ext.nightConfigVersion"
 
     testImplementation project(':modularbot-base')
 }

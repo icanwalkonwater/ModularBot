@@ -37,9 +37,6 @@ allprojects {
     repositories {
         mavenCentral()
         jcenter()
-        maven {
-            url 'http://jitpack.io'
-        }
     }
 
     dependencies {
