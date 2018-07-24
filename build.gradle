@@ -19,7 +19,7 @@ allprojects {
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version('2.3.2_' + getBuildNumber())
+    version('2.3.3_' + getBuildNumber())
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -31,7 +31,7 @@ allprojects {
 
     ext {
         name = 'ModularBot'
-        nightConfigVersion = '3.3.0' // Change in the readme too line 226.
+        nightConfigVersion = '3.3.1' // Change in the readme too line 231.
     }
 
     repositories {

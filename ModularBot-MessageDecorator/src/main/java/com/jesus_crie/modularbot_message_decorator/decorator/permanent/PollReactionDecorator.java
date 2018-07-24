@@ -160,7 +160,7 @@ public class PollReactionDecorator extends PermanentReactionDecorator implements
 
         final Long chanId = serialized.get(KEY_BINDING_CHANNEL_ID);
         final Long bindingId = serialized.get(KEY_BINDING_ID);
-        final long expireTime = serialized.<Number>getOrElse(KEY_TIMEOUT, 1).longValue(); // 1 means its expired.
+        final long expireTime = serialized.getLongOrElse(KEY_TIMEOUT, 1); // 1 means its expired.
         final List<String> votes = serialized.get(KEY_POLL_VOTES);
 
         final SerializableBiConsumer<PollReactionDecorator, GenericMessageReactionEvent> onVote;

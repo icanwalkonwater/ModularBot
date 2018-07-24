@@ -200,7 +200,7 @@ public class CommandProcessor {
 
                     if ((flags & FLAG_ALLOW_DUPLICATE_OPTION) == 0) {
                         if (options.containsKey(option.getLeft()))
-                            throw new CommandProcessingException("Duplicate long option !", startPos, cursor.position - 1);
+                            throw new CommandProcessingException("Duplicate long option !", startPos, cursor.position);
                     }
                     options.put(option.getLeft(), option.getRight());
 
@@ -214,7 +214,7 @@ public class CommandProcessor {
                 } else {
                     // Common character, so backward and pass the cursor
                     cursor.backward();
-                    final int startPos = cursor.position - 1;
+                    final int startPos = cursor.position;
                     final Map<String, String> option = processShortOptions(cursor);
 
                     if ((flags & FLAG_ALLOW_DUPLICATE_OPTION) == 0) {
@@ -236,6 +236,9 @@ public class CommandProcessor {
                 } else throw new CommandProcessingException("Not the option prefix !", cursor.position, cursor.position);
             }
         }
+
+        if (prevWasPrefix)
+            throw new CommandProcessingException("Empty short option !", cursor.position, cursor.position);
 
         return options;
     }
@@ -270,13 +273,13 @@ public class CommandProcessor {
                     || (n == ESCAPE_CHAR && (flags & FLAG_IGNORE_ESCAPE_CHARACTER) == 0)
                     || n == SINGLE_QUOTE
                     || n == DOUBLE_QUOTE)
-                throw new CommandProcessingException("Illegal character in long option name !", startPos, cursor.position - 1);
+                throw new CommandProcessingException("Illegal character in long option name !", cursor.position, cursor.position);
             buffer.append(n);
         }
 
         // Nothing (or a word separator) was found after the cursor
         if (buffer.length() == 0)
-            throw new CommandProcessingException("Anonymous long option !", startPos, cursor.position - 1);
+            throw new CommandProcessingException("Anonymous long option !", startPos, cursor.position);
 
         name = buffer.toString();
 
