@@ -4,6 +4,7 @@ import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.utils.Utils;
 import org.slf4j.impl.ModularLog;
 import org.slf4j.impl.ModularLogger;
 
@@ -55,8 +56,7 @@ public class ConsoleLoggerModule extends BaseModule {
                         FORMAT_TIME.format(log.time),
                         log.level.getPrefix(),
                         log.thread,
-                        //F.fullClassToSimpleClassName(log.from),
-                        log.from,
+                        Utils.fullClassToSimpleClassName(log.from),
                         log.error == null ? log.message : MessageFormat.format(FORMAT_ERROR, log.error.getClass().getName(), log.message));
 
                 if (log.level.getLevel() < ModularLog.Level.WARN.getLevel()) {

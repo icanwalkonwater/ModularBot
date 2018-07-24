@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot_command;
 
+import com.jesus_crie.modularbot.utils.Utils;
 import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.exception.CommandMappingException;
@@ -193,7 +194,10 @@ public abstract class Command {
                                     // CommandEvent, Options, Args...
                                     patterns.add(new CommandPattern(
                                             translateArguments(method, 2),
-                                            (event, args, options) -> invokeMethod(method, event, options, args.toArray(new Object[0]))
+                                            (event, args, options) -> {
+                                                Utils.addAll(args, 0, event, options);
+                                                invokeMethod(method, args.toArray(new Object[0]));
+                                            }
                                     ));
                                 }
                             }
