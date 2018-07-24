@@ -41,7 +41,7 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.jesus-crie:modularbot-base:2.2.0'
+    implementation 'com.jesus-crie:modularbot-base:2.3.4_18'
 }
 ```
 And now you can register commands and start your bot with:
