@@ -119,8 +119,8 @@ public class CommandProcessor {
     public char processEscapeCharacter(@Nonnull final Cursor cursor) throws CommandProcessingException {
         try {
             return cursor.nextToken();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            throw new CommandProcessingException("Can't escape character, no characters left !", cursor.position);
+        } catch (StringIndexOutOfBoundsException e) {
+            throw new CommandProcessingException("Can't escape character, no characters left !", cursor.position, cursor.position);
         }
     }
 
@@ -144,10 +144,11 @@ public class CommandProcessor {
     public String processQuotedString(@Nonnull final Cursor cursor) throws CommandProcessingException {
         final StringBuilder quote = new StringBuilder();
 
-        final short startPos = cursor.position;
-
         // Parse the type of quote
         boolean singleQuote = cursor.nextToken() == SINGLE_QUOTE;
+
+        final short startPos = cursor.position;
+
         char n;
         // Append until there is a corresponding quote that isn't
         while (cursor.hasNext()) {
@@ -168,7 +169,7 @@ public class CommandProcessor {
         }
 
         // If we reach this, the quote was never closed
-        throw new CommandProcessingException("Quote not closed !", startPos);
+        throw new CommandProcessingException("Quote not closed !", startPos, cursor.position);
     }
 
     /**
@@ -194,12 +195,12 @@ public class CommandProcessor {
 
                 if (n == PREFIX_OPTION) {
                     // Another prefix mark a long option
-                    final short startPos = cursor.position;
+                    final int startPos = cursor.position - 1;
                     final Pair<String, String> option = processLongOption(cursor);
 
                     if ((flags & FLAG_ALLOW_DUPLICATE_OPTION) == 0) {
                         if (options.containsKey(option.getLeft()))
-                            throw new CommandProcessingException("Duplicate long option !", startPos);
+                            throw new CommandProcessingException("Duplicate long option !", startPos, cursor.position - 1);
                     }
                     options.put(option.getLeft(), option.getRight());
 
@@ -209,17 +210,17 @@ public class CommandProcessor {
                         || n == SINGLE_QUOTE
                         || n == DOUBLE_QUOTE) {
                     // Invalid character for an option
-                    throw new CommandProcessingException("Invalid character in option !", cursor.position);
+                    throw new CommandProcessingException("Invalid character in option !", cursor.position, cursor.position);
                 } else {
                     // Common character, so backward and pass the cursor
                     cursor.backward();
-                    final short startPos = cursor.position;
+                    final int startPos = cursor.position - 1;
                     final Map<String, String> option = processShortOptions(cursor);
 
                     if ((flags & FLAG_ALLOW_DUPLICATE_OPTION) == 0) {
                         for (Map.Entry<String, String> entry : option.entrySet()) {
                             if (options.containsKey(entry.getKey()) && !option.get(entry.getKey()).equals(""))
-                                throw new CommandProcessingException("Duplicate short option with argument !", startPos);
+                                throw new CommandProcessingException("Duplicate short option with argument !", startPos, cursor.position);
                         }
                     }
                     options.putAll(option);
@@ -232,7 +233,7 @@ public class CommandProcessor {
                     // Prefix mode
                     prevWasPrefix = true;
 
-                } else throw new CommandProcessingException("Not the option prefix !", cursor.position);
+                } else throw new CommandProcessingException("Not the option prefix !", cursor.position, cursor.position);
             }
         }
 
@@ -261,19 +262,21 @@ public class CommandProcessor {
 
         char n;
 
+        final int startPos = cursor.position - 1;
+
         // Read the name of the long option (so until a space)
         while (cursor.hasNext() && (n = cursor.nextToken()) != WORD_SEPARATOR) {
             if (n == PREFIX_OPTION
                     || (n == ESCAPE_CHAR && (flags & FLAG_IGNORE_ESCAPE_CHARACTER) == 0)
                     || n == SINGLE_QUOTE
                     || n == DOUBLE_QUOTE)
-                throw new CommandProcessingException("Illegal character in long option name !", cursor.position);
+                throw new CommandProcessingException("Illegal character in long option name !", startPos, cursor.position - 1);
             buffer.append(n);
         }
 
         // Nothing (or a word separator) was found after the cursor
         if (buffer.length() == 0)
-            throw new CommandProcessingException("Anonymous long option !", cursor.position);
+            throw new CommandProcessingException("Anonymous long option !", startPos, cursor.position - 1);
 
         name = buffer.toString();
 
@@ -319,7 +322,7 @@ public class CommandProcessor {
                     || n == SINGLE_QUOTE
                     || n == DOUBLE_QUOTE) {
                 // Filter illegal characters
-                throw new CommandProcessingException("Illegal character in short option !", cursor.position);
+                throw new CommandProcessingException("Illegal character in short option !", cursor.position, cursor.position);
             }
 
             lastOption = n;
@@ -328,7 +331,7 @@ public class CommandProcessor {
 
         // No options were found (or very strange)
         if (lastOption == 0)
-            throw new CommandProcessingException("Empty short options !", cursor.position);
+            throw new CommandProcessingException("Empty short options !", cursor.position - 1, cursor.position);
 
         // Check if argument after
         if (cursor.hasNext()) {
