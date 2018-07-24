@@ -9,8 +9,6 @@ import com.jesus_crie.modularbot_command.processing.Options;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.ListenerAdapter;
 import net.dv8tion.jda.core.utils.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,8 @@ public class DiscordCommandListener extends ListenerAdapter {
         if (!event.getMessage().getContentRaw().startsWith(prefix))
             return;
 
+        module.triggerListeners(l -> l.onCommandReceived(event));
+
         final String[] parts = event.getMessage().getContentRaw().split(" ", 2);
         final String name = parts[0].substring(prefix.length());
         final Command command = module.getCommand(name);
@@ -43,6 +43,8 @@ public class DiscordCommandListener extends ListenerAdapter {
         }
 
         final CommandEvent cmdEvent = new CommandEvent(event, module, command);
+
+        module.triggerListeners(l -> l.onCommandFound(cmdEvent));
 
         if (!command.getAccessLevel().check(cmdEvent)) {
             // Too low access level
@@ -64,6 +66,7 @@ public class DiscordCommandListener extends ListenerAdapter {
             if (!command.execute(module, cmdEvent, options, processedContent.getLeft()))
                 // No pattern match
                 module.triggerListeners(l -> l.onCommandFailedNoPatternMatch(cmdEvent, options, processedContent.getLeft()));
+            else module.triggerListeners(l -> l.onCommandSuccess(cmdEvent));
 
         } catch (CommandProcessingException e) {
             // Fail processing
