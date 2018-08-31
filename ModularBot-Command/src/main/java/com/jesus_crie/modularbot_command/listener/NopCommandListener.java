@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot_command.listener;
 
 import com.jesus_crie.modularbot_command.CommandEvent;
+import com.jesus_crie.modularbot_command.exception.CommandExecutionException;
 import com.jesus_crie.modularbot_command.exception.CommandProcessingException;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 import com.jesus_crie.modularbot_command.processing.Options;
@@ -52,6 +53,11 @@ public class NopCommandListener implements CommandListener {
 
     @Override
     public void onCommandFailedNoPatternMatch(@Nonnull final CommandEvent event, @Nonnull final Options options, @Nonnull final List<String> arguments) {
+        /* no-op */
+    }
+
+    @Override
+    public void onCommandExecutionFailed(@Nonnull CommandEvent event, @Nonnull Options options, @Nonnull List<String> arguments, @Nonnull CommandExecutionException error) {
         /* no-op */
     }
 

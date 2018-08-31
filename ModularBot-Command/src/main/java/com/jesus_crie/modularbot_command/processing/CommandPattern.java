@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_command.processing;
 import com.jesus_crie.modularbot.utils.TriConsumer;
 import com.jesus_crie.modularbot_command.CommandEvent;
 import com.jesus_crie.modularbot_command.CommandModule;
+import com.jesus_crie.modularbot_command.exception.CommandExecutionException;
 import com.jesus_crie.modularbot_command.exception.CommandMappingException;
 
 import javax.annotation.Nonnull;
@@ -57,7 +58,8 @@ public class CommandPattern {
         return args;
     }
 
-    public void execute(@Nonnull CommandEvent event, @Nonnull Options options, @Nonnull List<Object> arguments) {
+    public void execute(@Nonnull CommandEvent event, @Nonnull Options options, @Nonnull List<Object> arguments)
+            throws CommandExecutionException {
         action.accept(event, arguments, options);
     }
 
