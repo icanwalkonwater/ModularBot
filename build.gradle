@@ -16,6 +16,7 @@ allprojects {
     apply plugin: 'java'
     apply plugin: 'java-library'
     apply plugin: 'maven'
+    apply plugin: 'maven-publish'
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
@@ -57,14 +58,6 @@ allprojects {
         classifier = 'sources'
         from sourceSets.main.allSource
     }
-
-    artifacts {
-        archives javadocJar, sourcesJar
-    }
-
-    signing {
-        sign configurations.archives
-    }
 }
 
 project(':modularbot-core') {
@@ -75,7 +68,7 @@ project(':modularbot-core') {
         from './ModularBot-Core/src/main/java'
         into './ModularBot-Core/build/filteredSrc'
         filter(ReplaceTokens, tokens: [
-                versionName: version,
+                versionName : version,
                 versionBuild: getBuildNumber()
         ])
     }
@@ -125,50 +118,63 @@ uploadArchives.doFirst {
 }
 
 subprojects {
-    uploadArchives {
-        repositories {
-            mavenDeployer {
-                beforeDeployment {
-                    MavenDeployment deployment -> signing.signPom(deployment)
-                }
+    artifacts {
+        archives javadocJar
+        archives sourcesJar
+    }
 
-                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2/') {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+                artifact sourcesJar
+                artifact javadocJar
 
-                snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
-                    authentication(userName: ossrhUsername, password: ossrhPassword)
-                }
-
-                pom.project {
-                    name project.ext.name
-                    description project.description
-                    packaging 'jar'
+                pom {
+                    name = project.ext.name
+                    description = project.description
                     url = 'https://github.com/JesusCrie/ModularBot_v2'
-
-                    scm {
-                        connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
-                        developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
-                        url = 'https://github.com/JesusCrie/ModularBot_v2'
-                    }
-
-                    licenses {
-                        license {
-                            name = 'GNU General Public License v3.0'
-                            url = 'https://github.com/JesusCrie/ModularBot_v2/blob/master/LICENSE'
-                        }
-                    }
 
                     developers {
                         developer {
                             id = 'com.jesus_crie'
                             name = 'Lucas Malandrino'
                             email = 'lucas.malandrino@gmail.com'
+                            url = 'https://github.com/JesusCrie'
                         }
                     }
 
+                    licenses {
+                        license {
+                            name = 'GNU General Public License v3.0'
+                            url = 'https://opensource.org/licenses/GPL-3.0'
+                        }
+                    }
+
+                    scm {
+                        connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
+                        developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
+                        url = 'https://github.com/JesusCrie/ModularBot_v2'
+                    }
                 }
             }
         }
+
+        repositories {
+            maven {
+                credentials {
+                    username = ossrhUsername
+                    password = ossrhPassword
+                }
+
+                def releaseRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+                def snapshotRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+                url = version.endsWith('SNAPSHOT') ? snapshotRepoUrl : releaseRepoUrl
+            }
+        }
+    }
+
+    signing {
+        sign publishing.publications.mavenJava
     }
 }

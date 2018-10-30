@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_command.listener;
 import com.jesus_crie.modularbot_command.Command;
 import com.jesus_crie.modularbot_command.CommandEvent;
 import com.jesus_crie.modularbot_command.CommandModule;
+import com.jesus_crie.modularbot_command.exception.CommandExecutionException;
 import com.jesus_crie.modularbot_command.exception.CommandProcessingException;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 import com.jesus_crie.modularbot_command.processing.Options;
@@ -63,10 +64,16 @@ public class DiscordCommandListener extends ListenerAdapter {
             module.triggerListeners(l -> l.onCommandSuccessfullyProcessed(cmdEvent, processedContent));
 
             final Options options = new Options(module, command, processedContent.getRight());
-            if (!command.execute(module, cmdEvent, options, processedContent.getLeft()))
-                // No pattern match
-                module.triggerListeners(l -> l.onCommandFailedNoPatternMatch(cmdEvent, options, processedContent.getLeft()));
-            else module.triggerListeners(l -> l.onCommandSuccess(cmdEvent));
+
+            try {
+                if (!command.execute(module, cmdEvent, options, processedContent.getLeft()))
+                    // No pattern match
+                    module.triggerListeners(l -> l.onCommandFailedNoPatternMatch(cmdEvent, options, processedContent.getLeft()));
+                else module.triggerListeners(l -> l.onCommandSuccess(cmdEvent));
+            } catch (CommandExecutionException e) {
+                // Command failed
+                module.triggerListeners(l -> l.onCommandExecutionFailed(cmdEvent, options, processedContent.getLeft(), e));
+            }
 
         } catch (CommandProcessingException e) {
             // Fail processing

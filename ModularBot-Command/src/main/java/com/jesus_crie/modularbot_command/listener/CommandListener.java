@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot_command.listener;
 
 import com.jesus_crie.modularbot_command.CommandEvent;
+import com.jesus_crie.modularbot_command.exception.CommandExecutionException;
 import com.jesus_crie.modularbot_command.exception.CommandProcessingException;
 import com.jesus_crie.modularbot_command.exception.UnknownOptionException;
 import com.jesus_crie.modularbot_command.processing.Options;
@@ -84,6 +85,17 @@ public interface CommandListener {
      * @param arguments The provided arguments.
      */
     void onCommandFailedNoPatternMatch(@Nonnull final CommandEvent event, @Nonnull final Options options, @Nonnull final List<String> arguments);
+
+    /**
+     * Triggered when an error is thrown by the command during its execution.
+     *
+     * @param event     The event that has triggered the command.
+     * @param options   The options passed with the command.
+     * @param arguments The arguments passed with the command.
+     * @param error     The error that was thrown.
+     */
+    void onCommandExecutionFailed(@Nonnull final CommandEvent event, @Nonnull final Options options,
+                                  @Nonnull final List<String> arguments, @Nonnull final CommandExecutionException error);
 
     /**
      * Triggered when the command is successfully executed.

@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot_command;
 import com.jesus_crie.modularbot.utils.Utils;
 import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
+import com.jesus_crie.modularbot_command.exception.CommandExecutionException;
 import com.jesus_crie.modularbot_command.exception.CommandMappingException;
 import com.jesus_crie.modularbot_command.exception.InvalidCommandInfoException;
 import com.jesus_crie.modularbot_command.exception.InvalidCommandPatternMethodException;
@@ -286,7 +287,11 @@ public abstract class Command {
     private void invokeMethod(@Nonnull Method method, @Nullable Object... args) {
         try {
             method.invoke(this, args);
-        } catch (IllegalAccessException | InvocationTargetException ignore) {
+        } catch (IllegalAccessException e) {
+            // Should never happen
+        } catch (InvocationTargetException e) {
+            // Rethrow exception of method as runtime exception
+            throw new RuntimeException(e.getTargetException());
         }
     }
 
@@ -298,9 +303,10 @@ public abstract class Command {
      * @param options   The options passed to the command.
      * @param arguments The arguments passed.
      * @return {@code True} if a pattern as successfully matched, otherwise {@code false}.
+     * @throws CommandExecutionException If the command fail during execution.
      */
     public boolean execute(@Nonnull final CommandModule module, @Nonnull final CommandEvent event,
-                           @Nonnull final Options options, @Nonnull final List<String> arguments) {
+                           @Nonnull final Options options, @Nonnull final List<String> arguments) throws CommandExecutionException {
         for (CommandPattern pattern : patterns) {
             try {
                 // Try to map the arguments and execute the pattern
@@ -309,7 +315,7 @@ public abstract class Command {
                 return true;
 
             } catch (CommandMappingException expected) {
-                // If the arguments doesn't match the pattern
+                // If the arguments doesn't match this pattern.
             }
         }
 
