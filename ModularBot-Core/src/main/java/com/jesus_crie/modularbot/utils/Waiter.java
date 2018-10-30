@@ -3,7 +3,6 @@ package com.jesus_crie.modularbot.utils;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.entities.MessageChannel;
 import net.dv8tion.jda.core.entities.User;
-import net.dv8tion.jda.core.entities.impl.JDAImpl;
 import net.dv8tion.jda.core.events.Event;
 import net.dv8tion.jda.core.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.core.hooks.EventListener;
@@ -12,16 +11,20 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class Waiter {
 
     private static final Logger LOG = LoggerFactory.getLogger("Waiter");
+
+    private static ScheduledExecutorService pool = null;
+
+    public static void init() {
+        pool = Executors.newScheduledThreadPool(2, new ModularThreadFactory("Waiter", true));
+    }
+
 
     // Can't be instantiated.
     private Waiter() {}
@@ -112,6 +115,10 @@ public class Waiter {
     public static <T extends Event> WaiterListener<T> createListener(@Nonnull final JDA shard, @Nonnull final Class<T> eventClass,
                                                                      @Nullable final Predicate<T> checker, @Nullable final Consumer<T> onSuccess,
                                                                      @Nullable final Runnable onTimeout, final long timeout, final boolean disposable) {
+        // Init pool if not done
+        if (pool == null) {
+            init();
+        }
 
         if (eventClass.getName().equals("com.jesus_crie.modularbot_command.CommandEvent"))
             throw new IllegalArgumentException("You can't wait for CommandEvent, these events aren't triggered.");
@@ -120,7 +127,7 @@ public class Waiter {
         final ScheduledFuture timeoutFuture;
 
         if (timeout > 0) {
-            timeoutFuture = ((JDAImpl) shard).pool.schedule(() -> {
+            timeoutFuture = pool.schedule(() -> {
                 if (onTimeout != null) onTimeout.run();
                 listener.cancel(true);
             }, timeout, TimeUnit.MILLISECONDS);

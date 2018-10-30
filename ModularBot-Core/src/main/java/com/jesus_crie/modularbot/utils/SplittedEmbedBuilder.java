@@ -30,7 +30,7 @@ import java.util.function.BiFunction;
  * <p>
  * <b>The javadoc from this class is inherited from {@link EmbedBuilder EmbedBuilder} !</b>
  */
-public class SplittedEmbedBuilder {
+class SplittedEmbedBuilder {
 
     private static final Queue<BiFunction<SplittedEmbedBuilder, EmbedBuilder, EmbedBuilder>> BUILDER = new LinkedList<>();
 
