@@ -60,7 +60,11 @@ public class CommandPattern {
 
     public void execute(@Nonnull CommandEvent event, @Nonnull Options options, @Nonnull List<Object> arguments)
             throws CommandExecutionException {
-        action.accept(event, arguments, options);
+        try {
+            action.accept(event, arguments, options);
+        } catch (RuntimeException e) {
+            throw new CommandExecutionException(e.getCause());
+        }
     }
 
     private Argument getLastArgument() {

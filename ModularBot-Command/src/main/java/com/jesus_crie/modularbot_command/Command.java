@@ -287,8 +287,11 @@ public abstract class Command {
     private void invokeMethod(@Nonnull Method method, @Nullable Object... args) {
         try {
             method.invoke(this, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-
+        } catch (IllegalAccessException e) {
+            // Should never happen
+        } catch (InvocationTargetException e) {
+            // Rethrow exception of method as runtime exception
+            throw new RuntimeException(e.getTargetException());
         }
     }
 
