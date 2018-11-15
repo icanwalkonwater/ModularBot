@@ -18,3 +18,4 @@ findProject(':ModularBot-NashornCommandSupport')?.name = 'modularbot-nashorn-com
 include 'ModularBot-MessageDecorator'
 findProject(':ModularBot-MessageDecorator')?.name = 'modularbot-message-decorator'
 
+enableFeaturePreview('STABLE_PUBLISHING')
