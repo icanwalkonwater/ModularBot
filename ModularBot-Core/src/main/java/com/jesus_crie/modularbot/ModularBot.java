@@ -33,6 +33,7 @@ import java.util.function.IntFunction;
 
 public class ModularBot extends DefaultShardManager {
 
+    // Note: LOG is already define
     private static final Logger logger = LoggerFactory.getLogger("ModularBot");
 
     private final AtomicInteger receivedReady = new AtomicInteger();

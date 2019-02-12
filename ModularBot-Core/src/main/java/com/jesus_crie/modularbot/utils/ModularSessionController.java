@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 
 public class ModularSessionController extends SessionControllerAdapter {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger("Session Controller");
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger("Session Controller");
 
     @Override
     public void appendSession(SessionConnectNode node) {
-        logger.info("Queuing new node !");
+        LOG.info("Queuing new node !");
         super.appendSession(node);
     }
 }
