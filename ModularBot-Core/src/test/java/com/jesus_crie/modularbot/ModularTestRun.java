@@ -11,20 +11,22 @@ import com.jesus_crie.modularbot_command.annotations.CommandInfo;
 import com.jesus_crie.modularbot_command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot_command.processing.Option;
 import com.jesus_crie.modularbot_command.processing.Options;
+import com.jesus_crie.modularbot_logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot_message_decorator.MessageDecoratorModule;
 import com.jesus_crie.modularbot_message_decorator.decorator.AutoDestroyMessageDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.AlertReactionDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.disposable.ConfirmReactionDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.permanent.PanelReactionDecorator;
 import com.jesus_crie.modularbot_message_decorator.decorator.permanent.PollReactionDecorator;
+import com.jesus_crie.modularbot_nashorn_support.JavaScriptModule;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
-import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import com.jesus_crie.modularbot_night_config_wrapper.NightConfigWrapperModule;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.ModularLog;
 
 import javax.annotation.Nonnull;
 import javax.script.ScriptEngine;
@@ -42,18 +44,19 @@ public class ModularTestRun extends BaseModule {
     public static void main(String[] args) {
         CommandModule cmd = new CommandModule();
         NightConfigWrapperModule config = new NightConfigWrapperModule("./example/config.json");
-        NashornSupportModule js = new NashornSupportModule("./example/scripts/");
+        //NashornSupportModuleOld js = new NashornSupportModuleOld("./example/scripts/");
+        NashornSupportModule jsNew = new NashornSupportModule("./example/scripts/");
         MessageDecoratorModule decorator = new MessageDecoratorModule("./example/decorator_cache.json");
 
         final ModularBotBuilder botBuilder = new ModularBotBuilder(args[0])
                 .registerModules(
-                        cmd, config, js, decorator,
+                        cmd, config, /*js*/jsNew, decorator,
                         new ModularTestRun()
                 )
                 .autoLoadBaseModules()
                 .useShutdownNow();
 
-        //ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.DEBUG;
+        ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.INFO;
 
         /// Commands
 
@@ -62,8 +65,11 @@ public class ModularTestRun extends BaseModule {
 
         /// JS
 
-        JavaScriptModule testModule = js.getModuleByName("test");
-        LOG.info("Test module file: " + testModule.getScriptLocation().getName());
+        /*JavaScriptModule testModule = js.getModuleByName("test");
+        LOG.info("Test module file: " + testModule.getScriptLocation().getName());*/
+
+        final JavaScriptModule testModule = jsNew.getModuleByName("TestModule2").get();
+        LOG.info("Test module: " + testModule.getInfo());
 
         /// Decorator cache
         //config.useSecondaryConfig("deco", "./example/decorator.json");

@@ -4,285 +4,178 @@ import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.Lifecycle;
 import com.jesus_crie.modularbot.module.ModuleManager;
-import com.jesus_crie.modularbot_nashorn_support.module.BaseJavaScriptModule;
-import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.script.CompiledScript;
-import javax.script.ScriptException;
+import javax.script.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.InputStreamReader;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class NashornSupportModule extends BaseModule {
 
-    private static final Logger LOG = LoggerFactory.getLogger("NashornSupportModule");
-
     private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", ModularBotBuildInfo.AUTHOR,
             ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
-    private String SCRIPT_HEADER;
+    private static final String DEFAULT_FOLDER = "scripts" + File.separatorChar;
+    private static final String SCRIPT_HEADER_FILE = "_header.js";
+    private static final String SCRIPT_MAIN_FILE = "main.js";
 
-    private NashornScriptEngineFactory engineFactory = new NashornScriptEngineFactory();
-    private NashornScriptEngine globalEngine = (NashornScriptEngine) engineFactory.getScriptEngine();
+    private static final Logger LOG = LoggerFactory.getLogger("NashornSupport");
 
-    private final File scriptDirectory;
-    private Map<String, JavaScriptModule> modules = Collections.emptyMap();
+    private final NashornScriptEngine ENGINE;
+    private final File SCRIPT_FOLDER;
+    private List<JavaScriptModule> modules = new ArrayList<>();
 
     public NashornSupportModule() {
-        this("./scripts/");
+        this(new File(DEFAULT_FOLDER).getAbsoluteFile());
     }
 
-    public NashornSupportModule(@Nonnull final String path) {
-        this(new File(path));
+    public NashornSupportModule(@Nonnull final String scriptLocation) {
+        this(new File(scriptLocation));
     }
 
-    public NashornSupportModule(@Nonnull final File directory) {
+    public NashornSupportModule(@Nonnull final File scriptLocation) {
         super(INFO);
-        scriptDirectory = directory;
+        if (!scriptLocation.exists()) {
+            if (!scriptLocation.mkdirs())
+                throw new IllegalStateException("Failed to create script directory !");
+        } else if (!scriptLocation.isDirectory())
+            throw new IllegalArgumentException("Provided location isn't a directory !");
 
-        if (!directory.exists()) {
-            if (!directory.mkdirs())
-                LOG.warn("Can't create the script directory !");
-        } else if (!directory.isDirectory())
-            throw new IllegalArgumentException("The provided location isn't a directory !");
+        SCRIPT_FOLDER = scriptLocation;
+        ENGINE = (NashornScriptEngine) new ScriptEngineManager().getEngineByName("js");
+    }
 
-        // Load the header
+    @Nonnull
+    public List<JavaScriptModule> getModules() {
+        return Collections.unmodifiableList(modules);
+    }
 
-        final File header = new File(scriptDirectory + "/_script_header.js");
+    @Nonnull
+    public Optional<JavaScriptModule> getModuleByName(@Nonnull final String name) {
+        return modules.stream()
+                .filter(m -> m.getInfo().getName().equals(name))
+                .findAny();
+    }
 
-        if (header.exists()) {
-            try {
-                SCRIPT_HEADER = String.join("\n",
-                        Files.readAllLines(Paths.get(header.toURI()), StandardCharsets.UTF_8));
-                return;
-            } catch (IOException e) {
-                LOG.error("Failed to load custom script header ! Loading the default one...");
-            }
-        }
+    private void dispatchToModules(@Nonnull final Consumer<JavaScriptModule> action) {
+        modules.forEach(action);
+    }
 
-        LOG.debug("No header found, using the default one.");
+    private void loadScripts() {
+        // Search for file header and load it.
+        final File headerFile = new File(SCRIPT_FOLDER + File.separator + SCRIPT_HEADER_FILE);
+        InputStreamReader headerReader;
+
         try {
-            SCRIPT_HEADER = String.join("\n",
-                    Files.readAllLines(
-                            Paths.get(NashornSupportModule.class.getResource("/script_header.js").toURI()),
-                            StandardCharsets.UTF_8));
-
-        } catch (URISyntaxException | IOException e) { // Should not happen
-            LOG.error("Failed to load script_header.js from the JAR ! No header will be used, expect some errors !");
-            SCRIPT_HEADER = "";
+            headerReader = new FileReader(headerFile);
+        } catch (FileNotFoundException e) {
+            LOG.warn("No header found, using default header");
+            headerReader = new InputStreamReader(getClass().getResourceAsStream("/script_header.js"));
         }
-    }
 
-    /**
-     * Load the scripts from the script directory.
-     * Skip the header file.
-     * For each script, create a new engine, evaluate the header and the script.
-     * Then wrap them in a {@link JavaScriptModule JavaScriptModule} and register it.
-     * The name of the register is the name of the file without the extension.
-     *
-     * @param directory The directory that contains the entry points of the modules to load.
-     * @see #registerScript(String, JavaScriptModule)
-     */
-    private void loadScripts(@Nonnull final File directory) {
-        final File[] scripts = directory.listFiles((dir, name) -> !name.equals("_script_header.js") && name.endsWith(".js") && name.length() > 3);
-
-        if (scripts == null)
+        // Eval the header to create the bindings
+        try {
+            ENGINE.eval(headerReader);
+        } catch (ScriptException e) {
+            LOG.error("Failed to evaluate header !", e);
             return;
+        }
 
-        for (File file : scripts) {
-            if (file.isDirectory()) continue;
+        final Bindings headerBindings = ENGINE.getBindings(ScriptContext.ENGINE_SCOPE);
+        LOG.debug("Script header bindings created");
+
+        // Clear engine bindings
+        ENGINE.setBindings(ENGINE.createBindings(), ScriptContext.ENGINE_SCOPE);
+
+        // For each sub folder (considered a module)
+        for (final File moduleFolder : SCRIPT_FOLDER.listFiles(File::isDirectory)) {
+            final File moduleMain = new File(moduleFolder + File.separator + SCRIPT_MAIN_FILE);
+
+            // If main file doesn't exist
+            if (!moduleMain.exists())
+                continue;
 
             try {
-                final NashornScriptEngine engine = (NashornScriptEngine) engineFactory.getScriptEngine();
-                engine.eval(SCRIPT_HEADER);
-                engine.eval(new FileReader(file));
+                // Eval the main, with copied bindings
+                final ScriptContext moduleContext = new SimpleScriptContext();
+                moduleContext.setBindings(copyBindings(headerBindings), ScriptContext.ENGINE_SCOPE);
+                ENGINE.eval(new FileReader(moduleMain), moduleContext);
 
-                final JavaScriptModule module = new JavaScriptModule(engine, file);
-                registerScript(file.getName().substring(0, file.getName().length() - 3), module);
+                // Register it
+                final Object module = ((ScriptObjectMirror) moduleContext.getAttribute("nashorn.global")).getMember("module");
+                if (module instanceof ScriptObjectMirror) {
+                    final JavaScriptModule jsModule = new JavaScriptModule(((ScriptObjectMirror) module));
+                    modules.add(jsModule);
 
-            } catch (FileNotFoundException ignore) { // Can't happen
+                    LOG.info("Successfully loaded module " + jsModule.getInfo().getName());
+                } else {
+                    LOG.error("Failed to load module in folder '" + moduleFolder.getName() + "'");
+                }
+
             } catch (ScriptException e) {
-                LOG.error("Failed to load script: " + file, e);
-            }
+                LOG.error("An error happened while evaluating the main file: " + e.getMessage());
+            } catch (FileNotFoundException ignore) {
+            } // Won't happen we have checked that
         }
     }
 
-    /**
-     * Compile an arbitrary script that can be evaluated whenever you want.
-     * Not that all of the arbitrary scripts are loaded with the same engine so the code from the previous scripts is
-     * still here.
-     *
-     * @param script The script to execute.
-     * @return A {@link CompiledScript CompiledScript} that can be executed at any time on the global engine.
-     * @throws ScriptException If the script fail to compile.
-     */
     @Nonnull
-    public CompiledScript compileArbitraryScript(@Nonnull final String script) throws ScriptException {
-        return globalEngine.compile(script);
+    private Bindings copyBindings(@Nonnull final Bindings source) {
+        final Bindings out = new SimpleBindings();
+        out.putAll(source);
+
+        return out;
     }
 
-    /**
-     * Compile an arbitrary script that can be evaluated whenever you want.
-     * Not that the script is compiled in a dedicated engine so there is no interference possible with another script.
-     *
-     * @param script The script to compile.
-     * @return A {@link CompiledScript CompiledScript} ready.
-     * @throws ScriptException If the script fail to compile.
-     */
-    @Nonnull
-    public CompiledScript compileIsolatedScript(@Nonnull final String script) throws ScriptException {
-        return ((NashornScriptEngine) engineFactory.getScriptEngine()).compile(script);
-    }
-
-    /**
-     * Create a new {@link NashornScriptEngine NashornScriptEngine}.
-     *
-     * @return A new {@link NashornScriptEngine NashornScriptEngine}.
-     */
-    @Nonnull
-    public NashornScriptEngine newNashornEngine() {
-        return (NashornScriptEngine) engineFactory.getScriptEngine();
-    }
-
-    /**
-     * Register a {@link JavaScriptModule JavaScriptModule} by an arbitrary name.
-     * If the name is already taken, add a suffix with the index of the duplicate.
-     *
-     * @param name   The arbitrary name of the module.
-     * @param module The wrapper that holds the module.
-     * @see #getModuleByName(String)
-     */
-    public void registerScript(@Nonnull final String name, @Nonnull final JavaScriptModule module) {
-        if (modules.size() == 0)
-            modules = new HashMap<>();
-
-        modules.compute(name, (key, old) -> {
-            if (old == null) return module;
-
-            // Skip the already used suffixes.
-            int i = 1;
-            while (modules.containsKey(name + "-" + i)) {
-                i++;
-            }
-
-            modules.put(name + "-" + i, module);
-            return old;
-        });
-    }
-
-    /**
-     * Get a module by its arbitrary name. Usually the name of the file without the extension.
-     *
-     * @param name The name of the module to get.
-     * @return The module or {@code null} if no modules exist with this name.
-     * @see #registerScript(String, JavaScriptModule)
-     */
-    @Nullable
-    public JavaScriptModule getModuleByName(@Nonnull final String name) {
-        return modules.get(name);
-    }
-
-    /**
-     * Get a view of the JS modules currently registered.
-     *
-     * @return An immutable view of the JS modules currently registered.
-     */
-    @Nonnull
-    public Collection<JavaScriptModule> getModules() {
-        return modules.values();
-    }
-
-    private void dispatchToModules(Consumer<BaseJavaScriptModule> action) {
-        modules.values().forEach(module -> action.accept(module.getJsModule()));
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void onLoad(@Nonnull ModuleManager moduleManager, @Nonnull ModularBotBuilder builder) {
-        loadScripts(scriptDirectory);
-
+    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {
+        loadScripts();
         dispatchToModules(m -> m.onLoad(moduleManager, builder));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onInitialization() {
-        if (modules.size() > 0)
-            modules = Collections.unmodifiableMap(modules);
-
-        dispatchToModules(Lifecycle::onInitialization);
-
-        LOG.info(modules.size() + " JS modules initialized !");
+        dispatchToModules(JavaScriptModule::onInitialization);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onPostInitialization() {
-        dispatchToModules(Lifecycle::onPostInitialization);
+        dispatchToModules(JavaScriptModule::onPostInitialization);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onPrepareShards() {
-        dispatchToModules(Lifecycle::onPrepareShards);
+        dispatchToModules(JavaScriptModule::onPrepareShards);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onShardsCreated() {
-        dispatchToModules(Lifecycle::onShardsCreated);
+        dispatchToModules(JavaScriptModule::onShardsCreated);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
-    public void onShardsReady(@Nonnull ModularBot bot) {
+    public void onShardsReady(@Nonnull final ModularBot bot) {
         super.onShardsReady(bot);
-        dispatchToModules(m -> m.onShardsReadyDelegate(bot));
+        dispatchToModules(m -> m.onShardsReady(bot));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onShutdownShards() {
-        dispatchToModules(Lifecycle::onShutdownShards);
+        dispatchToModules(JavaScriptModule::onShutdownShards);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @Override
     public void onUnload() {
-        dispatchToModules(Lifecycle::onUnload);
+        dispatchToModules(JavaScriptModule::onUnload);
     }
+
 }

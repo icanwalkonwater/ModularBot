@@ -5,8 +5,8 @@ import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
 import com.jesus_crie.modularbot_command.CommandModule;
+import com.jesus_crie.modularbot_nashorn_support.JavaScriptModule;
 import com.jesus_crie.modularbot_nashorn_support.NashornSupportModule;
-import com.jesus_crie.modularbot_nashorn_support.module.JavaScriptModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +32,7 @@ public class NashornCommandSupportModule extends BaseModule {
 
         for (JavaScriptModule module : nashornModule.getModules()) {
             try {
-                final JavaScriptCommand[] commands = (JavaScriptCommand[]) module.getEngine().invokeFunction("getCommands");
+                final JavaScriptCommand[] commands = (JavaScriptCommand[]) module.getUnderlyingModule().callMember("getCommands");
 
                 if (commands == null)
                     continue;
@@ -42,10 +42,8 @@ public class NashornCommandSupportModule extends BaseModule {
                     commandModule.registerCommands(wrapper);
                 }
 
-            } catch (ScriptException | ClassCastException e) {
-                LOG.error("Failed to load commands from JS module: " + module.getJsModule().getInfo().getName(), e);
-            } catch (NoSuchMethodException ignore) {
-                // The module have no command to register.
+            } catch (ClassCastException e) {
+                LOG.error("Failed to load commands from JS module: " + module.getInfo().getName(), e);
             }
         }
     }

@@ -92,7 +92,7 @@ public abstract class BaseModule implements Lifecycle {
 
         @Override
         public String toString() {
-            return "Module[" + name + "#" + versionName + "]";
+            return String.format("Module[%s v%s]", name, versionName);
         }
 
         @Override
