@@ -70,6 +70,7 @@ public class NashornSupportModule extends BaseModule {
         modules.forEach(action);
     }
 
+    @SuppressWarnings("ConstantConditions")
     private void loadScripts() {
         // Search for file header and load it.
         final File headerFile = new File(SCRIPT_FOLDER + File.separator + SCRIPT_HEADER_FILE);

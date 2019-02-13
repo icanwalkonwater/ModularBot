@@ -17,7 +17,7 @@ import javax.annotation.Nullable;
 public class AlertReactionDecorator extends SafeAutoDestroyDisposableReactionDecorator implements Cacheable {
 
     /**
-     * The default emote. Correspond to the unicde character "❌".
+     * The default emote. Correspond to the unicode character "❌".
      */
     public static final MessageReaction.ReactionEmote DEFAULT_REACTION = new MessageReaction.ReactionEmote("\u274C", null, null);
 

@@ -622,11 +622,11 @@ class SplittedEmbedBuilder {
     }
 
     private void urlCheck(@Nullable final String url) {
-        if (url == null)
-            return;
-        else if (url.length() > MessageEmbed.URL_MAX_LENGTH)
-            throw new IllegalArgumentException("URL cannot be longer than " + MessageEmbed.URL_MAX_LENGTH + " characters.");
-        else if (!EmbedBuilder.URL_PATTERN.matcher(url).matches())
-            throw new IllegalArgumentException("URL must be a valid http or https url.");
+        if (url != null) {
+            if (url.length() > MessageEmbed.URL_MAX_LENGTH)
+                throw new IllegalArgumentException("URL cannot be longer than " + MessageEmbed.URL_MAX_LENGTH + " characters.");
+            else if (!EmbedBuilder.URL_PATTERN.matcher(url).matches())
+                throw new IllegalArgumentException("URL must be a valid http or https url.");
+        }
     }
 }

@@ -3,7 +3,6 @@ package com.jesus_crie.modularbot_nashorn_support;
 import com.jesus_crie.modularbot.ModularBot;
 import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.Lifecycle;
 import com.jesus_crie.modularbot.module.ModuleManager;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 

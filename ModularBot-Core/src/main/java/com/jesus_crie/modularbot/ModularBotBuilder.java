@@ -277,7 +277,6 @@ public class ModularBotBuilder {
     /**
      * Automatically register the modules contained in the base module (logger and command modules).
      */
-    @SuppressWarnings("unchecked")
     public ModularBotBuilder autoLoadBaseModules() {
 
         tryLoadModule("com.jesus_crie.modularbot_logger.ConsoleLoggerModule");

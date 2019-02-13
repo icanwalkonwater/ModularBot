@@ -1,6 +1,5 @@
 # ModularBot 2
 [![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22)
-[![Javadocs global](https://img.shields.io/badge/javadoc-latest-brightgreen.svg)](http://jesus-crie.com/modularbot/latest)
 
 > This project is at its early stage of development, so any bug reports are
 welcome.
@@ -103,7 +102,7 @@ Here is a diagram of the dependencies between each modules.
 > *Artifact: `com.jesus-crie:modularbot-base`.*
 
 There is no additional code in this module other than the code provided by
-the modules [Core](# core*), [Logger](#console-logger*) and [Command](#command*).
+the modules [Core](#core*), [Logger](#console-logger*) and [Command](#command*).
 
 This is basically a shortcut to import these 3 modules in one line.
 

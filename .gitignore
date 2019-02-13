@@ -111,7 +111,6 @@ gradle-app.setting
 
 
 # End of https://www.gitignore.io/api/java,gradle,intellij
-.idea/modules.xml
-.idea/modules/
+
 example/decorator_cache.json
 example/scripts

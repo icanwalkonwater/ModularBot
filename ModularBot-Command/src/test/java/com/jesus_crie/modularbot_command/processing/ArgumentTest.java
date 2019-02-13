@@ -4,6 +4,8 @@ import com.jesus_crie.modularbot_command.CommandModule;
 import com.jesus_crie.modularbot_command.annotations.RegisterArgument;
 import org.junit.jupiter.api.Test;
 
+import java.util.regex.Matcher;
+
 import static org.hamcrest.Matchers.*;
 import static org.hamcrest.junit.MatcherAssert.assertThat;
 
@@ -30,6 +32,7 @@ class ArgumentTest {
         assertThat(Argument.STRING.getArgumentsType(), equalTo(String.class));
     }
 
+    @SuppressWarnings("unchecked")
     public static class TestArguments {
 
         @RegisterArgument
