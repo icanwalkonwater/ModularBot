@@ -1,5 +1,5 @@
 dependencies {
-    api 'net.dv8tion:JDA:3.8.3_460'
+    implementation 'net.dv8tion:JDA:3.8.3_460'
 
     testImplementation project(':modularbot-logger')
     testImplementation project(':modularbot-command')
