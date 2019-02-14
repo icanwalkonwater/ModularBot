@@ -305,22 +305,13 @@ function TestModule() {
 var module = new TestModule();
 ```
 
-Note that the only requirement is a method called `getModule()` without
-arguments that returns a `BaseJsModule` which is a `BaseModule` that allows
-an empty constructor and doesn't require a call to the super in
-`#onShardsReady()`.
-
 See [this section](#your-custom-module) for more information about the
 custom modules.
 
 For each script, a header is added that imports some essential classes.
 You can found this header [here](./ModularBot-NashornSupport/src/main/resources/script_header.js).
-It can be overridden if there is a file called `_script_header.js` in the
+It can be overridden if there is a file called `_header.js` in the
 scripts folder.
-
-You can use multiple files for your module if you put them in a subfolder
-of `./scripts/` or somewhere else but you need to keep your main file that
-contains the `#getModule()` function in the `./scripts/` folder.
 
 #### JS Nashorn Command Support
 [![Javadocs nashorn command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-command-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-command-support)
