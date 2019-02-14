@@ -282,30 +282,27 @@ and I hardly recommend to read its documentation.
 [![Javadocs nashorn](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-support)
 > *Artifact: `com.jesus-crie:modularbot-nashorn-support`*
 
+> As described in the [JEP 335](http://openjdk.java.net/jeps/335), the Nashorn JavaScript engine has been deprecated in Java 11.
+> **Therefore this module is considered deprecated**.
+
 This module allows you to load modules in JavaScript using the Nashorn
-Script Engine. By default it will look for any `.js` file in the folder
-`./scripts/` and try to load them.
+Script Engine. It will consider each subdirectory in `./scripts/` (or the
+specified base folder) as a module and will try to load the `main.js` of
+each one (if it exists) and will wrap any object in the `module` top-level
+variable into a module and send lifecycle events to it.
 
 A module in JavaScript looks like this:
 ```javascript
-with (baseImports) {
-    var LOG = LoggerFactory.getLogger("JS TestModule");
-
-    var TestModule = Java.extend(BaseJavaScriptModule, {
-        info: new ModuleInfo("TestModule", "Author", "URL", "1.0", 1),
-
-        onLoad: function(moduleManager, builder) {
-            LOG.info("Module loaded !");
-        },
-        onUnload: function () {
-            LOG.info("Module unloaded !");
-        }
-    });
+function TestModule() {
+    this.log = LoggerFactory.getLogger("TestModule");
+    this.info = new ModuleInfo("TestModule", "Author", "http://example.com", "1.0", 1);
+    
+    this.onInitialization = function() {
+        this.log.info("Module initialized");
+    }
 }
 
-function getModule() {
-    return new TestModule();
-}
+var module = new TestModule();
 ```
 
 Note that the only requirement is a method called `getModule()` without

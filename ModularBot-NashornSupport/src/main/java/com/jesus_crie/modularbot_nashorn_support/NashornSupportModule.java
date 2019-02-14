@@ -19,6 +19,7 @@ import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Consumer;
 
+@Deprecated
 public class NashornSupportModule extends BaseModule {
 
     private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", ModularBotBuildInfo.AUTHOR,

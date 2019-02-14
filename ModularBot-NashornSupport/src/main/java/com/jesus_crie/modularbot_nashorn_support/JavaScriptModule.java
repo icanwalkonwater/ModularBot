@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 /**
  * Wrap a JavaScript module to delegate the calls to the underlying JS code.
  */
+@Deprecated
 public class JavaScriptModule extends BaseModule {
 
     private final ScriptObjectMirror jsModule;
