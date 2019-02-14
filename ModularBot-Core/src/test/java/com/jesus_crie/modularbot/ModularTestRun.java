@@ -65,11 +65,9 @@ public class ModularTestRun extends BaseModule {
 
         /// JS
 
-        /*JavaScriptModule testModule = js.getModuleByName("test");
-        LOG.info("Test module file: " + testModule.getScriptLocation().getName());*/
-
-        final JavaScriptModule testModule = jsNew.getModuleByName("TestModule2").get();
-        LOG.info("Test module: " + testModule.getInfo());
+        jsNew.getModuleByName("TestModule2").ifPresent(testModule ->
+                LOG.info("Test module: " + testModule.getInfo())
+        );
 
         /// Decorator cache
         //config.useSecondaryConfig("deco", "./example/decorator.json");
