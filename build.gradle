@@ -171,7 +171,6 @@ subprojects {
     }
 
     signing {
-        sign configurations.archives
-        //sign publishing.publications.mavenJava
+        sign publishing.publications.mavenJava
     }
 }
