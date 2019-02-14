@@ -21,9 +21,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A permanent decorator that needs to be extended because it might contains pretty complex methods.
@@ -58,7 +57,7 @@ public abstract class PanelReactionDecorator extends PermanentReactionDecorator 
 
     private static final Logger LOG = LoggerFactory.getLogger("PanelReactionDecorator");
 
-    private Map<Integer, Pair<MessageReaction.ReactionEmote, Method>> panelActions = new HashMap<>();
+    private final List<Pair<MessageReaction.ReactionEmote, Method>> panelActions = new LinkedList<>();
 
     protected PanelReactionDecorator(@Nonnull final Message binding, final long timeout) {
         super(binding, timeout);
@@ -102,23 +101,21 @@ public abstract class PanelReactionDecorator extends PermanentReactionDecorator 
 
     @Override
     public void setup() {
-        panelActions.entrySet().stream()
-                .sorted(Comparator.comparing(Map.Entry::getKey))
-                .forEachOrdered(entry ->
-                        buttons.add(DecoratorButton.fromReactionEmote(entry.getValue().getLeft(),
-                                event -> {
-                                    try {
-                                        final Method method = entry.getValue().getRight();
-                                        if (!method.isAccessible()) method.setAccessible(true);
+        panelActions.forEach(entry ->
+                buttons.add(DecoratorButton.fromReactionEmote(entry.getLeft(),
+                        event -> {
+                            try {
+                                final Method method = entry.getRight();
+                                if (!method.isAccessible()) method.setAccessible(true);
 
-                                        method.invoke(this, event);
-                                    } catch (IllegalAccessException | InvocationTargetException error) {
-                                        // Should happen only if the underlying method throw an exception.
-                                        LOG.error("An error occurred while executing a panel method !", error);
-                                    }
-                                })
-                        )
-                );
+                                method.invoke(this, event);
+                            } catch (IllegalAccessException | InvocationTargetException error) {
+                                // Should happen only if the underlying method throw an exception.
+                                LOG.error("An error occurred while executing a panel method !", error);
+                            }
+                        })
+                ));
+
 
         super.setup();
     }
@@ -145,15 +142,7 @@ public abstract class PanelReactionDecorator extends PermanentReactionDecorator 
      * @param method   The action.
      */
     protected void registerPanelMethod(final int position, @Nonnull final MessageReaction.ReactionEmote emote, @Nonnull final Method method) {
-        panelActions.compute(position, (pos, current) -> {
-            if (current != null) {
-                while (panelActions.containsKey(pos))
-                    pos++;
-
-                panelActions.put(pos, current);
-            }
-            return Pair.of(emote, method);
-        });
+        panelActions.add(position, Pair.of(emote, method));
     }
 
     /**

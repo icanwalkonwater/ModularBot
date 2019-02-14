@@ -103,7 +103,7 @@ public class MessageDecoratorModule extends BaseModule {
         if (data == null)
             return;
 
-        LOG.info("Deserializing " + data.size() + " decorators...");
+        LOG.info("De-serializing " + data.size() + " decorators...");
 
         for (final Config serialized : data) {
             String clazzS = serialized.get(Cacheable.KEY_CLASS);

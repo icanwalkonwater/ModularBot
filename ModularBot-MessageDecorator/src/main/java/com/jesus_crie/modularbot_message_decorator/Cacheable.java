@@ -29,7 +29,7 @@ public interface Cacheable {
     String KEY_CLASS_UNDERLYING = "class_underlying";
 
     /**
-     * Used to serialize the objet into a {@link Config Config} usable by the config module.
+     * Used to serialize the object into a {@link Config Config} usable by the config module.
      *
      * @return A {@link Config Config} containing the information necessary to restore the object.
      * @throws IllegalStateException If you try to serialize an expired decorator.

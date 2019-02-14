@@ -7,6 +7,8 @@
 # User-specific stuff:
 .idea/**/workspace.xml
 .idea/**/tasks.xml
+.idea/**/encodings.xml
+.idea/**/jsLibraryMappings.xml
 .idea/dictionaries
 .idea/scopes
 
@@ -109,3 +111,6 @@ gradle-app.setting
 
 
 # End of https://www.gitignore.io/api/java,gradle,intellij
+
+example/decorator_cache.json
+example/scripts

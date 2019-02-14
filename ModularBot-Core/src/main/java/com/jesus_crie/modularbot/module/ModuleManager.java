@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -35,12 +36,13 @@ public class ModuleManager {
         for (BaseModule module : toRegister) registerModule(builder, module);
     }
 
-    public void registerModules(@Nonnull final ModularBotBuilder builder, @Nonnull final Class<? extends BaseModule>... classes) {
+    @SafeVarargs
+    public final void registerModules(@Nonnull final ModularBotBuilder builder, @Nonnull final Class<? extends BaseModule>... classes) {
         for (Class<? extends BaseModule> clazz : classes) {
             try {
-                BaseModule module = clazz.newInstance();
+                BaseModule module = clazz.getConstructor().newInstance();
                 registerModule(builder, module);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
                 LOG.warn("Autoload failed for module " + clazz.getName(), e);
             }
         }

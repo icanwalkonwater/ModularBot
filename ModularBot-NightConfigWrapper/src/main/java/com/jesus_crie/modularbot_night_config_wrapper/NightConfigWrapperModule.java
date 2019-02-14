@@ -315,7 +315,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
     /**
      * Get all of the {@link FileConfig FileConfig} that belongs to que given group, = their name begin with the
-     * group name and is followed by a "." and the reste of the config name.
+     * group name and is followed by a "." and the rest of the config name.
      *
      * @param groupName The name of the group to query.
      * @return A list containing all of the {@link FileConfig FileConfig} of the group.

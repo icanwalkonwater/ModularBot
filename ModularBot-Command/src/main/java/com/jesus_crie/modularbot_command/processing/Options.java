@@ -75,6 +75,7 @@ public class Options {
      * @see #has(Option)
      * @see #has(String)
      */
+    @SuppressWarnings("ConstantConditions")
     @Nullable
     public <T> T get(@Nonnull Option<T> option) {
         if (!has(option) || !option.hasArgument()) return null;

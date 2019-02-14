@@ -69,9 +69,9 @@ public class  AccessLevel {
     }
 
     /**
-     * The logic behind
-     * @param event
-     * @return
+     * The logic behind the access level checking.
+     * @param event The event that triggered this check.
+     * @return True if the access is granted for this event, otherwise false.
      */
     public boolean check(@Nonnull CommandEvent event) {
         // If in a guild

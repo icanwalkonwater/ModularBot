@@ -20,7 +20,7 @@ allprojects {
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version('2.3.4_' + getBuildNumber())
+    version('2.4.0_' + getBuildNumber())
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -32,7 +32,7 @@ allprojects {
 
     ext {
         name = 'ModularBot'
-        nightConfigVersion = '3.3.1' // Change in the readme too line 231.
+        nightConfigVersion = '3.4.2' // Change in the readme too line 231.
     }
 
     repositories {
@@ -50,12 +50,12 @@ allprojects {
     }
 
     task javadocJar(type: Jar) {
-        classifier = 'javadoc'
-        from javadoc
+        archiveClassifier = 'javadoc'
+        from javadoc.destinationDir
     }
 
     task sourcesJar(type: Jar) {
-        classifier = 'sources'
+        archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 }
@@ -111,10 +111,6 @@ project(':modularbot-nashorn-command-support') {
 project(':modularbot-message-decorator') {
     ext.name = 'ModularBot - Message Decorator'
     project.description = 'Module that can bind to specific messages and extends their behaviour.'
-}
-
-uploadArchives.doFirst {
-    incrementBuildNumber()
 }
 
 subprojects {
@@ -175,6 +171,7 @@ subprojects {
     }
 
     signing {
-        sign publishing.publications.mavenJava
+        sign configurations.archives
+        //sign publishing.publications.mavenJava
     }
 }
