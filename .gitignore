@@ -11,6 +11,7 @@
 .idea/**/jsLibraryMappings.xml
 .idea/dictionaries
 .idea/scopes
+.idea/inspectionProfiles
 
 # Sensitive or high-churn files:
 .idea/**/dataSources/
