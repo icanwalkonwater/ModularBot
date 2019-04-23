@@ -32,7 +32,7 @@ allprojects {
 
     ext {
         name = 'ModularBot'
-        nightConfigVersion = '3.4.2' // Change in the readme too line 231.
+        nightConfigVersion = '3.6.0' // Change in the readme too line 231.
     }
 
     repositories {

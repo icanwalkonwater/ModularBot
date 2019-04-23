@@ -99,6 +99,7 @@ public class ModularBot extends DefaultShardManager {
                final boolean enableMDC, @Nullable final IntFunction<? extends ConcurrentMap<String, String>> contextProvider,
                @Nullable final EnumSet<CacheFlag> cacheFlags, final boolean enableCompression,
                @Nonnull final ModuleManager moduleManager) {
+
         super(shardsTotal, shardIds, controller,
                 listeners, listenerProviders,
                 token, eventManagerProvider,
@@ -157,6 +158,7 @@ public class ModularBot extends DefaultShardManager {
                final boolean enableMDC, @Nullable final IntFunction<? extends ConcurrentMap<String, String>> contextProvider,
                @Nullable final EnumSet<CacheFlag> cacheFlags,
                @Nonnull final ModuleManager moduleManager) {
+
         this(shardsTotal, null, controller, new ArrayList<>(), listenerProviders, token, eventManagerProvider,
                 audioSendFactory, stateProvider == null ? null : stateProvider.getGameProvider(),
                 stateProvider == null ? null : stateProvider.getOnlineStatusProvider(),

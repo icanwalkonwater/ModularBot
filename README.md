@@ -227,7 +227,7 @@ user by registering your own `CommandListener` with `CommandModule#addListener`.
 [![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
-This module uses [NightConfig 3.3.1](https://github.com/TheElectronWill/Night-Config)
+This module uses [NightConfig 3.6.0](https://github.com/TheElectronWill/Night-Config)
 to load, parse and save config files. You will be forces to have a "primary"
 config file and you can have multiple secondary config files.
 

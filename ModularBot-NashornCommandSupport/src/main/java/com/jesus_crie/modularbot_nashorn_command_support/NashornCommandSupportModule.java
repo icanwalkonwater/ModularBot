@@ -43,6 +43,11 @@ public class NashornCommandSupportModule extends BaseModule {
 
             } catch (ClassCastException e) {
                 LOG.error("Failed to load commands from JS module: " + module.getInfo().getName(), e);
+            } catch (RuntimeException e) {
+                // If cause is NoSuchMethodException that means that the module just doesn't have any commands.
+                if (!(e.getCause() instanceof NoSuchMethodException)) {
+                    throw e;
+                }
             }
         }
     }
