@@ -2,11 +2,11 @@ package com.jesus_crie.modularbot.command;
 
 import com.jesus_crie.modularbot.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.ModularBotBuilder;
+import com.jesus_crie.modularbot.command.listener.CommandListener;
+import com.jesus_crie.modularbot.command.listener.DiscordCommandListener;
 import com.jesus_crie.modularbot.command.processing.CommandProcessor;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
-import com.jesus_crie.modularbot.command.listener.CommandListener;
-import com.jesus_crie.modularbot.command.listener.DiscordCommandListener;
 import net.dv8tion.jda.core.entities.Guild;
 
 import javax.annotation.Nonnull;

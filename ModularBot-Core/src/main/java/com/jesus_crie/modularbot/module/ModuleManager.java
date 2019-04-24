@@ -7,7 +7,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -49,25 +48,28 @@ public class ModuleManager {
     }
 
     @SuppressWarnings("unchecked")
-    @Nullable
+    @Nonnull
     public <T extends BaseModule> T getModule(@Nonnull final Class<T> moduleClass) {
-        return (T) modules.get(moduleClass);
+        final T module = (T) modules.get(moduleClass);
+        if (module == null)
+            throw new IllegalStateException("This module isn't loaded !");
+        return module;
     }
 
     /**
      * Get a module by its class name, can be useful if a module as an optional dependency and avoid raising exceptions.
      *
      * @param className The name of the module to query.
-     * @return The given module or null if not found or if it's not a module.
+     * @return The given module.
      */
     @SuppressWarnings("unchecked")
-    @Nullable
+    @Nonnull
     public BaseModule getModuleByClassName(@Nonnull final String className) {
         try {
-            Class<? extends BaseModule> clazz = (Class<? extends BaseModule>) Class.forName(className);
+            final Class<? extends BaseModule> clazz = (Class<? extends BaseModule>) Class.forName(className);
             return getModule(clazz);
         } catch (ClassNotFoundException | ClassCastException e) {
-            return null;
+            throw new IllegalStateException("This module doesn't exist or isn't loaded !");
         }
     }
 
@@ -76,7 +78,7 @@ public class ModuleManager {
      */
     public void initialize() {
         modules.forEachValue(20, m -> {
-            m.onInitialization();
+            m.onInitialization(this);
             initialized = true;
             m.onPostInitialization();
             m.state = Lifecycle.State.INITIALIZED;

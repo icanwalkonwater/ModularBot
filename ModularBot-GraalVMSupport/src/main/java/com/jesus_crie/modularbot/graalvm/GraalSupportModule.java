@@ -15,7 +15,8 @@ public class GraalSupportModule extends BaseModule {
     private static final Logger LOG = LoggerFactory.getLogger("GraalVMSupport");
 
     private static final ModuleInfo INFO = new ModuleInfo("GraalVM Support", ModularBotBuildInfo.AUTHOR,
-            ModularBotBuildInfo.GITHUB_URL + ", https://www.graalvm.org", ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
+            ModularBotBuildInfo.GITHUB_URL + ", https://www.graalvm.org",
+            ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
     public static Context GLOBAL_CONTEXT = Context.newBuilder().allowAllAccess(true).build();
 

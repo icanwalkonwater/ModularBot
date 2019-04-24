@@ -19,11 +19,12 @@ public interface Lifecycle {
     /**
      * Called when the instance of {@link ModularBot ModularBot} is almost created and the {@link ModuleManager ModuleManager}
      * is still considered as not initialized (you can still register new modules).
+     * @param moduleManager - The current {@link ModuleManager}.
      */
-    default void onInitialization() {}
+    default void onInitialization(@Nonnull final ModuleManager moduleManager) {}
 
     /**
-     * Right after {@link #onInitialization()}, when the {@link ModuleManager ModuleManager} is initialized and no other
+     * Right after {@link #onInitialization(ModuleManager)}, when the {@link ModuleManager ModuleManager} is initialized and no other
      * modules can be registered.
      */
     default void onPostInitialization() {}

@@ -37,7 +37,7 @@ public class JavaScriptModule extends BaseModule {
     }
 
     @Override
-    public void onInitialization() {
+    public void onInitialization(@Nonnull final ModuleManager moduleManager) {
         if (jsModule.hasMember("onInitialization")) {
             jsModule.callMember("onInitialization");
         }

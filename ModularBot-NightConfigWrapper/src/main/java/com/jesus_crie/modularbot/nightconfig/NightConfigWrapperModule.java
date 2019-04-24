@@ -1,381 +1,302 @@
 package com.jesus_crie.modularbot.nightconfig;
 
-import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
+import com.electronwill.nightconfig.core.io.ParsingMode;
+import com.electronwill.nightconfig.json.JsonFormat;
 import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
 import com.jesus_crie.modularbot.module.BaseModule;
 import com.jesus_crie.modularbot.module.ModuleManager;
-import com.jesus_crie.modularbot.nightconfig.exception.DirectoryAccessDeniedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.RegEx;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class NightConfigWrapperModule extends BaseModule {
 
-    private static final Logger LOG = LoggerFactory.getLogger("NightConfigWrapper");
+    private static final Logger LOG = LoggerFactory.getLogger("NightConfig Wrapper");
 
-    private static final ModuleInfo INFO = new ModuleInfo("Message Decorator", ModularBotBuildInfo.AUTHOR + ", TheElectronWill",
-            ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
+    private static final ModuleInfo INFO = new ModuleInfo("NightCondif Wrapper",
+            ModularBotBuildInfo.AUTHOR + ", TheElectronWill",
+            ModularBotBuildInfo.GITHUB_URL + ", https://github.com/TheElectronWill/Night-Config",
+            ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
-    private ModuleManager moduleManager;
+    private static final String DEFAULT_SECONDARY_GROUP = "__default";
 
-    private final FileConfigBuilder primaryConfigBuilder;
     private FileConfig primaryConfig;
-    private Map<String, FileConfig> secondaryConfigs = Collections.emptyMap();
+    private Map<String, Set<FileConfig>> configGroups = Collections.emptyMap();
 
     public NightConfigWrapperModule() {
-        super(INFO);
-        primaryConfigBuilder = (FileConfigBuilder) FileConfig.builder("./config.json")
+        this("./config.json");
+    }
+
+    public NightConfigWrapperModule(@Nonnull final String path) {
+        this((FileConfigBuilder) FileConfig.builder(path, JsonFormat.minimalInstance())
                 .defaultResource("/default_config.json")
-                .autoreload()
-                .concurrent();
-    }
-
-    public NightConfigWrapperModule(@Nonnull final String primaryConfigPath) {
-        super(INFO);
-        primaryConfigBuilder = FileConfig.builder(primaryConfigPath);
-    }
-
-    @Override
-    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull ModularBotBuilder builder) {
-        this.moduleManager = moduleManager;
-    }
-
-    @SuppressWarnings({"unchecked", "JavaReflectionInvocation"})
-    @Override
-    public void onInitialization() {
-        primaryConfig = primaryConfigBuilder.build();
-        primaryConfig.load();
-        secondaryConfigs.values().forEach(FileConfig::load);
-
-        final BaseModule commandModule = moduleManager.getModuleByClassName("com.jesus_crie.modularbot_command.CommandModule");
-        if (commandModule == null)
-            return;
-
-        // Command module is present, use the information of the primary config for it.
-
-        try {
-            final Class<? extends BaseModule> commandModuleClass =
-                    (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_command.CommandModule");
-
-            // Set the creator id from the config.
-            Optional<Long> creator = primaryConfig.getOptional("creator_id");
-            if (creator.isPresent()) {
-                final Method setCreatorId = commandModuleClass.getDeclaredMethod("setCreatorId", long.class);
-
-                LOG.debug("Setting creator id: " + creator.get());
-                setCreatorId.invoke(commandModule, creator.get());
-            }
-
-            // Set the default prefix
-            Optional<String> prefix = primaryConfig.getOptional("prefix");
-            if (prefix.isPresent()) {
-                final Field prefixField = commandModuleClass.getDeclaredField("defaultPrefix");
-                prefixField.setAccessible(true);
-
-                LOG.debug("Setting default prefix: " + prefix.get());
-                prefixField.set(commandModule, prefix.get());
-            }
-
-            // Set the custom prefixes from the config.
-
-            Optional<List<Config>> customPrefix = primaryConfig.getOptional("guild_prefix");
-            if (customPrefix.isPresent()) {
-                final Method addCustomPrefix = commandModuleClass.getMethod("addCustomPrefixForGuild", long.class, String.class);
-                for (Config config : customPrefix.get()) {
-                    LOG.debug("Adding prefix: " + config.get("prefix") + " for guild " + config.get("guild_id"));
-                    addCustomPrefix.invoke(commandModule, config.get("guild_id"), config.get("prefix"));
-                }
-            }
-
-        } catch (ReflectiveOperationException ignore) {
-            ignore.printStackTrace();
-        } // Should not occur.
-    }
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onUnload() {
-        if (primaryConfig.getOptional("guild_prefix").isPresent()) {
-            final BaseModule commandModule = moduleManager.getModuleByClassName("com.jesus_crie.modularbot_command.CommandModule");
-            if (commandModule == null)
-                return;
-
-            try {
-                final Class<? extends BaseModule> commandModuleClass =
-                        (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot_command.CommandModule");
-                final Method getCustomPrefixes = commandModuleClass.getMethod("getCustomPrefixes");
-
-                final Map<Long, String> prefixes = (Map<Long, String>) getCustomPrefixes.invoke(commandModule);
-                final List<Config> configs = prefixes.entrySet().stream()
-                        .map(entry -> {
-                            Config pair = Config.inMemory();
-                            pair.set("guild_id", entry.getKey());
-                            pair.set("prefix", entry.getValue());
-
-                            return pair;
-                        }).collect(Collectors.toList());
-
-                primaryConfig.set("guild_prefix", configs);
-
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignore) {
-            } // Will not occur because i'm too good for that =)
-        }
-
-        primaryConfig.save();
-        primaryConfig.close();
-        secondaryConfigs.values().forEach(config -> {
-            config.save();
-            config.close();
-        });
-    }
-
-    /**
-     * Return the {@link FileConfigBuilder FileConfigBuilder} that will be used to create the config file during
-     * the initialization.
-     *
-     * @return The {@link FileConfigBuilder FileConfigBuilder}.
-     */
-    @Nonnull
-    public FileConfigBuilder customizePrimaryConfig() {
-        return primaryConfigBuilder;
-    }
-
-    /**
-     * Register a new secondary config located at the given path.
-     * <p>
-     * Overload of {@link #useSecondaryConfig(String, File)}.
-     *
-     * @param path The path of the file, existing ot not.
-     * @throws UnsupportedOperationException Thrown if the config has already been initialized.
-     * @see #useSecondaryConfig(String, File)
-     * @see #useSecondaryConfig(String, FileConfig)
-     */
-    public void useSecondaryConfig(@Nonnull final String path) {
-        useSecondaryConfig(null, path);
-    }
-
-    /**
-     * Register a new secondary config located at the given path.
-     * <p>
-     * Overload of {@link #useSecondaryConfig(String, File)}.
-     *
-     * @param configName The name of the config that will be used to query it.
-     * @param path       The path of the file, existing ot not.
-     * @throws UnsupportedOperationException Thrown if the config has already been initialized.
-     * @see #useSecondaryConfig(String, File)
-     * @see #useSecondaryConfig(String, FileConfig)
-     */
-    public void useSecondaryConfig(@Nullable final String configName, @Nonnull final String path) {
-        useSecondaryConfig(configName, new File(path));
-    }
-
-    /**
-     * Register a secondary config located at the given path.
-     * You can override this if you want to change the default {@link FileConfigBuilder FileConfigBuilder} used for the
-     * secondary configs.
-     * <p>
-     * Overload of {@link #useSecondaryConfig(String, FileConfig)} with a default builder.
-     *
-     * @param configName The name of the config that will be used to query it back.
-     * @param path       The path of the file, existing or not.
-     * @throws UnsupportedOperationException Thrown if the config has already been initialized.
-     * @see #useSecondaryConfig(String, FileConfig)
-     * @see #useSecondaryConfig(String, File)
-     */
-    public void useSecondaryConfig(@Nullable final String configName, @Nonnull final File path) {
-        useSecondaryConfig(configName == null ? path.getName() : configName,
-                FileConfig.builder(path)
-                        .autoreload()
-                        .concurrent()
-                        .build()
+                .charset(Charset.forName("UTF-8"))
+                .parsingMode(ParsingMode.REPLACE)
+                .concurrent()
         );
     }
 
+    public NightConfigWrapperModule(@Nonnull final FileConfigBuilder builder) {
+        super(INFO);
+        primaryConfig = builder.build();
+    }
+
+    @Override
+    public void onInitialization(@Nonnull final ModuleManager moduleManager) {
+        loadEveryConfigs();
+        loadCommandModuleSettings(moduleManager);
+    }
+
+    @Override
+    public void onShutdownShards() {
+        saveEveryConfigs();
+    }
+
+    @Override
+    public void onUnload() {
+        closeEveryConfigs();
+    }
+
     /**
-     * Directly register the given config with the given name.
-     * It will override other config files with this name after closing them.
+     * Overload of {@link #registerSecondaryConfig(String, String)} with a default group name.
      *
-     * @param configName The name of the config that will be registered.
-     * @param config     The config file to register.
-     * @throws UnsupportedOperationException Thrown if the config has already been initialized.
-     * @see #getSecondaryConfig(String)
+     * @param path - The name of the config to register.
      */
-    public void useSecondaryConfig(@Nonnull final String configName, @Nonnull final FileConfig config) {
-        // Replace the default empty map
-        // This is like this to avoid a useless ConcurrentMap
-        if (secondaryConfigs.size() == 0)
-            secondaryConfigs = new ConcurrentHashMap<>();
-
-        secondaryConfigs.compute(configName, (key, old) -> {
-            if (old != null) old.close();
-            return config;
-        });
+    public void registerSecondaryConfig(@Nonnull final String path) {
+        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, path);
     }
 
     /**
-     * Query an already registered secondary config file.
+     * Overload of {@link #registerSecondaryConfig(String, File)} with a default group name.
      *
-     * @param configName The name of the config when it was registered.
-     * @return The queried config file or {@code null}.
-     * @see #useSecondaryConfig(String, FileConfig)
+     * @param file - The config to register.
      */
-    @Nullable
-    public FileConfig getSecondaryConfig(@Nonnull final String configName) {
-        return secondaryConfigs.get(configName);
+    public void registerSecondaryConfig(@Nonnull final File file) {
+        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, file);
     }
 
     /**
-     * @see #loadConfigGroup(String, File, boolean, String)
-     * @see #loadConfigGroup(String, String, boolean)
-     */
-    public void loadConfigGroup(@Nullable final String groupName, @Nonnull final String directory) {
-        loadConfigGroup(groupName, directory, false);
-    }
-
-    /**
-     * @see #loadConfigGroup(String, File, boolean, String)
-     * @see #loadConfigGroup(String, String)
-     */
-    public void loadConfigGroup(@Nullable final String groupName, @Nonnull final String directory, boolean recursive) {
-        loadConfigGroup(groupName, new File(directory), recursive, "");
-    }
-
-    /**
-     * Load a group of config files from a directory and eventually subdirectories.
-     * If {@code recursive} is {@code true}, the method will be recursively applied to all subdirectories.
-     * You can also provide a pattern that the <b>file names</b> need to satisfy (and not the directories) to be
-     * registered.
-     * <p>
-     * The method {@link #useSecondaryConfig(String, File)} is used to register the sub-configs and their name will be
-     * the group name plus the name of the subdirectory plus the name of the file with it's extension.
-     * <p>
-     * The method {@link #getConfigGroup(String)} can be used to retrieve them.
+     * Overload of {@link #registerSecondaryConfig(String, FileConfig)} with a default group name.
      *
-     * @param groupName      The name of the group. If null, will be the name of the directory.
-     * @param directory      The directory.
-     * @param recursive      If the subdirectories need to be loaded recursively.
-     * @param includePattern A pattern to specify files to include.
-     * @throws IllegalArgumentException       If the provided directory isn't a folder.
-     * @throws DirectoryAccessDeniedException If we can't create the directory.
-     * @see #loadConfigGroup(String, String, boolean)
-     * @see #addSecondaryConfigToGroup(String, FileConfig)
-     * @see #getConfigGroup(String)
+     * @param config - The config to register.
      */
-    public void loadConfigGroup(@Nullable String groupName, @Nonnull final File directory, boolean recursive,
-                                @Nonnull @RegEx final String includePattern) {
-        if (!directory.isDirectory() && directory.exists())
-            throw new IllegalArgumentException("The provided path isn't a directory !");
+    public void registerSecondaryConfig(@Nonnull final FileConfig config) {
+        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, config);
+    }
 
-        if (!directory.exists() && !directory.mkdirs())
-            throw new DirectoryAccessDeniedException("Can't create the given directory, maybe some permissions are missing.");
+    /**
+     * Overload of {@link #registerSecondaryConfig(String, File)} with a plain path.
+     *
+     * @param groupName - The name of the group.
+     * @param path      - The path of the config to register.
+     */
+    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final String path) {
+        registerSecondaryConfig(groupName, new File(path));
+    }
 
-        if (groupName == null)
-            groupName = directory.getName();
+    /**
+     * Overload of {@link #registerSecondaryConfig(String, FileConfig)} with a default config builder.
+     *
+     * @param groupName - The name of the group.
+     * @param file      - The config to register.
+     */
+    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final File file) {
+        registerSecondaryConfig(groupName, FileConfig.builder(file, JsonFormat.minimalInstance())
+                .charset(Charset.forName("UTF-8"))
+                .parsingMode(ParsingMode.REPLACE)
+                .build());
+    }
 
-        final File[] content = directory.listFiles(file -> {
-            // If is file and there is a pattern for files to exclude.
-            if (file.isFile() && includePattern.length() != 0)
-                return file.getName().matches(includePattern);
+    /**
+     * Register a config in the given group config.
+     * A given config can only appear once in each group.
+     * If the group doesn't exist, it will be created.
+     *
+     * @param groupName - The name of the group, case-sensitive.
+     * @param config    - The config to register.
+     * @throws UnsupportedOperationException If the group is already a singleton.
+     */
+    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final FileConfig config) {
+        // Ensure secondary config map is a real map.
+        ensureRealSecondaryConfigMap();
 
-                // Or there is just a file.
-            else if (file.isFile())
-                return true;
+        final Set<FileConfig> group;
+        if (!configGroups.containsKey(groupName))
+            group = configGroups.put(groupName, new HashSet<>());
+        else group = configGroups.get(groupName);
 
-                // Or its a directory.
-            else return recursive;
-        });
+        group.add(config);
+    }
 
-        // If the directory is empty.
-        if (content == null)
-            return;
+    /**
+     * Overload of {@link #registerSingletonSecondaryConfig(String, File)} with a plain path.
+     * @param name - The name of the config.
+     * @param path - The path of the config to register.
+     */
+    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final String path) {
+        registerSingletonSecondaryConfig(name, new File(path));
+    }
 
-        for (File file : content) {
-            if (file.isFile())
-                useSecondaryConfig(groupName + "." + file.getName(), file);
-            else if (recursive)
-                loadConfigGroup(groupName + "." + file.getName(), file, true, includePattern);
+    /**
+     * Overload of {@link #registerSingletonSecondaryConfig(String, FileConfig)} with a default config builder.
+     * @param name - The name of the config.
+     * @param file - The config to register.
+     */
+    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final File file) {
+        registerSingletonSecondaryConfig(name, FileConfig.builder(file, JsonFormat.minimalInstance())
+                .charset(Charset.forName("UTF-8"))
+                .parsingMode(ParsingMode.REPLACE)
+                .build());
+    }
+
+    /**
+     * Register a config group with only the given config.
+     * Throw an exception if it already exists or if you try to add another value.
+     * Useful to make named configs.
+     *
+     * @param name   - The name of the config.
+     * @param config - The config to register.
+     * @throws IllegalStateException If the group already exists.
+     */
+    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final FileConfig config) {
+        // Ensure secondary config map is a real map
+        ensureRealSecondaryConfigMap();
+
+        if (configGroups.containsKey(name))
+            throw new IllegalStateException("Another config group has that name !");
+
+        configGroups.put(name, Collections.singleton(config));
+    }
+
+    /**
+     * Overload of {@link #getSecondaryConfigGroup(String)} for the default group.
+     *
+     * @return The config files from the default group or an empty set.
+     */
+    @Nonnull
+    public Set<FileConfig> getSecondaryConfigGroup() {
+        return getSecondaryConfigGroup(DEFAULT_SECONDARY_GROUP);
+    }
+
+    /**
+     * Query a whole group of config files by its name.
+     * Return an empty set if the config group doesn't exists or is empty.
+     *
+     * @param groupName - The name of the group to query.
+     * @return A set of the config files that belongs to the given group or an empty set.
+     */
+    @Nonnull
+    public Set<FileConfig> getSecondaryConfigGroup(@Nonnull final String groupName) {
+        return configGroups.getOrDefault(groupName, Collections.emptySet());
+    }
+
+    /**
+     * Overload of {@link #getSecondaryConfigFile(String)} for the default group.
+     *
+     * @return A config file that belongs to the default group.
+     * @throws IllegalArgumentException If there is nothing in the default group or if it doesn't exist.
+     */
+    @Nonnull
+    public FileConfig getSecondaryConfigFile() {
+        return getSecondaryConfigFile(DEFAULT_SECONDARY_GROUP);
+    }
+
+    /**
+     * Query a config file from a group, there are no guaranty that it will be the
+     * same every time.
+     * Useful when you use config groups to store named configs.
+     *
+     * @param groupName - The name of the group to query.
+     * @return A config file that belongs to the given group.
+     * @throws IllegalArgumentException If the given group is empty or doesn't exist.
+     */
+    @Nonnull
+    public FileConfig getSecondaryConfigFile(@Nonnull final String groupName) {
+        final Set<FileConfig> group = configGroups.get(groupName);
+
+        if (group != null && !group.isEmpty())
+            return group.iterator().next();
+
+        throw new IllegalArgumentException(String.format("The config group '%s' doesn't exist !", groupName));
+    }
+
+    /**
+     * Trigger the loading of every config file.
+     */
+    private void loadEveryConfigs() {
+        primaryConfig.load();
+        configGroups.values().forEach(set -> set.forEach(FileConfig::load));
+    }
+
+    /**
+     * Trigger the save of every config file.
+     */
+    private void saveEveryConfigs() {
+        primaryConfig.save();
+        configGroups.values().forEach(set -> set.forEach(FileConfig::close));
+    }
+
+    /**
+     * Close every config file.
+     */
+    private void closeEveryConfigs() {
+        primaryConfig.close();
+        configGroups.values().forEach(set -> set.forEach(FileConfig::close));
+    }
+
+    /**
+     * Load some default settings from the primary config into the command module.
+     *
+     * @param moduleManager - The module manager instance.
+     */
+    @SuppressWarnings("unchecked")
+    private void loadCommandModuleSettings(@Nonnull final ModuleManager moduleManager) {
+        final BaseModule module = moduleManager.getModuleByClassName("com.jesus_crie.modularbot.command.CommandModule");
+
+        LOG.info("Configuring command module...");
+        try {
+            final Class<? extends BaseModule> commandModuleClass =
+                    (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot.command.CommandModule");
+
+            primaryConfig.getOptionalLong("creator_id").ifPresent(creator -> {
+                LOG.info("[Command Module] Setting creator id: " + creator);
+                try {
+                    commandModuleClass.getMethod("setCreatorId", long.class).invoke(module, creator);
+                } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    LOG.info("[Command Module] Failed to set creator id, ignoring.");
+                }
+            });
+
+            primaryConfig.<String>getOptional("prefix").ifPresent(prefix -> {
+                LOG.info("[Command Module] Setting default command prefix: " + prefix);
+                try {
+                    final Field field = commandModuleClass.getField("defaultPrefix");
+                    field.setAccessible(true);
+                    field.set(module, prefix);
+                } catch (IllegalAccessException | NoSuchFieldException e) {
+                    LOG.info("[Command Module] Failed to set default prefix, ignoring.");
+                }
+            });
+
+        } catch (ClassNotFoundException e) {
+            LOG.info("Command module not found, ignoring.");
         }
     }
 
-    /**
-     * Get all of the {@link FileConfig FileConfig} that belongs to que given group, = their name begin with the
-     * group name and is followed by a "." and the rest of the config name.
-     *
-     * @param groupName The name of the group to query.
-     * @return A list containing all of the {@link FileConfig FileConfig} of the group.
-     */
-    public List<FileConfig> getConfigGroup(@Nonnull final String groupName) {
-        return secondaryConfigs.keySet().stream()
-                .filter(k -> k.startsWith(groupName + "."))
-                .map(k -> secondaryConfigs.get(k))
-                .collect(Collectors.toList());
-    }
-
-    /**
-     * Overload of {@link #addSecondaryConfigToGroup(String, File)}.
-     *
-     * @param groupName The group that owns this config.
-     * @param path      The path to the config file.
-     * @see #addSecondaryConfigToGroup(String, File)
-     * @see #addSecondaryConfigToGroup(String, FileConfig)
-     */
-    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final String path) {
-        addSecondaryConfigToGroup(groupName, new File(path));
-    }
-
-    /**
-     * This method is similar to {@link #addSecondaryConfigToGroup(String, FileConfig)} and delegates to the method
-     * {@link #useSecondaryConfig(String, File)} to save the file.
-     *
-     * @param groupName The name of the group that owns the config.
-     * @param path      Represent the path of the config file.
-     * @see #useSecondaryConfig(String, FileConfig)
-     */
-    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final File path) {
-        useSecondaryConfig(groupName + "." + path.getName(), path);
-    }
-
-    /**
-     * Append a new config file to an existing or not, config group.
-     * This is an alternative to {@link #loadConfigGroup(String, File, boolean, String)} when the config file isn't in
-     * the same folder or if the config is created procedurally.
-     * <p>
-     * This method delegate to {@link #useSecondaryConfig(String, FileConfig)}.
-     *
-     * @param groupName The name of the group that owns this config.
-     * @param config    The actual config.
-     * @see #loadConfigGroup(String, File, boolean, String)
-     */
-    public void addSecondaryConfigToGroup(@Nonnull final String groupName, @Nonnull final FileConfig config) {
-        useSecondaryConfig(groupName + "." + config.getFile().getName(), config);
-    }
-
-    /**
-     * Get the main {@link FileConfig FileConfig}
-     *
-     * @return The main config file.
-     * @throws IllegalStateException If the module hasn't been initialized yet.
-     */
-    @Nonnull
-    public FileConfig getPrimaryConfig() {
-        if (primaryConfig == null)
-            throw new IllegalStateException("You can't query the config before the initialization !");
-        return primaryConfig;
+    private void ensureRealSecondaryConfigMap() {
+        if (configGroups == null || configGroups.isEmpty())
+            configGroups = new ConcurrentHashMap<>();
     }
 }

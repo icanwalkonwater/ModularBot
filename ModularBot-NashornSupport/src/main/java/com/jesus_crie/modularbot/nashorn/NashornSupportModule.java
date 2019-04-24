@@ -145,8 +145,8 @@ public class NashornSupportModule extends BaseModule {
     }
 
     @Override
-    public void onInitialization() {
-        dispatchToModules(JavaScriptModule::onInitialization);
+    public void onInitialization(@Nonnull final ModuleManager moduleManager) {
+        dispatchToModules(javaScriptModule -> javaScriptModule.onInitialization(moduleManager));
     }
 
     @Override
