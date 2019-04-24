@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot.nightconfig;
 
+import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import com.electronwill.nightconfig.core.io.ParsingMode;
@@ -14,18 +15,16 @@ import javax.annotation.Nonnull;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NightConfigWrapperModule extends BaseModule {
 
-    private static final Logger LOG = LoggerFactory.getLogger("NightConfig Wrapper");
+    private static final Logger LOG = LoggerFactory.getLogger("NightConfigWrapper");
 
-    private static final ModuleInfo INFO = new ModuleInfo("NightCondif Wrapper",
+    private static final ModuleInfo INFO = new ModuleInfo("NightConfig Wrapper",
             ModularBotBuildInfo.AUTHOR + ", TheElectronWill",
             ModularBotBuildInfo.GITHUB_URL + ", https://github.com/TheElectronWill/Night-Config",
             ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
@@ -142,6 +141,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
     /**
      * Overload of {@link #registerSingletonSecondaryConfig(String, File)} with a plain path.
+     *
      * @param name - The name of the config.
      * @param path - The path of the config to register.
      */
@@ -151,6 +151,7 @@ public class NightConfigWrapperModule extends BaseModule {
 
     /**
      * Overload of {@link #registerSingletonSecondaryConfig(String, FileConfig)} with a default config builder.
+     *
      * @param name - The name of the config.
      * @param file - The config to register.
      */
@@ -270,6 +271,7 @@ public class NightConfigWrapperModule extends BaseModule {
             final Class<? extends BaseModule> commandModuleClass =
                     (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot.command.CommandModule");
 
+            // Set creator ID
             primaryConfig.getOptionalLong("creator_id").ifPresent(creator -> {
                 LOG.info("[Command Module] Setting creator id: " + creator);
                 try {
@@ -279,6 +281,7 @@ public class NightConfigWrapperModule extends BaseModule {
                 }
             });
 
+            // Set default prefix
             primaryConfig.<String>getOptional("prefix").ifPresent(prefix -> {
                 LOG.info("[Command Module] Setting default command prefix: " + prefix);
                 try {
@@ -287,6 +290,21 @@ public class NightConfigWrapperModule extends BaseModule {
                     field.set(module, prefix);
                 } catch (IllegalAccessException | NoSuchFieldException e) {
                     LOG.info("[Command Module] Failed to set default prefix, ignoring.");
+                }
+            });
+
+            // Add custom prefixes
+            primaryConfig.<List<Config>>getOptional("guild_prefix").ifPresent(prefixes -> {
+                try {
+                    final Method method = commandModuleClass.getMethod("addCustomPrefixForGuild", long.class, String.class);
+
+                    for (Config prefixConfig : prefixes) {
+                        final long guildId = prefixConfig.getLong("guild_id");
+                        final String prefix = prefixConfig.get("prefix");
+                        method.invoke(module, guildId, prefix);
+                    }
+                } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                    LOG.info("[Command module] Failed to add custom prefixes, ignoring.");
                 }
             });
 
