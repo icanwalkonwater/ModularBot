@@ -119,6 +119,11 @@ project(':modularbot-message-decorator') {
     project.description = 'Module that can bind to specific messages and extends their behaviour.'
 }
 
+project(':modularbot-graalvm-support') {
+    ext.name = 'ModularBot - GraalVM Support'
+    project.description = 'Module that enable the support of module written in any languages supported by GraalVM.'
+}
+
 subprojects {
     artifacts {
         archives javadocJar

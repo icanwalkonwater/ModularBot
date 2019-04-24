@@ -17,5 +17,10 @@ include 'ModularBot-NashornCommandSupport'
 findProject(':ModularBot-NashornCommandSupport')?.name = 'modularbot-nashorn-command-support'
 include 'ModularBot-MessageDecorator'
 findProject(':ModularBot-MessageDecorator')?.name = 'modularbot-message-decorator'
+include 'ModularBot-GraalVMSupport'
+findProject(':ModularBot-GraalVMSupport')?.name = 'modularbot-graalvm-support'
 
 enableFeaturePreview('STABLE_PUBLISHING')
+include 'ModularBot-GraalVMSupport-DiscordJS'
+findProject(':ModularBot-GraalVMSupport-DiscordJS')?.name = 'modularbot-graalvm-support-discordjs'
+

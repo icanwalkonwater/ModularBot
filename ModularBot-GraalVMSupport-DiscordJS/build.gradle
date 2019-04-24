@@ -1,0 +1,4 @@
+dependencies {
+    implementation project(':modularbot-core')
+    implementation project(':modularbot-graalvm-support')
+}
