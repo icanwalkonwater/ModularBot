@@ -301,10 +301,11 @@ public class NightConfigWrapperModule extends BaseModule {
                     for (Config prefixConfig : prefixes) {
                         final long guildId = prefixConfig.getLong("guild_id");
                         final String prefix = prefixConfig.get("prefix");
+                        LOG.info("[Command Module] Setting custom prefix %s for guild %s", prefix, guildId);
                         method.invoke(module, guildId, prefix);
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    LOG.info("[Command module] Failed to add custom prefixes, ignoring.");
+                    LOG.info("[Command Module] Failed to add custom prefixes, ignoring.");
                 }
             });
 

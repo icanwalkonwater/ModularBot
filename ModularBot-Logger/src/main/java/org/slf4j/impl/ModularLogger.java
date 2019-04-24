@@ -41,7 +41,7 @@ public class ModularLogger extends MarkerIgnoringBase {
         this.name = name;
     }
 
-    private void log(@Nonnull ModularLog.Level level, @Nullable Throwable error, @Nonnull String message) {
+    private void log(@Nonnull final ModularLog.Level level, @Nullable final Throwable error, @Nonnull final String message) {
         final ModularLog log = new ModularLog(new Date(),
                 level, name, Thread.currentThread().getName(), message, error);
         listeners.forEach(l -> l.onLog(log));
