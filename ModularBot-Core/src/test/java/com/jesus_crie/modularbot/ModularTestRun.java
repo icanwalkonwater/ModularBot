@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot.core;
+package com.jesus_crie.modularbot;
 
 import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.command.AccessLevel;
@@ -9,6 +9,10 @@ import com.jesus_crie.modularbot.command.annotations.CommandInfo;
 import com.jesus_crie.modularbot.command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot.command.processing.Option;
 import com.jesus_crie.modularbot.command.processing.Options;
+import com.jesus_crie.modularbot.core.ModularBot;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
 import com.jesus_crie.modularbot.logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot.messagedecorator.MessageDecoratorModule;
 import com.jesus_crie.modularbot.messagedecorator.decorator.AutoDestroyMessageDecorator;
@@ -16,9 +20,7 @@ import com.jesus_crie.modularbot.messagedecorator.decorator.disposable.AlertReac
 import com.jesus_crie.modularbot.messagedecorator.decorator.disposable.ConfirmReactionDecorator;
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PanelReactionDecorator;
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PollReactionDecorator;
-import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
-import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
@@ -40,44 +42,45 @@ public class ModularTestRun extends Module {
     private static final Logger LOG = LoggerFactory.getLogger("TestBot");
 
     public static void main(String[] args) {
-        CommandModule cmd = new CommandModule();
-        NightConfigWrapperModule config = new NightConfigWrapperModule("./example/config.json");
-        MessageDecoratorModule decorator = new MessageDecoratorModule("./example/decorator_cache.json");
-
         final ModularBotBuilder botBuilder = new ModularBotBuilder(args[0])
+                .provideBuiltModules(
+                        new ConsoleLoggerModule()
+                )
+                .requestBaseModules()
                 .requestModules(
-                        ConsoleLoggerModule.class,
-                        CommandModule.class,
-                        NightConfigWrapperModule.class,
-                        MessageDecoratorModule.class,
                         ModularTestRun.class
                 )
                 .configureModule(NightConfigWrapperModule.class, "./example/config.json")
                 .configureModule(MessageDecoratorModule.class, "./example/decorator_cache.json")
                 .useShutdownNow();
 
-        ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.INFO;
+        ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.DEBUG;
 
         Logger l = LoggerFactory.getLogger("hey");
         l.trace("HELLO");
-
-        /// Commands
-
-        //cmd.setCreatorId(182547138729869314L);
-        cmd.registerCommands(new StopCommand(), new EvalCommand());
 
         /// Decorator cache
         //config.useSecondaryConfig("deco", "./example/decorator.json");
 
         /* #### BUILD #### */
-        ModularBot bot = botBuilder.build();
+        ModularBot bot = botBuilder.resolveModulesSilently().build();
+
+        /// Commands
+        CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
+
+        //cmd.setCreatorId(182547138729869314L);
+        cmd.registerCommands(new StopCommand(), new EvalCommand());
 
         /// Config
+        NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
 
         Optional<Integer> startCount = config.getPrimaryConfig().getOptional("start_count");
         int count = startCount.orElse(0);
         count++;
         config.getPrimaryConfig().set("start_count", count);
+
+        /// Decorators
+        MessageDecoratorModule decorator = bot.getModuleManager().getModule(MessageDecoratorModule.class);
 
         // Alert 10s
         cmd.registerQuickCommand("dA10", e -> {
@@ -190,7 +193,7 @@ public class ModularTestRun extends Module {
         }
     }
 
-    protected ModularTestRun() {
+    public ModularTestRun() {
         super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
     }
 

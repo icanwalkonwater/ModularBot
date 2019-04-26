@@ -6,8 +6,11 @@ import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.json.JsonFormat;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.dependencyinjection.DefaultInjectionParameters;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
+import com.jesus_crie.modularbot.core.module.ModuleSettingsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,10 +37,10 @@ public class NightConfigWrapperModule extends Module {
     private FileConfig primaryConfig;
     private Map<String, Set<FileConfig>> configGroups = Collections.emptyMap();
 
-    public NightConfigWrapperModule() {
-        this("./config.json");
-    }
+    @DefaultInjectionParameters
+    private static final ModuleSettingsProvider DEFAULT_SETTINGS = new ModuleSettingsProvider("./config.json");
 
+    @InjectorTarget
     public NightConfigWrapperModule(@Nonnull final String path) {
         this((FileConfigBuilder) FileConfig.builder(path, JsonFormat.minimalInstance())
                 .defaultResource("/default_config.json")
@@ -317,7 +320,7 @@ public class NightConfigWrapperModule extends Module {
             primaryConfig.<String>getOptional("prefix").ifPresent(prefix -> {
                 LOG.debug("[Command Module] Setting default command prefix: " + prefix);
                 try {
-                    final Field field = commandModuleClass.getField("defaultPrefix");
+                    final Field field = commandModuleClass.getDeclaredField("defaultPrefix");
                     field.setAccessible(true);
                     field.set(module, prefix);
                 } catch (IllegalAccessException | NoSuchFieldException e) {

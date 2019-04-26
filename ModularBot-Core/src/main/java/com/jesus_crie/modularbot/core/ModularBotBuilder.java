@@ -1,12 +1,12 @@
 package com.jesus_crie.modularbot.core;
 
-import com.jesus_crie.modularbot.core.exception.ModuleAlreadyLoadedException;
+import com.jesus_crie.modularbot.core.dependencyinjection.exception.*;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
 import com.jesus_crie.modularbot.core.module.ModuleSettingsProvider;
 import com.jesus_crie.modularbot.core.utils.IStateProvider;
-import com.jesus_crie.modularbot.core.utils.ModularThreadFactory;
 import com.jesus_crie.modularbot.core.utils.ModularSessionController;
+import com.jesus_crie.modularbot.core.utils.ModularThreadFactory;
 import net.dv8tion.jda.bot.sharding.ThreadPoolProvider;
 import net.dv8tion.jda.core.JDA;
 import net.dv8tion.jda.core.audio.factory.IAudioSendFactory;
@@ -284,6 +284,7 @@ public class ModularBotBuilder {
         tryRequest("com.jesus_crie.modularbot.logger.ConsoleLoggerModule");
         tryRequest("com.jesus_crie.modularbot.command.CommandModule");
         tryRequest("com.jesus_crie.modularbot.messagedecorator.MessageDecoratorModule");
+        tryRequest("com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule");
 
         tryRequest("com.jesus_crie.modularbot.graalvm.GraalSupportModule");
         tryRequest("com.jesus_crie.modularbot.graalvm.discordjs.GraalSupportDiscordJSModule");
@@ -301,6 +302,18 @@ public class ModularBotBuilder {
         } catch (ClassNotFoundException ignore) {
             // Don't care if we can't load it
         }
+    }
+
+    /**
+     * Provide some built modules that will be used to resolve other modules during the injection.
+     * It can be useful for the
+     *
+     * @param modules - Built modules to provide.
+     */
+    @Nonnull
+    public ModularBotBuilder provideBuiltModules(@Nonnull final Module... modules) {
+        injectionContext.provideBuiltModules(modules);
+        return this;
     }
 
     /**
@@ -325,11 +338,61 @@ public class ModularBotBuilder {
     }
 
     /**
+     * Resolve the injection context and let you handle the exceptions.
+     *
+     * @throws DependencyInjectionException If an error occured in the injector.
+     */
+    public ModularBotBuilder resolveModules() throws DependencyInjectionException {
+        injectionContext.resolve();
+        return this;
+    }
+
+    /**
+     * Resolve the injection context and handle the task of logging exceptions.
+     * However it will still throw a runtime exception if an error occurred to stop the program.
+     * The errors will be logged using the logger.
+     *
+     * @throws IllegalStateException If the injector throws an error.
+     */
+    public ModularBotBuilder resolveModulesSilently() {
+        try {
+            injectionContext.resolve();
+
+        } catch (CircularDependencyException e) {
+            LOG.error("Circular dependency detected !", e);
+            throw new IllegalStateException(e);
+
+        } catch (NoInjectorTargetException | TooManyInjectorTargetException e) {
+            LOG.error(e.getMessage());
+            throw new IllegalStateException(e);
+
+        } catch (InjectionFailedException e) {
+            LOG.error("One module threw an exception !", e);
+            throw new IllegalStateException(e);
+
+        } catch (DependencyInjectionException e) {
+            LOG.error("An unknown DI exception has occurred !", e);
+            throw new IllegalStateException(e);
+
+        } catch (RuntimeException e) {
+            LOG.error("An injector target has thrown an exception !", e);
+            throw new IllegalStateException(e);
+        }
+
+        return this;
+    }
+
+    /**
      * Create a new instance of {@link ModularBot ModularBot}.
      *
      * @return A new {@link ModularBot ModularBot}
      */
     public ModularBot build() {
+        if (!injectionContext.isResolved())
+            throw new IllegalStateException("You need to resolve the injection context before building !");
+
+        moduleManager.loadModules(this);
+
         return new ModularBot(
                 shards, new ModularSessionController(),
                 listenersProvider, token, eventManagerProvider,

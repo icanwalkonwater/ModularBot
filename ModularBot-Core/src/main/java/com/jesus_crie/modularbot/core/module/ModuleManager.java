@@ -156,6 +156,7 @@ public class ModuleManager {
      */
     public final class InjectionContext {
 
+        private boolean resolved = false;
         private final DependencyInjector injector = new DependencyInjector();
         private final List<Class<? extends Module>> requests = new LinkedList<>();
 
@@ -221,6 +222,14 @@ public class ModuleManager {
         }
 
         /**
+         * Check if the context has been resolved or not.
+         * @return True if {@link #resolve()} has been called, otherwise false.
+         */
+        public boolean isResolved() {
+            return resolved;
+        }
+
+        /**
          * Resolve this context by starting the injector.
          *
          * @throws DependencyInjectionException If the injector throws an error.
@@ -232,6 +241,7 @@ public class ModuleManager {
             ms.forEach(module -> modules.put(module.getClass(), module));
 
             dependencyGraph = injector.getDependencyGraph();
+            resolved = true;
         }
     }
 }

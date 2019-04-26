@@ -11,10 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -117,6 +114,13 @@ public final class DependencyInjector {
             queuedInjections.removeFirstOccurrence(value);
         }
 
+        // Fill the remaining settings providers by the default ones
+        LOG.debug("Filling remaining settings providers...");
+        for (Class<? extends Module> request : queuedInjections) {
+            if (!settings.containsKey(request))
+                settings.put(request, extractDefaultSettingsProvider(request));
+        }
+
         // Build and inject them in the correct order
         LOG.debug("Starting construction...");
         for (Class<? extends Module> request = queuedInjections.pop();
@@ -155,7 +159,6 @@ public final class DependencyInjector {
 
         for (Class<? extends Module> request : requests) {
             dependencyHierarchy.clear();
-            dependencyHierarchy.push(request);
             exploreDependencies(graph, request);
         }
 
@@ -290,9 +293,6 @@ public final class DependencyInjector {
             throws NoInjectorTargetException, TooManyInjectorTargetException {
         final Constructor<?>[] cs = Arrays.stream(request.getDeclaredConstructors())
                 .filter(c -> c.isAnnotationPresent(InjectorTarget.class))
-                .peek(c -> {
-                    if (!c.isAccessible()) c.setAccessible(true);
-                })
                 .toArray(Constructor<?>[]::new);
 
         // No constructor with the annotation, check for default constructor
@@ -306,7 +306,36 @@ public final class DependencyInjector {
             throw new TooManyInjectorTargetException(request.getSimpleName());
         }
 
+        // Make accessible
+        if (!cs[0].isAccessible())
+            cs[0].setAccessible(true);
+
         return (Constructor<? extends Module>) cs[0];
+    }
+
+    @Nonnull
+    private ModuleSettingsProvider extractDefaultSettingsProvider(@Nonnull final Class<? extends Module> request) {
+        final Field[] sfs = Arrays.stream(request.getDeclaredFields())
+                .filter(f -> f.isAnnotationPresent(DefaultInjectionParameters.class))
+                .filter(f -> Modifier.isStatic(f.getModifiers()))
+                .filter(f -> f.getType().isAssignableFrom(ModuleSettingsProvider.class))
+                .toArray(Field[]::new);
+
+        // If not default can be found, well, don't insist.
+        if (sfs.length == 0)
+            return ModuleSettingsProvider.EMPTY;
+        else if (sfs.length > 1)
+            LOG.warn("Multiple default settings fields found in " + request.getSimpleName() + ", taking the first one.");
+
+        // Make accessible
+        if (!sfs[0].isAccessible()) sfs[0].setAccessible(true);
+
+        try {
+            return (ModuleSettingsProvider) sfs[0].get(null);
+        } catch (IllegalAccessException e) {
+            LOG.warn("Failed to access default settings field in " + request.getSimpleName() + ", ignoring.");
+            return ModuleSettingsProvider.EMPTY;
+        }
     }
 
     /**
@@ -422,7 +451,7 @@ public final class DependencyInjector {
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException e) {
             throw new InjectionFailedException(e);
         } catch (InvocationTargetException e) {
-            // It's not the scope of the injector to handle exception from the module itself
+            // It's not the scope of the injector to handle exception from the object itself
             throw new RuntimeException(e.getTargetException());
         }
     }

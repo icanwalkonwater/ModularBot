@@ -1,10 +1,10 @@
 package com.jesus_crie.modularbot.command;
 
-import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.command.listener.CommandListener;
 import com.jesus_crie.modularbot.command.listener.DiscordCommandListener;
 import com.jesus_crie.modularbot.command.processing.CommandProcessor;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
 import net.dv8tion.jda.core.entities.Guild;

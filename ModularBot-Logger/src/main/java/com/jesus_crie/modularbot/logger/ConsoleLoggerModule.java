@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
-public class ConsoleLoggerModule extends Module {
+public class ConsoleLoggerModule extends Module implements ModularLogger.OnLogListener {
 
     private static final ModuleInfo INFO = new ModuleInfo("Console Logger",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
@@ -45,28 +45,27 @@ public class ConsoleLoggerModule extends Module {
 
     public ConsoleLoggerModule() {
         super(INFO);
+        ModularLogger.addListener(this);
     }
 
     @Override
-    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nullable ModularBotBuilder builder) {
-        ModularLogger.addListener(log -> {
-            if (log.level.getLevel() >= MIN_LEVEL.getLevel()) {
+    public void onLog(@Nonnull ModularLog log) {
+        if (log.level.getLevel() >= MIN_LEVEL.getLevel()) {
 
-                final String message = MessageFormat.format(FORMAT_LOG,
-                        FORMAT_TIME.format(log.time),
-                        log.level.getPrefix(),
-                        log.thread,
-                        Utils.fullClassToSimpleClassName(log.from),
-                        log.error == null ? log.message : MessageFormat.format(FORMAT_ERROR, log.error.getClass().getName(), log.message));
+            final String message = MessageFormat.format(FORMAT_LOG,
+                    FORMAT_TIME.format(log.time),
+                    log.level.getPrefix(),
+                    log.thread,
+                    Utils.fullClassToSimpleClassName(log.from),
+                    log.error == null ? log.message : MessageFormat.format(FORMAT_ERROR, log.error.getClass().getName(), log.message));
 
-                if (log.level.getLevel() < ModularLog.Level.WARN.getLevel()) {
-                    System.out.println(message);
-                } else {
-                    System.err.println(message);
-                    if (log.error != null && log.level.getLevel() == ModularLog.Level.ERROR.getLevel())
-                        log.error.printStackTrace();
-                }
+            if (log.level.getLevel() < ModularLog.Level.WARN.getLevel()) {
+                System.out.println(message);
+            } else {
+                System.err.println(message);
+                if (log.error != null && log.level.getLevel() == ModularLog.Level.ERROR.getLevel())
+                    log.error.printStackTrace();
             }
-        });
+        }
     }
 }
