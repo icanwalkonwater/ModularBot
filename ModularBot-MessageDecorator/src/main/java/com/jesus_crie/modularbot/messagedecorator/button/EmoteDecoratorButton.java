@@ -1,6 +1,6 @@
 package com.jesus_crie.modularbot.messagedecorator.button;
 
-import com.jesus_crie.modularbot.utils.SerializableConsumer;
+import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;

@@ -1,16 +1,16 @@
 package com.jesus_crie.modularbot.graalvm;
 
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
 import org.graalvm.polyglot.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
-public class GraalSupportModule extends BaseModule {
+public class GraalSupportModule extends Module {
 
     private static final Logger LOG = LoggerFactory.getLogger("GraalVMSupport");
 

@@ -1,8 +1,8 @@
 package com.jesus_crie.modularbot.messagedecorator.button;
 
 import com.electronwill.nightconfig.core.Config;
-import com.jesus_crie.modularbot.utils.SerializableConsumer;
-import com.jesus_crie.modularbot.utils.SerializationUtils;
+import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
+import com.jesus_crie.modularbot.core.utils.SerializationUtils;
 import com.jesus_crie.modularbot.messagedecorator.Cacheable;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;

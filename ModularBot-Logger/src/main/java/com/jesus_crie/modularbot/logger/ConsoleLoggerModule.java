@@ -1,10 +1,10 @@
 package com.jesus_crie.modularbot.logger;
 
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
-import com.jesus_crie.modularbot.utils.Utils;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
+import com.jesus_crie.modularbot.core.utils.Utils;
 import org.slf4j.impl.ModularLog;
 import org.slf4j.impl.ModularLogger;
 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
-public class ConsoleLoggerModule extends BaseModule {
+public class ConsoleLoggerModule extends Module {
 
     private static final ModuleInfo INFO = new ModuleInfo("Console Logger",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,

@@ -4,8 +4,5 @@ dependencies {
     testImplementation project(':modularbot-logger')
     testImplementation project(':modularbot-command')
     testImplementation project(':modularbot-night-config-wrapper')
-    testImplementation project(':modularbot-nashorn-support')
-    testImplementation project(':modularbot-nashorn-command-support')
     testImplementation project(':modularbot-message-decorator')
-    testImplementation project(':modularbot-graalvm-support')
 }

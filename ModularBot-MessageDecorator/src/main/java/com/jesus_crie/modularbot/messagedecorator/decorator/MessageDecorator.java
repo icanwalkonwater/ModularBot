@@ -1,7 +1,7 @@
 package com.jesus_crie.modularbot.messagedecorator.decorator;
 
-import com.jesus_crie.modularbot.ModularBot;
-import com.jesus_crie.modularbot.utils.Waiter;
+import com.jesus_crie.modularbot.core.ModularBot;
+import com.jesus_crie.modularbot.core.utils.Waiter;
 import com.jesus_crie.modularbot.messagedecorator.DecoratorListener;
 import com.jesus_crie.modularbot.messagedecorator.MessageDecoratorModule;
 import net.dv8tion.jda.core.entities.Message;

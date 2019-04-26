@@ -1,0 +1,20 @@
+{
+  "modules": [
+    {
+      "identifier": "ModularBot-Core",
+      "type": "jar"
+    }, {
+      "identifier": "ModularBot-Logger",
+      "type": "jar"
+    }, {
+      "identifier": "ModularBot-Command",
+      "type": "jar"
+    }, {
+      "identifier": "Graven-Candid",
+      "type": "jar"
+    }, {
+      "identifier": "Graven-Survey",
+      "type": "js"
+    }
+  ]
+}

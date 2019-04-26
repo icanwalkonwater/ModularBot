@@ -1,12 +1,12 @@
 package com.jesus_crie.modularbot.command;
 
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.command.listener.CommandListener;
 import com.jesus_crie.modularbot.command.listener.DiscordCommandListener;
 import com.jesus_crie.modularbot.command.processing.CommandProcessor;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
 import net.dv8tion.jda.core.entities.Guild;
 
 import javax.annotation.Nonnull;
@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 
-public class CommandModule extends BaseModule {
+public class CommandModule extends Module {
 
     private static final ModuleInfo INFO = new ModuleInfo("Command",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,

@@ -1,18 +1,19 @@
 package com.jesus_crie.modularbot.nashorn.command;
 
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.command.CommandModule;
-import com.jesus_crie.modularbot.nashorn.JavaScriptModule;
-import com.jesus_crie.modularbot.nashorn.NashornSupportModule;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
+import com.jesus_crie.modularbot.core.nashorn.JavaScriptModule;
+import com.jesus_crie.modularbot.core.nashorn.NashornSupportModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 
-public class NashornCommandSupportModule extends BaseModule {
+@Deprecated
+public class NashornCommandSupportModule extends Module {
 
     private static final Logger LOG = LoggerFactory.getLogger("NashornCommandSupportModule");
 

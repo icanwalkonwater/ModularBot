@@ -11,6 +11,7 @@ import java.util.Collections;
  * <p>
  * The command can't be modified after being wrapped.
  */
+@Deprecated
 public class JavaScriptCommandWrapper extends Command {
 
     public JavaScriptCommandWrapper(@Nonnull final JavaScriptCommand command) {

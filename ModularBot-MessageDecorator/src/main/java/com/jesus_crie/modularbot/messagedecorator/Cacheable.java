@@ -1,7 +1,7 @@
 package com.jesus_crie.modularbot.messagedecorator;
 
 import com.electronwill.nightconfig.core.Config;
-import com.jesus_crie.modularbot.ModularBot;
+import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.messagedecorator.button.DecoratorButton;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;

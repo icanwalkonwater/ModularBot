@@ -96,7 +96,7 @@ public class Argument<T> implements Cloneable {
      * Match a mention of an user or a User#1234.
      */
     @RegisterArgument
-    public static final Argument<User> USER = new Argument<>(User.class, "(?:<@(?<id>[\\d]+)>|(?<name>[\\S]+)#(?<discr>[\\d]{4}))", (m, b) -> {
+    public static final Argument<User> USER = new Argument<>(User.class, "(?:<@!?(?<id>[\\d]+)>|(?<name>[\\S]+)#(?<discr>[\\d]{4}))", (m, b) -> {
         if (m.group("id") != null) {
             return b.getBot().getUserById(m.group("id"));
         } else {

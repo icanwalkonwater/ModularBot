@@ -5,9 +5,9 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.electronwill.nightconfig.core.file.FileConfigBuilder;
 import com.electronwill.nightconfig.core.io.ParsingMode;
 import com.electronwill.nightconfig.json.JsonFormat;
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +20,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NightConfigWrapperModule extends BaseModule {
+public class NightConfigWrapperModule extends Module {
 
     private static final Logger LOG = LoggerFactory.getLogger("NightConfigWrapper");
 
@@ -72,27 +72,33 @@ public class NightConfigWrapperModule extends BaseModule {
      * Overload of {@link #registerSecondaryConfig(String, String)} with a default group name.
      *
      * @param path - The name of the config to register.
+     * @return The newly registered config file.
      */
-    public void registerSecondaryConfig(@Nonnull final String path) {
-        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, path);
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final String path) {
+        return registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, path);
     }
 
     /**
      * Overload of {@link #registerSecondaryConfig(String, File)} with a default group name.
      *
      * @param file - The config to register.
+     * @return The newly registered config file.
      */
-    public void registerSecondaryConfig(@Nonnull final File file) {
-        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, file);
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final File file) {
+        return registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, file);
     }
 
     /**
      * Overload of {@link #registerSecondaryConfig(String, FileConfig)} with a default group name.
      *
      * @param config - The config to register.
+     * @return The newly registered config file.
      */
-    public void registerSecondaryConfig(@Nonnull final FileConfig config) {
-        registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, config);
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final FileConfig config) {
+        return registerSecondaryConfig(DEFAULT_SECONDARY_GROUP, config);
     }
 
     /**
@@ -100,9 +106,11 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param groupName - The name of the group.
      * @param path      - The path of the config to register.
+     * @return The newly registered config file.
      */
-    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final String path) {
-        registerSecondaryConfig(groupName, new File(path));
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final String path) {
+        return registerSecondaryConfig(groupName, new File(path));
     }
 
     /**
@@ -110,9 +118,11 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param groupName - The name of the group.
      * @param file      - The config to register.
+     * @return The newly registered config file.
      */
-    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final File file) {
-        registerSecondaryConfig(groupName, FileConfig.builder(file, JsonFormat.minimalInstance())
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final File file) {
+        return registerSecondaryConfig(groupName, FileConfig.builder(file, JsonFormat.minimalInstance())
                 .charset(Charset.forName("UTF-8"))
                 .parsingMode(ParsingMode.REPLACE)
                 .build());
@@ -125,9 +135,12 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param groupName - The name of the group, case-sensitive.
      * @param config    - The config to register.
+     * @return The newly registered config file.
      * @throws UnsupportedOperationException If the group is already a singleton.
+     * @throws IllegalStateException         If the config is already registered in this group.
      */
-    public void registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final FileConfig config) {
+    @Nonnull
+    public FileConfig registerSecondaryConfig(@Nonnull final String groupName, @Nonnull final FileConfig config) {
         // Ensure secondary config map is a real map.
         ensureRealSecondaryConfigMap();
 
@@ -136,7 +149,9 @@ public class NightConfigWrapperModule extends BaseModule {
             group = configGroups.put(groupName, new HashSet<>());
         else group = configGroups.get(groupName);
 
-        group.add(config);
+        if (!group.add(config))
+            throw new IllegalStateException("This config il already registered !");
+        return config;
     }
 
     /**
@@ -144,9 +159,11 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param name - The name of the config.
      * @param path - The path of the config to register.
+     * @return The newly registered config file.
      */
-    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final String path) {
-        registerSingletonSecondaryConfig(name, new File(path));
+    @Nonnull
+    public FileConfig registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final String path) {
+        return registerSingletonSecondaryConfig(name, new File(path));
     }
 
     /**
@@ -154,9 +171,11 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param name - The name of the config.
      * @param file - The config to register.
+     * @return The newly registered config file.
      */
-    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final File file) {
-        registerSingletonSecondaryConfig(name, FileConfig.builder(file, JsonFormat.minimalInstance())
+    @Nonnull
+    public FileConfig registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final File file) {
+        return registerSingletonSecondaryConfig(name, FileConfig.builder(file, JsonFormat.minimalInstance())
                 .charset(Charset.forName("UTF-8"))
                 .parsingMode(ParsingMode.REPLACE)
                 .build());
@@ -169,9 +188,11 @@ public class NightConfigWrapperModule extends BaseModule {
      *
      * @param name   - The name of the config.
      * @param config - The config to register.
+     * @return The newly registered config file.
      * @throws IllegalStateException If the group already exists.
      */
-    public void registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final FileConfig config) {
+    @Nonnull
+    public FileConfig registerSingletonSecondaryConfig(@Nonnull final String name, @Nonnull final FileConfig config) {
         // Ensure secondary config map is a real map
         ensureRealSecondaryConfigMap();
 
@@ -179,6 +200,17 @@ public class NightConfigWrapperModule extends BaseModule {
             throw new IllegalStateException("Another config group has that name !");
 
         configGroups.put(name, Collections.singleton(config));
+        return config;
+    }
+
+    /**
+     * Query the primary, always existent, primary config.
+     *
+     * @return The unique primary config.
+     */
+    @Nonnull
+    public FileConfig getPrimaryConfig() {
+        return primaryConfig;
     }
 
     /**
@@ -264,32 +296,32 @@ public class NightConfigWrapperModule extends BaseModule {
      */
     @SuppressWarnings("unchecked")
     private void loadCommandModuleSettings(@Nonnull final ModuleManager moduleManager) {
-        final BaseModule module = moduleManager.getModuleByClassName("com.jesus_crie.modularbot.command.CommandModule");
-
         LOG.info("Configuring command module...");
+
         try {
-            final Class<? extends BaseModule> commandModuleClass =
-                    (Class<? extends BaseModule>) Class.forName("com.jesus_crie.modularbot.command.CommandModule");
+            final Class<? extends Module> commandModuleClass =
+                    (Class<? extends Module>) Class.forName("com.jesus_crie.modularbot.command.CommandModule");
+            final Module module = moduleManager.getModule(commandModuleClass);
 
             // Set creator ID
             primaryConfig.getOptionalLong("creator_id").ifPresent(creator -> {
-                LOG.info("[Command Module] Setting creator id: " + creator);
+                LOG.debug("[Command Module] Setting creator id: " + creator);
                 try {
                     commandModuleClass.getMethod("setCreatorId", long.class).invoke(module, creator);
                 } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                    LOG.info("[Command Module] Failed to set creator id, ignoring.");
+                    LOG.warn("[Command Module] Failed to set creator id, ignoring.");
                 }
             });
 
             // Set default prefix
             primaryConfig.<String>getOptional("prefix").ifPresent(prefix -> {
-                LOG.info("[Command Module] Setting default command prefix: " + prefix);
+                LOG.debug("[Command Module] Setting default command prefix: " + prefix);
                 try {
                     final Field field = commandModuleClass.getField("defaultPrefix");
                     field.setAccessible(true);
                     field.set(module, prefix);
                 } catch (IllegalAccessException | NoSuchFieldException e) {
-                    LOG.info("[Command Module] Failed to set default prefix, ignoring.");
+                    LOG.warn("[Command Module] Failed to set default prefix, ignoring.");
                 }
             });
 
@@ -301,16 +333,16 @@ public class NightConfigWrapperModule extends BaseModule {
                     for (Config prefixConfig : prefixes) {
                         final long guildId = prefixConfig.getLong("guild_id");
                         final String prefix = prefixConfig.get("prefix");
-                        LOG.info("[Command Module] Setting custom prefix %s for guild %s", prefix, guildId);
+                        LOG.debug(String.format("[Command Module] Setting custom prefix %s for guild %s", prefix, guildId));
                         method.invoke(module, guildId, prefix);
                     }
                 } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
-                    LOG.info("[Command Module] Failed to add custom prefixes, ignoring.");
+                    LOG.warn("[Command Module] Failed to add custom prefixes, ignoring.");
                 }
             });
 
         } catch (ClassNotFoundException e) {
-            LOG.info("Command module not found, ignoring.");
+            LOG.warn("Command module not found, ignoring.");
         }
     }
 

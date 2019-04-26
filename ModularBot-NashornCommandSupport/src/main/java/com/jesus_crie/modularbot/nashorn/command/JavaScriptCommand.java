@@ -9,6 +9,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
  * A class that represent a command that can be extended in JS and wrapped into a {@link JavaScriptCommandWrapper JavaScriptCommandWrapper}
  * to be registered in the command module.
  */
+@Deprecated
 public class JavaScriptCommand {
 
     public String[] aliases;

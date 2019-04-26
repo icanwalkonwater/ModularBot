@@ -1,6 +1,6 @@
 package com.jesus_crie.modularbot.command;
 
-import com.jesus_crie.modularbot.utils.Utils;
+import com.jesus_crie.modularbot.core.utils.Utils;
 import com.jesus_crie.modularbot.command.annotations.CommandInfo;
 import com.jesus_crie.modularbot.command.annotations.RegisterPattern;
 import com.jesus_crie.modularbot.command.exception.CommandExecutionException;

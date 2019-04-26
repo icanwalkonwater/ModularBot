@@ -1,14 +1,14 @@
 package com.jesus_crie.modularbot.messagedecorator.decorator.permanent;
 
 import com.electronwill.nightconfig.core.Config;
-import com.jesus_crie.modularbot.ModularBot;
+import com.jesus_crie.modularbot.core.ModularBot;
+import com.jesus_crie.modularbot.core.utils.SerializableBiConsumer;
+import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
+import com.jesus_crie.modularbot.core.utils.SerializationUtils;
 import com.jesus_crie.modularbot.messagedecorator.Cacheable;
 import com.jesus_crie.modularbot.messagedecorator.button.DecoratorButton;
 import com.jesus_crie.modularbot.messagedecorator.button.EmoteDecoratorButton;
 import com.jesus_crie.modularbot.messagedecorator.button.UnicodeDecoratorButton;
-import com.jesus_crie.modularbot.utils.SerializableBiConsumer;
-import com.jesus_crie.modularbot.utils.SerializableConsumer;
-import com.jesus_crie.modularbot.utils.SerializationUtils;
 import net.dv8tion.jda.core.entities.Emote;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;

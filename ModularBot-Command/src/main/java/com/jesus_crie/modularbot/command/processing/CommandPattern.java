@@ -1,7 +1,7 @@
 package com.jesus_crie.modularbot.command.processing;
 
 import com.jesus_crie.modularbot.command.exception.CommandMappingException;
-import com.jesus_crie.modularbot.utils.TriConsumer;
+import com.jesus_crie.modularbot.core.utils.TriConsumer;
 import com.jesus_crie.modularbot.command.CommandEvent;
 import com.jesus_crie.modularbot.command.CommandModule;
 import com.jesus_crie.modularbot.command.exception.CommandExecutionException;

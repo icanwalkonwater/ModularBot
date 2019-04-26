@@ -2,13 +2,12 @@ package com.jesus_crie.modularbot.messagedecorator;
 
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.FileConfig;
-import com.electronwill.nightconfig.json.JsonFormat;
-import com.jesus_crie.modularbot.ModularBot;
-import com.jesus_crie.modularbot.ModularBotBuildInfo;
-import com.jesus_crie.modularbot.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.ModularBot;
+import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.messagedecorator.decorator.MessageDecorator;
-import com.jesus_crie.modularbot.module.BaseModule;
-import com.jesus_crie.modularbot.module.ModuleManager;
+import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
 import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-public class MessageDecoratorModule extends BaseModule {
+public class MessageDecoratorModule extends Module {
 
     private static final ModuleInfo INFO = new ModuleInfo("Message Decorator",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
@@ -57,16 +56,7 @@ public class MessageDecoratorModule extends BaseModule {
     @Override
     public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {
         NightConfigWrapperModule config = moduleManager.getModule(NightConfigWrapperModule.class);
-        if (config == null)
-            throw new IllegalStateException("You need to register the module NightConfigWrapperModule prior to this module !");
-
-        // Disable pretty print
-        config.useSecondaryConfig(CONFIG_DECORATOR_CACHE, FileConfig.builder(cacheFile, JsonFormat.minimalInstance())
-                .autoreload()
-                .concurrent()
-                .build());
-        cache = config.getSecondaryConfig(CONFIG_DECORATOR_CACHE);
-
+        cache = config.registerSingletonSecondaryConfig(CONFIG_DECORATOR_CACHE, cacheFile);
     }
 
     @Override

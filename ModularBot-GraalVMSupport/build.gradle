@@ -1,3 +1,4 @@
 dependencies {
+    //implementation 'org.graalvm:graal-sdk:1.0.0-rc7'
     implementation project(':modularbot-core')
 }

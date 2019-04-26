@@ -1,8 +1,8 @@
 package com.jesus_crie.modularbot.messagedecorator.decorator.disposable;
 
+import com.jesus_crie.modularbot.core.utils.SerializableBiConsumer;
+import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
 import com.jesus_crie.modularbot.messagedecorator.button.DecoratorButton;
-import com.jesus_crie.modularbot.utils.SerializableBiConsumer;
-import com.jesus_crie.modularbot.utils.SerializableConsumer;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.entities.MessageReaction;
 
