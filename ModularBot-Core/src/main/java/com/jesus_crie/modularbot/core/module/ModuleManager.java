@@ -91,12 +91,12 @@ public class ModuleManager {
     }
 
     /**
-     * Finalize the initialisation of the modules when the bot comes online.
+     * Finalize the initialization of the modules when the bot comes online.
      *
      * @param bot - The bot.
      * @see Lifecycle#onShardsReady(ModularBot)
      */
-    public void finalizeInitialisation(@Nonnull final ModularBot bot) {
+    public void finalizeInitialization(@Nonnull final ModularBot bot) {
         modules.forEachValue(20, module -> {
             module.onShardsReady(bot);
             module.state = Lifecycle.State.STARTED;

@@ -1,6 +1,4 @@
 rootProject.name = 'modularbot'
-include 'ModularBot-Bootstrap'
-findProject(':ModularBot-Bootstrap')?.name = 'modularbot-bootstrap'
 include 'ModularBot-Core'
 findProject(':ModularBot-Core')?.name = 'modularbot-core'
 include 'ModularBot-Command'

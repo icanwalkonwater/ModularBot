@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot.graalvm.discordjs;
+package com.jesus_crie.modularbot.graalvm.js;
 
 import org.graalvm.polyglot.Value;
 import org.graalvm.polyglot.proxy.ProxyExecutable;
@@ -19,7 +19,11 @@ public abstract class JSPromiseExecutorProxy implements ProxyExecutable {
         resolve = arguments[0];
         reject = arguments[1];
 
-        run();
+        try {
+            run();
+        } catch (Exception e) {
+            reject(e);
+        }
         return null;
     }
 

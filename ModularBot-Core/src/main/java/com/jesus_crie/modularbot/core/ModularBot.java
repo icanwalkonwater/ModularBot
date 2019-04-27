@@ -210,7 +210,7 @@ public class ModularBot extends DefaultShardManager {
     private void onReady() {
         if (receivedReady.get() == shardsTotal) {
             logger.info("Shards ready !");
-            moduleManager.finalizeInitialisation(this);
+            moduleManager.finalizeInitialization(this);
 
             logger.info("Modules initialisation finalized.");
             logger.info("ModularBot successfully started and ready !");

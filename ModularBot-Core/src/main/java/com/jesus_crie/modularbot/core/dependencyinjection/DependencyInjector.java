@@ -111,7 +111,7 @@ public final class DependencyInjector {
         // Cleanup already built deps
         LOG.debug("Cleanup queue...");
         for (final Module value : builtModules.values()) {
-            queuedInjections.removeFirstOccurrence(value);
+            queuedInjections.removeIf(r -> r.equals(value.getClass()));
         }
 
         // Fill the remaining settings providers by the default ones
@@ -123,10 +123,8 @@ public final class DependencyInjector {
 
         // Build and inject them in the correct order
         LOG.debug("Starting construction...");
-        for (Class<? extends Module> request = queuedInjections.pop();
-             !queuedInjections.isEmpty();
-             request = queuedInjections.pop()
-        ) {
+        while (!queuedInjections.isEmpty()) {
+            final Class<? extends Module> request = queuedInjections.pop();
             LOG.debug("Constructing module " + request.getSimpleName() + "...");
             builtModules.put(request, constructAndInject(request));
         }
@@ -215,7 +213,7 @@ public final class DependencyInjector {
 
         // Extract what arguments are actually dependencies to inject
         return Arrays.stream(constructor.getParameterTypes())
-                .filter(param -> param.isAssignableFrom(Module.class))
+                .filter(Module.class::isAssignableFrom)
                 .toArray(Class[]::new);
     }
 
@@ -226,9 +224,7 @@ public final class DependencyInjector {
      */
     private void queueInjection(@Nonnull final Class<? extends Module> request) {
         // If already present, delete the old one
-        if (!queuedInjections.contains(request)) {
-            queuedInjections.removeFirstOccurrence(request);
-        }
+        queuedInjections.removeIf(r -> r.equals(request));
 
         // Add the request on the top of the stack
         queuedInjections.push(request);
@@ -267,7 +263,7 @@ public final class DependencyInjector {
             final Class<?> parameterType = parameterTypes[i];
 
             // Is an injection
-            if (parameterType.isAssignableFrom(Module.class)) {
+            if (Module.class.isAssignableFrom(parameterType)) {
                 arguments[i] = builtModules.get(parameterType);
             } else {
                 // Fill with some user supplied settings (or null if none left)
@@ -318,7 +314,7 @@ public final class DependencyInjector {
         final Field[] sfs = Arrays.stream(request.getDeclaredFields())
                 .filter(f -> f.isAnnotationPresent(DefaultInjectionParameters.class))
                 .filter(f -> Modifier.isStatic(f.getModifiers()))
-                .filter(f -> f.getType().isAssignableFrom(ModuleSettingsProvider.class))
+                .filter(f -> ModuleSettingsProvider.class.isAssignableFrom(f.getType()))
                 .toArray(Field[]::new);
 
         // If not default can be found, well, don't insist.
@@ -366,7 +362,7 @@ public final class DependencyInjector {
         for (final Field field : fields) {
             try {
                 // Don't really care if the field is of the wrong type
-                if (!field.getType().isAssignableFrom(Module.class)) {
+                if (!Module.class.isAssignableFrom(field.getType())) {
                     LOG.warn(String.format("Found a late injection target with a wrong type: %s#%s, ignoring.",
                             module.getClass().getSimpleName(), field.getName())
                     );
@@ -403,7 +399,7 @@ public final class DependencyInjector {
         for (final Method method : methods) {
             try {
                 // Need to be only modules as argument to fill it
-                if (Arrays.stream(method.getParameterTypes()).anyMatch(type -> !type.isAssignableFrom(Module.class))) {
+                if (Arrays.stream(method.getParameterTypes()).anyMatch(type -> !Module.class.isAssignableFrom(type))) {
                     LOG.warn(String.format("Found a late injection target with non-injectable parameters: %s#%s(%s), ignoring.",
                             module.getClass().getSimpleName(), method.getName(),
                             Arrays.stream(method.getParameterTypes()).map(Class::getSimpleName).collect(Collectors.joining(", ")))

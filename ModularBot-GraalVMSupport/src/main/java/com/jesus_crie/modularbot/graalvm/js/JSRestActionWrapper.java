@@ -1,4 +1,4 @@
-package com.jesus_crie.modularbot.graalvm.discordjs;
+package com.jesus_crie.modularbot.graalvm.js;
 
 import net.dv8tion.jda.core.requests.RestAction;
 

@@ -11,8 +11,15 @@ import com.jesus_crie.modularbot.command.processing.Option;
 import com.jesus_crie.modularbot.command.processing.Options;
 import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
+import com.jesus_crie.modularbot.core.dependencyinjection.LateInjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
 import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
+import com.jesus_crie.modularbot.graalvm.GUtils;
+import com.jesus_crie.modularbot.graalvm.GraalModuleWrapper;
+import com.jesus_crie.modularbot.graalvm.js.JSPromiseExecutorProxy;
+import com.jesus_crie.modularbot.graalvm.js.JSRestActionWrapper;
 import com.jesus_crie.modularbot.logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot.messagedecorator.MessageDecoratorModule;
 import com.jesus_crie.modularbot.messagedecorator.decorator.AutoDestroyMessageDecorator;
@@ -24,6 +31,7 @@ import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
+import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.ModularLog;
@@ -34,8 +42,10 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.security.auth.login.LoginException;
 import java.awt.Color;
+import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public class ModularTestRun extends Module {
 
@@ -48,7 +58,8 @@ public class ModularTestRun extends Module {
                 )
                 .requestBaseModules()
                 .requestModules(
-                        ModularTestRun.class
+                        ModularTestRun.class,
+                        TestJSModule.class
                 )
                 .configureModule(NightConfigWrapperModule.class, "./example/config.json")
                 .configureModule(MessageDecoratorModule.class, "./example/decorator_cache.json")
@@ -70,6 +81,25 @@ public class ModularTestRun extends Module {
 
         //cmd.setCreatorId(182547138729869314L);
         cmd.registerCommands(new StopCommand(), new EvalCommand());
+        //cmd.registerCreatorQuickCommand("stop", e -> bot.shutdown());
+
+        // Test JS
+        TestJSModule js = bot.getModuleManager().getModule(TestJSModule.class);
+
+        cmd.registerQuickCommand("testpromise", commandEvent ->
+                js.acceptPromise(() -> 42)
+        );
+
+        cmd.registerQuickCommand("testpromisefail", commandEvent ->
+                js.acceptPromise(() -> {
+                    throw new RuntimeException();
+                })
+        );
+
+        cmd.registerQuickCommand("testra", commandEvent ->
+                js.listenRestAction(commandEvent.getChannel().sendMessage("YOLO !"))
+        );
+
 
         /// Config
         NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
@@ -158,6 +188,9 @@ public class ModularTestRun extends Module {
             dec.register(decorator);
         });
 
+        // TODO remove
+        //System.exit(0);
+
         try {
             bot.login();
         } catch (LoginException e) {
@@ -193,8 +226,58 @@ public class ModularTestRun extends Module {
         }
     }
 
-    public ModularTestRun() {
+    @InjectorTarget
+    public ModularTestRun(final SubModule1 module1, final SubModule2 module2) {
         super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
+        LOG.info("Main: Sub module 1 injection: " + (module1 == null ? "failed" : "successful"));
+        LOG.info("Main: Sub module 2 injection: " + (module2 == null ? "failed" : "successful"));
+    }
+
+    public static class SubModule1 extends Module {
+
+        @LateInjectorTarget
+        private ModularTestRun module;
+
+        @Override
+        public void onLoad(@Nonnull ModuleManager moduleManager, @Nonnull ModularBotBuilder builder) {
+            LOG.info("Sub module 1: Load !");
+            LOG.info("Sub module 1: Late module injection: " + (module == null ? "failed" : "successful"));
+        }
+    }
+
+    public static class SubModule2 extends Module {
+
+        @InjectorTarget
+        public SubModule2(final SubModule1 module1) {
+            super();
+            LOG.info("Sub2: Sub module 1 injection: " + (module1 == null ? "failed" : "successful"));
+        }
+
+        @Override
+        public void onLoad(@Nonnull ModuleManager moduleManager, @Nonnull ModularBotBuilder builder) {
+            LOG.info("Sub module 2: Load !");
+        }
+    }
+
+    public static class TestJSModule extends GraalModuleWrapper {
+
+        @InjectorTarget
+        public TestJSModule(@Nonnull final CommandModule cmdModule) {
+            super(new File("./example/main.js"), cmdModule);
+        }
+
+        public void acceptPromise(Supplier<Integer> action) {
+            safeInvoke("acceptPromise", GUtils.createJSPromise(getContext(), new JSPromiseExecutorProxy() {
+                @Override
+                public void run() {
+                    resolve(action.get());
+                }
+            }));
+        }
+
+        public void listenRestAction(RestAction<Message> action) {
+            safeInvoke("listenRestAction", GUtils.createJSPromise(getContext(), new JSRestActionWrapper<>(action)));
+        }
     }
 
     @Override

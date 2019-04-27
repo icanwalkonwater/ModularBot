@@ -46,7 +46,11 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DJSEventAdapter implements EventListener {
 
-    private Value eventEmitter;
+    private final Value eventEmitter;
+
+    public DJSEventAdapter(@Nonnull final Value eventEmitter) {
+        this.eventEmitter = eventEmitter;
+    }
 
     @Override
     public void onEvent(@Nonnull final Event event) {

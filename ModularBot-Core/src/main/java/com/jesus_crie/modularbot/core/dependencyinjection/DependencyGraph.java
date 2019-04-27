@@ -59,7 +59,7 @@ public class DependencyGraph {
     private void ensureEntryExist(@Nonnull final Class<? extends Module> actual) {
         dependencyGraph.putIfAbsent(
                 actual,
-                Pair.of(new LinkedList<>(), new LinkedList<>())
+                Pair.of(new ArrayList<>(), new ArrayList<>())
         );
     }
 

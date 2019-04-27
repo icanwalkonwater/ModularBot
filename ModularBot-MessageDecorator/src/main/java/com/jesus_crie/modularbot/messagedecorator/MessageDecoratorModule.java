@@ -5,6 +5,7 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.messagedecorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
@@ -44,11 +45,12 @@ public class MessageDecoratorModule extends Module {
         this("./decorator_cache.json");
     }
 
-    public MessageDecoratorModule(@Nonnull String cachePath) {
+    @InjectorTarget
+    public MessageDecoratorModule(@Nonnull final String cachePath) {
         this(new File(cachePath));
     }
 
-    public MessageDecoratorModule(@Nonnull File cachePath) {
+    public MessageDecoratorModule(@Nonnull final File cachePath) {
         super(INFO);
         cacheFile = cachePath;
     }
