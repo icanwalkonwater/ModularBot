@@ -1,0 +1,3 @@
+[submodule "ModularBot-TS-Types"]
+	path = ModularBot-TS-Types
+	url = git@github.com:JesusCrie/ModularBot-TS-Types.git

@@ -1,9 +1,6 @@
 # ModularBot 2
 [![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22)
 
-> This project is at its early stage of development, so any bug reports are
-welcome.
-
 > There are probably typos and some language mistakes in this project, if you
 see one, notify me.
 
