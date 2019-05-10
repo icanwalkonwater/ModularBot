@@ -11,4 +11,8 @@
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_STRING" value="-parameters" />
   </component>
+  <component name="TypeScriptCompiler">
+    <option name="enableServiceForProjectsWithoutConfig" value="false" />
+    <option name="recompileOnChanges" value="true" />
+  </component>
 </project>
