@@ -1,6 +1,5 @@
 package com.jesus_crie.modularbot;
 
-import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.command.AccessLevel;
 import com.jesus_crie.modularbot.command.Command;
 import com.jesus_crie.modularbot.command.CommandEvent;
@@ -51,6 +50,13 @@ public class ModularTestRun extends Module {
 
     private static final Logger LOG = LoggerFactory.getLogger("TestBot");
 
+    @InjectorTarget
+    public ModularTestRun(final SubModule1 module1, final SubModule2 module2) {
+        super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
+        LOG.info("Main: Sub module 1 injection: " + (module1 == null ? "failed" : "successful"));
+        LOG.info("Main: Sub module 2 injection: " + (module2 == null ? "failed" : "successful"));
+    }
+
     public static void main(String[] args) {
         final ModularBotBuilder botBuilder = new ModularBotBuilder(args[0])
                 .provideBuiltModules(
@@ -74,7 +80,7 @@ public class ModularTestRun extends Module {
         //config.useSecondaryConfig("deco", "./example/decorator.json");
 
         /* #### BUILD #### */
-        ModularBot bot = botBuilder.resolveModulesSilently().build();
+        ModularBot bot = botBuilder.resolveAndBuild();
 
         /// Commands
         CommandModule cmd = bot.getModuleManager().getModule(CommandModule.class);
@@ -103,6 +109,8 @@ public class ModularTestRun extends Module {
 
         /// Config
         NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
+
+        config.registerSingletonSecondaryConfig()
 
         Optional<Integer> startCount = config.getPrimaryConfig().getOptional("start_count");
         int count = startCount.orElse(0);
@@ -189,6 +197,12 @@ public class ModularTestRun extends Module {
         }
     }
 
+    @Override
+    public void onShardsReady(final @Nonnull ModularBot bot) {
+        super.onShardsReady(bot);
+        LOG.info("Module initialized !");
+    }
+
     public static class TestPanelDecorator extends PanelReactionDecorator {
 
         public TestPanelDecorator(@Nonnull final Message binding, final long timeout) {
@@ -215,13 +229,6 @@ public class ModularTestRun extends Module {
             e.getChannel().sendMessage("Okay, let s remove that").queue();
             destroy();
         }
-    }
-
-    @InjectorTarget
-    public ModularTestRun(final SubModule1 module1, final SubModule2 module2) {
-        super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
-        LOG.info("Main: Sub module 1 injection: " + (module1 == null ? "failed" : "successful"));
-        LOG.info("Main: Sub module 2 injection: " + (module2 == null ? "failed" : "successful"));
     }
 
     public static class SubModule1 extends Module {
@@ -269,12 +276,6 @@ public class ModularTestRun extends Module {
         public void listenRestAction(RestAction<Message> action) {
             safeInvoke("listenRestAction", GUtils.createJSPromise(getContext(), new JSRestActionWrapper<>(action)));
         }
-    }
-
-    @Override
-    public void onShardsReady(final @Nonnull ModularBot bot) {
-        super.onShardsReady(bot);
-        LOG.info("Module initialized !");
     }
 
     @CommandInfo(

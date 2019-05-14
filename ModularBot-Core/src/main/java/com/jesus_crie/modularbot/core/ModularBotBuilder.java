@@ -105,7 +105,7 @@ public class ModularBotBuilder {
     }
 
     /**
-     * Set the {@link IAudioSendFactory IAudioSendFactory} to use.
+     * Set the {@link IAudioSendFactory} to use.
      *
      * @param audioSendFactory The audio send factory to use.
      */
@@ -230,7 +230,7 @@ public class ModularBotBuilder {
     }
 
     /**
-     * Set the {@link ThreadFactory ThreadFactory} that will be used by the manager to create thread.
+     * Set the {@link ThreadFactory} that will be used by the manager to create thread.
      * This will not affect thread created by each shard.
      *
      * @param factory The thread factory to use.
@@ -383,9 +383,9 @@ public class ModularBotBuilder {
     }
 
     /**
-     * Create a new instance of {@link ModularBot ModularBot}.
+     * Create a new instance of {@link ModularBot}.
      *
-     * @return A new {@link ModularBot ModularBot}
+     * @return A new {@link ModularBot}
      */
     public ModularBot build() {
         if (!injectionContext.isResolved())
@@ -402,5 +402,15 @@ public class ModularBotBuilder {
                 enableBulkDeleteSplitting, useShutdownNow, enableMdcContext, contextProvider,
                 cacheFlags, moduleManager
         );
+    }
+
+    /**
+     * Alias for the chain {@code builder.resolveModulesSilently().build()}.
+     *
+     * @return A new {@link ModularBot}
+     */
+    public ModularBot resolveAndBuild() {
+        resolveModulesSilently();
+        return build();
     }
 }

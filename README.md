@@ -1,16 +1,23 @@
-# ModularBot 2
+# ModularBot
 [![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22)
 
 > There are probably typos and some language mistakes in this project, if you
 see one, notify me.
 
-ModularBot is a kind of little framework for making discord bots with [JDA](https://github.com/DV8FromTheWorld/JDA).
+ModularBot is a framework aimed at anyone that would like to create discord bot. It uses
+[JDA](https://github.com/DV8FromTheWorld/JDA) to interface with discord, otherwise it provides
+a robust mechanism of modules that enables you to create tiny to large scale projects with many features
+and at the same time, provides you a organized and transparent way to manage them and their interactions.
 
-It comes in little modules that can be added to the core and allow you to
-customize your installation by not having to compile useless things that you
-won't use.
+It's modularity allows you to build only the modules you want to use instead of everything which means
+with the correct build configuration, you will be able to split your application in small chunks and
+leverage the amount of code that will be rebuilt and uploaded to your hosting service.
 
-It's a v2 because there's been a long pause since v1 and JDA has changed a lot. 
+The full framework comes in small modules that allows you to choose the exact features you want.
+
+Side note: since v2.5.0, a module has been released that enables [GraalVM](https://www.graalvm.org/)
+users to write and build modules in every languages provided by GraalVM which means you are able to
+write modules in any language with the robustness of JDA.
 
 1. [Getting Started](#getting-started)
 2. [Modules](#modules)
@@ -29,7 +36,8 @@ It's a v2 because there's been a long pause since v1 and JDA has changed a lot.
 
 ## Getting Started
 
-You can download each modules with gradle from maven central.
+The framework is available on Maven Central but you still need to add JCenter to your repositories
+to be able to download JDA dependencies.
 ```groovy
 repositories {
     mavenCentral()
@@ -37,15 +45,21 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.jesus-crie:modularbot-base:2.3.4_18'
+    implementation 'com.jesus-crie:modularbot-core:2.5.0_22'
+    implementation 'com.jesus-crie:modularbot-logger:2.5.0_22'
+    implementation 'com.jesus-crie:modularbot-command:2.5.0_22'
 }
 ```
-And now you can register commands and start your bot with:
+As every module of the framework has the same version you can define a variable with the version to
+update every module at the same time.
+
+Now you can build your first instance of `ModularBot` using the `ModularBotBuilder` class which
+mirrors the behaviour of the classic `JDABuilder` but with additional methods.
 ```java
 // Build a new instance of ModularBot with the base modules.
 ModularBot bot = new ModularBotBuilder("token")
-        .autoLoadBaseModules()
-        .build();
+        .requestBaseModules() // Explicitly request every default modules
+        .resolveAndBuild(); // If you use only #build(), the modules will not be instantiated !
 
 // Register a quick command.
 CommandModule module = bot.getModuleManager().getModule(CommandModule.class);
@@ -53,64 +67,249 @@ module.registerCreatorQuickCommand("stop", e -> bot.shutdown());
 
 bot.login();
 ```
-That's all the code required to make ModularBot work with commands.
+> Note that this is a great way to start experiencing things but not the clean way to use the framework.
 
 ## Modules
 
-For simplicity, all of the modules (made by me) uses the same version
-name, so if version 2.1.0 is released for a module, **ALL** other modules
-will be updated to this version. So you can use a global variable do define
-the version of ModularBot that you want to use.
+Each module of your application is typically a collection of related utilities that depends on the same
+modules or provides the same kind of services. Each module is a singleton.
 
-All of the modules made by me are in this github repository and available
-on [Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22).
+The usage of 'request' for saying that you want to use a module refers to the fact that you are actually
+asking the DI to provide you an instance of a given module.
 
-To enable a module, add the corresponding artifact (+ version) to your
-gradle/maven dependencies and enable it in the `ModularBotBuilder` with
-the method `ModularBotBuilder#autoLoadBaseModules()` that will look for the
-"official" modules and load them automatically with their respective default
-settings, if you want to customize some parameters in those modules you need
-to register them one by one BEFORE calling `#autoLoadBaseModule()` (or not
-calling it at all).
+All of the modules in this github repository are available on
+[Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22).
 
-Note that when the associated instance of `ModularBot` is created, you can't
-register modules anymore.
+### Writing a module
 
-You can query a module from the `ModuleManager` (accessible with
-`ModularBot#getModuleManager()`) by providing the main class of the module
-(usually easy to find, ends with "Module" and located at the root of the package).
-For example:
+To get a first glance of what a module is, it way be usefull the start writing one on your own to better
+understand how to manipulate them.
+
+#### Quickstart
+
+Modules are just subclasses of `Module` and basically that's all that you need to create your first module.
 ```java
-ModularBot bot = ...;
-ModuleManager moduleManager = bot.getModuleManager();
-
-CommandModule module = moduleManager.getModule(CommandModule.class);
+public class MyModule extends Module {
+    
+    public MyModule() {
+        // Hello world !
+    }
+}
 ```
 
-For custom modules, look [here](#your-custom-module).
+Event the default constructor is optional here !
+
+Note that just that is not enough to tell the framework to create your module, we will register it in
+the last section of the chapter. Note also that you will almost never call this constructor directly,
+so don't make complex constructor with lots of overloads and all. Only one will be used.
+
+#### Lifecycle hooks
+
+But what if you want to do something when your bot starts ? Fortunately, `Module` implement `Lifecycle`
+which defines some lifecycle hooks that you can use to do things at certain steps of the bootstrapping of
+your bot until its shutdown. 
+
+For example you can override the method `Lifecycle#onLoad()` to perform some initialization just after
+the module has been constructed and before the bot is created. Other hooks includes
+`Lifecycle#onShardsReady()`, triggered when the bot comes online and is ready to go.
+
+The full listing of the callbacks is listed in the interface `Lifecycle`.
+
+#### Injecting another module
+
+You now have a module that can interact with the bot at any step of its lifecycle and thats great by
+you may want to split your code in multiple modules and communicate between them, or just use the
+default modules available like, for example the `CommandModule`, available in the `modularbot-command`
+maven artifact.
+
+There are to things required to inject a module:
+- First, you need to create a constructor that has the wanted module has one of its parameters.
+- Annotate this constructor with `@InjectorTarget` to tell the DI to use this constructor.
+
+**Important**: You can only have **one** annotated constructor and no more.
+
+For example if you want to write a module that register a command in the `CommandModule`, it will
+look like this:
+```java
+public class MyModule extends Module {
+    
+    @InjectorTarget
+    public MyModule(CommandModule cmdModule) {
+        cmdModule.registerCreatorQuickCommand("ping", e -> e.fastReply("Pong !"));
+    }
+}
+```
+
+Note that if your module is not explicitly request nor injected in another module, it will never be
+instantiated by the DI.
+
+#### Passing parameters to your module
+
+You may want to make a configurable module and inject these settings in the constructor. The surprise
+is: you can ! You can define any other type of parameters in your constructor and pass arguments to
+them. Consider this module:
+```java
+public class WelcomeModule extends Module {
+    
+    public WelcomeModule(NighConfigWrapperModule cfgModule, String messageFormat) {
+        // ...
+    }
+    
+    // ...
+}
+```
+This module needs the config module to work, which will be provided automatically, but also need
+a string as its second parameter, which the framework can't guess.
+
+You can define what will be the value passed this parameter in the `ModularBotBuilder` with
+`ModularBotBuilder#configureModule()`:
+```java
+ModularBot bot = new ModularBotBuilder("token")
+    .requestModules(WelcomeModule.class)
+    .configureModule(WelcomeModule.class, "Welcome %s !")
+    .resolveAndBuild();
+```
+
+You can also specify default parameters in the module class by creating a static field of type
+`ModuleSettingsProvider` and annotating it with `@DefaultInjectionParameters`. These settings will be
+used if to call to `#configureModule()` has been made !
+
+The order of your arguments matters, you need to provide them in the correct order but the presence of
+modules to be injected doesn't matter at all.
+
+#### Registering/Requesting your module
+
+If your module can't be registered implicitly (aka injected in another module), you need to do it
+yourself in the builder like:
+```java
+ModularBot bot = new ModularBotBuilder("token")
+    .requestModules(
+            MyAwesomeModule.class,
+            AnotherModule.class
+    )
+    .resolveAndBuild();
+```
+> Don't forget to resolve the modules using one of `#resolveModules()`, `#resolveModulesSilently()` or
+> `#resolveAndBuild()`.
+
+Note that `#requestBaseModules()` can be used to request all of the default/official modules.
+
+### Dependency Injection (DI)
+
+This dependency injector is a bit inspired of the way that angular module injection is used, defining a
+constructor with the requested modules, declaring the module and boom you have everything you want.
+
+This section will not talk of the internals of this feature but rather of its usage.
+
+#### Requiring another module (`@InjectorTarget`)
+
+Like you saw in the last section, you can request another module implicitly by *requiring* it. It means
+writing a constructor with the annotation and the module in question as a parameter.
+
+You can require as many modules as you want in this constructor, in theory you can even request the
+module twice or more as long as there have these requirements:
+- They need to extend `Module` of course, otherwise they will be treated like common parameters and not
+injections.
+- They are real modules, you can't inject a module by only knowing one of its superclasses which isn't
+instantiable.
+
+About the annotation (`@InjectorTarget`), there need to be **exactly one** constructor annotated by
+module, otherwise an exception will be thrown.
+> The only exception to that is the empty constructor, if the **only** constructor of your module is
+> a constructor without any parameters or the default constructor, you the annotation is optional.
+
+#### Late injections and circular dependencies (`@LateInjectorTarget`)
+
+If for some reason you have a circular dependency, the DI will throw an exception. A circular dependency
+is described by the fact that a module A requires module B that in some way also required module A.
+It can be a simple loop, `A -> B -> A -> ...` or a bigger loop like `A -> C -> B -> A -> ...`
+
+If such a loop shows up, the natural thing is to rethink your architecture a bit in my opinion. If for
+some reasons you can't, you can still take advantage of the late injection mechanism.
+
+Late injection takes place after *every* requested module has been instantiated. The DI will look for
+methods and fields annotated with `@LateInjectorTarget` and extract required modules from the method
+signature / the field type. Unlike the main injector target, parameters other than modules are considered
+an error and the whole method/field will be ignored.
+
+If the target is valid and **the module has already been built**, it will be assigned to the field /
+passed to the method. **The late injection will not build any additional modules !!** A late injector
+method can contains multiple injections.
+
+Back to the case of the circular dependency, if you have something like `A -> B -> A`, you can choose
+to late inject one of the two. For the example, A will be late injected into B.
+
+You will end up with something like:
+```java
+public class A extends Module {
+    
+    // Main target
+    @InjectorTarget
+    public A(B moduleB) {}
+}
+
+public class B extends Module {
+    
+    // Late inject via a field
+    @LateInjectorTarget
+    private A moduleA;
+    
+    // Main target
+    @InjectorTarget
+    public B() {}
+    
+    // Late inject via a method
+    @LateInjectorTarget
+    public void whatever(A moduleA) {}
+}
+```
+> For the sake of the example, both a field and a method late injector target are used. This can work
+> but just don't.
+
+Here, module A require the module B in its target which lead to the instantiation of module B. Module B
+doesn't require anything from the point of view of the main target so it can be instantiated without
+any constraint and module A requirements are fulfilled and A can be instantiated.
+
+After everyone has been instantiated, the late injection come in place and sees the field target, query
+the corresponding module (A) and set its value to it. Then it looks for method targets, find the method
+and fulfill its dependency like for the field.
+
+If you've been paying attention, you will notice something a little problematic with this solution. If
+We request only module B, module A will never be instantiated because it is never referenced in the main
+injector target and the late injection will just throw a warning when it will see that it hasn't the
+module A ready. So for this to work, you need to request the module A, which *require* module B.
+
+You can also take advantage of this late injection mechanism to make optional dependencies.
+
+#### Building modules manually
+
+The DI allows you to provide already built modules if for some reason you want to provide you own
+instance of a module.
+
+This is particularly useful for the logger module which need to be built to start receiving logs.
+```java
+ModularBot bot = new ModularBotBuilder("token")
+    .provideBuiltModules(
+            new ConsoleLoggerModule()
+    )
+    .resolveAndBuild();
+```
 
 ### Available modules
-> The modules with a * are included in the [Base](#Base) module
 
-Here is a diagram of the dependencies between each modules.
-![Module Dependencies](./diagrams/module_dependencies.png)
-
-#### Base
-> *Artifact: `com.jesus-crie:modularbot-base`.*
-
-There is no additional code in this module other than the code provided by
-the modules [Core](#core*), [Logger](#console-logger*) and [Command](#command*).
-
-This is basically a shortcut to import these 3 modules in one line.
+ModularBot provides a few default modules that covers the primary needs of any discord bot such as config
+files, commands, ... 
 
 #### Core*
 [![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
 > *Artifact: `com.jesus-crie:modularbot-core`.*
 
+This is the core of the framework, its contains the main classes like `ModularBot`, `Module` and the DI.
 If you want only the base code without any modules you can use this artifact.
 
-Use it if you want to use another command system or another implementation
-of SLF4J. It only contains the classes necessary to use JDA and the module manager.
+It doesn't have any default logger, like the rest of the framework it uses the slf4j logger which
+a custom implementation is provided in the logger module and works out of the box without any
+configuration.
 
 #### Console Logger*
 [![Javadocs logger](http://www.javadoc.io/badge/com.jesus-crie/modularbot-logger.svg?label=javadoc-logger)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-logger)
@@ -118,61 +317,58 @@ of SLF4J. It only contains the classes necessary to use JDA and the module manag
 
 Provides an implementation of [SLF4J](https://www.slf4j.org/).
 
-You can use a logger like this:
+Works out of the box without the need of any configuration. But you can still configure the message
+format and the log level via the static variables in the module class.
+
+Loggers are typically constants in the class where they are declared.
+
+A typical setup for a logger looks like:
 ```java
-Logger logger = LoggerFactory.getLogger("Some Name");
-logger.info("Hi mom");
+public class MyClass {
+    private static final Logger LOG = LoggerFactory.getLogger("MyClass");
+    
+    public void whatever() {
+        LOG.info("I like trains");
+    }
+}
 ```
 
-You can customize the output of the logger by modifying the two variables
-in `ConsoleLoggerModule`.
-
-The default value for `FORMAT_LOG` makes logs look like this:
-```
-[16:11:01] [Info] [main] [ModularBot]: Starting shards...
-[HH:mm:ss] [Level] [Thread] [Logger name]: Message
-```
-
-With this module, each log is an instance of `ModularLog` that provide all of
-the necessary information about a specific log. You can listen to them by
-registering a listener using `ModularLogger#addListener`.
+You can listen to logs by yourself by adding a listener using the static `ModularLogger#addListener()`
+method.
 
 #### Command*
 [![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
 > *Artifact: `com.jesus-crie:modularbot-command`*
 
-This module provide a complete command system. Commands that looks like
+This module provide a complete command system to craft commands that looks like
+
 `!command arg1 arg2 "arg 3" --explicit-option arg -i -o "implicit options"`
 
-With this system each command need to have a dedicated class that extends
-`Command`. You can provide basic information about this command using the
-`@CommandInfo` annotation this class to avoid using a constructor.
+With this system each command need to have a dedicated class that extends `Command`. You can provide 
+basic information about this command using the `@CommandInfo` annotation this class to avoid using a
+constructor.
  
-Note that only the constructors `Command#Command()` and
-`Command#Command(AccessLevel)` uses the annotation.
+Note that only the constructors `Command#Command()` and `Command#Command(AccessLevel)` uses the
+annotation.
 
 > Note that if you want to specify an `AccessLevel` you need to use a constructor.
 
-The `AccessLevel` of a command is a set of prerequisites that a user need to
-satisfy before using a command. It contains a set of permissions that the user
-need to satisfy if the command is executed in a guild, plus some flags and
-the ID of an user if you want to authorize only one person. However you can
-still override the method `AccessLevel#check(CommandEvent)` and implement
-your own checks.
+The `AccessLevel` of a command is a set of prerequisites that a user need to satisfy before using a
+command. It contains a set of permissions that the user need to satisfy if the command is executed in 
+a guild, plus some flags and the ID of an user if you want to authorize only one person. However you 
+can still override the method `AccessLevel#check(CommandEvent)` and implement your own checks.
 
 > The way that `AccessLevel`s are made is a bit crappy so expect changes.
 
-Each command have a set of `CommandPattern`s that correspond to a certain
-manner to type a command. These patterns can be found automatically when
-the command class is instantiated* by looking at the methods in the class
-annotated with `@RegisterPattern`.
+Each command have a set of `CommandPattern`s that correspond to a certain manner to type a command.
+These patterns can be found automatically when the command class is instantiated* by looking at the
+methods in the class annotated with `@RegisterPattern`.
 
-Note that if you want to take full advantage of this system you need to provide
-the argument `-parameters` to your compiler to be able to read the names of
-your method parameters.
+Note that if you want to take full advantage of this system you need to provide the argument
+`-parameters` to your compiler to be able to read the names of your method parameters.
 
-With this system a command that have this syntax `!command <@User> add <String>`
-can be automatically registered by a method signature like this:
+With this system a command that have this syntax `!command <@User> add <String>` can be automatically
+registered by a method signature like this:
 ```java
 @RegisterPattern
 protected void someMethod(CommandEvent event, Options options, User user, Void add, String string) {}
@@ -180,100 +376,70 @@ protected void someMethod(CommandEvent event, Options options, User user, Void a
 or:
 ```java
 @RegisterPattern(arguments = {"USER", "'add'", "STRING"})
-protected void someMethod(CommandEvent event, Options options) {}
+protected void someMethod(CommandEvent event, Options options, User user, Void add, String string) {}
 ```
-Note that the strings provided in the annotations (except for the second) are
-the names of constants in the [Argument class](./ModularBot-Command/src/main/java/com/jesus_crie/modularbot_command/processing/Argument.java).
-You can register your own class that contains such constants annotated with
-`@RegisterArgument` with the method `Argument#registerArguments(Class)`.
+Note that the strings provided in the annotations (except for the second) are the names of constants
+in the [Argument class](./ModularBot-Command/src/main/java/com/jesus_crie/modularbot_command/processing/Argument.java).
+You can register your own class that contains such constants annotated with `@RegisterArgument` with
+the method `Argument#registerArguments(Class)`.
 
-There is a variety of possibility to make such methods, all of them can be
-found in this [Test class](./ModularBot-Command/src/test/java/com/jesus_crie/modularbot_command/CommandTest.java).
+There is a variety of possibility to make such methods, all of them can be found in this
+[Test class](./ModularBot-Command/src/test/java/com/jesus_crie/modularbot_command/CommandTest.java).
 
-> *: It's planned to do this at compile-time but for now it happens basically
-when the command is registered so when the bot is waking up.
+> *: It's planned to do this at compile-time but for now it happens basically when the command is
+> registered so when the bot is waking up.
 
-Each command can accept a certain set of `Option`s provided in the constructor
-or in the `@CommandInfo`. These options are totally optional and to not
-appear in the `CommandPattern`s. These are added at the end of the command
-implicitly (`-f`) or explicitly (`--force`).
+Each command can accept a certain set of `Option`s provided in the constructor or in the `@CommandInfo`.
+These options are totally optional and to not appear in the `CommandPattern`s. These are added at the 
+end of the command implicitly (`-f`) or explicitly (`--force`).
 
-Explicit options need to be prefixed with `--` and the long name of the option
-whereas implicit ones are prefixed by `-` and followed by one or more letters
-each representing the short name of an option. If they are followed by a string
-it will be considered as the argument of the option (or the last in implicit
-options).
+Explicit options need to be prefixed with `--` and the long name of the option whereas implicit ones 
+are prefixed by `-` and followed by one or more letters each representing the short name of an option.
+If they are followed by a string it will be considered as the argument of the option (or the last in
+implicit options).
 
-Once parsed these options are accessible through the `Options` object provided
-along the arguments to the patterns. The argument of each option is also
-present.
+Once parsed these options are accessible through the `Options` object provided along the arguments to
+the patterns. The argument of each option is also present.
 
-Note that like the `Argument`s, all of the `Option`s names are constants in
-the [Option class](./ModularBot-Command/src/main/java/com/jesus_crie/modularbot_command/processing/Option.java)
+Note that like the `Argument`s, all of the `Option`s names are constants in the
+[Option class](./ModularBot-Command/src/main/java/com/jesus_crie/modularbot_command/processing/Option.java)
 and you can register your own constants with `Option#registerOptions(Class)`.
 
-**Experimental:** In the `CommandModule` you can set flags to the command
-processor to modify the behaviour of the algorithm but it's experimental
-and can lead to unexpected behaviour. This feature isn't a priority so if
-your're a volunteer you can fork this repo and send a pull request.
+**Experimental:** In the `CommandModule` you can set flags to the command processor to modify the
+behaviour of the algorithm but it's experimental and can lead to unexpected behaviour. This feature 
+isn't a priority so if your're a volunteer you can fork this repo and send a pull request.
 
-Finally, you can listen to the success or the failure of a command typed by a
-user by registering your own `CommandListener` with `CommandModule#addListener`.
+Finally, you can listen to the success or the failure of a command typed by a user by registering your
+own `CommandListener` with `CommandModule#addListener`.
 
 #### Night Config Wrapper
 [![Javadocs config](http://www.javadoc.io/badge/com.jesus-crie/modularbot-night-config-wrapper.svg?label=javadoc-night-config-wrapper)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-night-config-wrapper)
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
-This module uses [NightConfig 3.6.0](https://github.com/TheElectronWill/Night-Config)
-to load, parse and save config files. You will be forces to have a "primary"
-config file and you can have multiple secondary config files.
+This module uses [NightConfig 3.6.0](https://github.com/TheElectronWill/Night-Config) to load, parse
+and save config files. You will be forced to have a "primary" config file. You can also register names
+groups of secondary config files as well singleton config groups (basically a named config).
 
-Note that the default config file contains information that will be delivered
-to the CommandModule like the "creator_id" and a list of custom prefixes for
-guilds. Note that the creator id will only be loaded whereas the custom
-prefixes will be loaded and saved when the module is unloaded.
+Note that the default config file contains information that will be delivered to the `CommandModule`
+like the "creator_id" and a list of custom prefixes for guilds. Note that the creator id will only be 
+loaded whereas the custom prefixes will be loaded and saved when the module is unloaded.
 
-By default, the primary config will be created like this:
-```java
-FileConfigBuilder builder = FileConfig.builder("./config.json")
-        .defaultRessource("/default_json.json")
-        .autoReload()
-        .concurrent();
-FileConfig primaryConfig = builder.build();
-```
-
-But the `#build()` method will be called only at the initialisation so you
-can still customize the builder in the meantime using `NightConfigWrapperModule#customizePrimaryConfig()`
-
-You can also totally override this config by using the other constructor
-which will only create a builder with the given path without any alteration.
-
-There are also "secondary" config files that you can register and can exist
-alongside the primary config file. You can also load an entire folder of
-config file and it will create a "group" of config files that you can
-query back whenever you want but querying an entire group can be costly
-depending of how many files you have.
+You can customize the path of the default config by configuring the module but if you want to use a
+completely different `FileConfig` you will need to instantiate it yourself and provide it as a built
+module.
 
 You can use secondary config files like this:
 ```java
-NightConfigWrapperModule module = ...;
-
-// Regular secondary config
-module.useSecondaryConfig("levels", "./levels.json");
-
-// Load an entire config group but only the .json files and not the subfolders
-module.loadConfigGroup("users", "./users/", false, "^.+\\.json$")
-// or simply
-module.loadConfigGroup("users", "./users/")
+public class MyModule extends Module {
+    @InjectorTarget
+    public MyModule(NightConfigWrapperModule cfgModule) {
+        FileConfig cacheFile = cfgModule.registerSingletonSecondaryConfig("cache", "./cache.json");
+    }
+}
 ```
 
-Then you can query the secondary configs by their names, the names for a
-config group will be `[group name].[filename]`, for exemple `users.michel.json`
-for the config file located at `./users/michel.json` and loaded by one of the
-`#loadConfigGroup()` methods.
-
-This module is entirely based on [Night Config](https://github.com/TheElectronWill/Night-Config)
-and I hardly recommend to read its documentation.
+This module is entirely based on [Night Config](https://github.com/TheElectronWill/Night-Config) and I
+really recommend you to read its documentation.
 
 #### JS Nashorn support
 [![Javadocs nashorn](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-support)

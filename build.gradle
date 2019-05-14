@@ -26,7 +26,7 @@ allprojects {
     apply plugin: 'signing'
 
     group 'com.jesus-crie'
-    version('2.4.1_' + getBuildNumber())
+    version('2.5.0_' + getBuildNumber())
 
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
@@ -47,7 +47,7 @@ allprojects {
     }
 
     dependencies {
-        testImplementation 'org.junit.platform:junit-platform-gradle-plugin:1.2.0'
+        testImplementation "org.junit.platform:junit-platform-gradle-plugin:1.2.0"
         testImplementation 'org.junit.platform:junit-platform-launcher:1.2.0'
         testImplementation 'org.junit.jupiter:junit-jupiter-api:5.2.0'
         testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.2.0'
@@ -117,6 +117,11 @@ project(':modularbot-message-decorator') {
 project(':modularbot-graalvm-support') {
     ext.name = 'ModularBot - GraalVM Support'
     project.description = 'Module that enable the support of module written in any languages supported by GraalVM.'
+}
+
+project(':modularbot-graalvm-support-discordjs') {
+    ext.name = 'ModularBot - GraalVM Support DJS'
+    project.description = 'Extension to the GraalVM module that emulates the DiscordJS API.'
 }
 
 subprojects {
