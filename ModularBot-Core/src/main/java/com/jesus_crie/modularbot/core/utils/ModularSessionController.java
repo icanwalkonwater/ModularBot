@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class ModularSessionController extends SessionControllerAdapter {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger("Session Controller");
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger("SessionController");
 
     @Override
     public void appendSession(SessionConnectNode node) {

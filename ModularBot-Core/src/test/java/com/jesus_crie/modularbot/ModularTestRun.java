@@ -65,7 +65,7 @@ public class ModularTestRun extends Module {
                 .configureModule(MessageDecoratorModule.class, "./example/decorator_cache.json")
                 .useShutdownNow();
 
-        ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.DEBUG;
+        ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.INFO;
 
         Logger l = LoggerFactory.getLogger("hey");
         l.trace("HELLO");
@@ -132,16 +132,7 @@ public class ModularTestRun extends Module {
             AlertReactionDecorator dec = new AlertReactionDecorator(m, 1000 * 100, false);
             dec.setup();
 
-            FileConfig cfg = config.registerSingletonSecondaryConfig("deco", "./example/decorator.json");
-            cfg.set("dec100", dec.serialize());
-            cfg.save();
-        });
-
-        // Alert 100s loaded.
-        cmd.registerQuickCommand("ddA100", e -> {
-            FileConfig cfg = config.getSecondaryConfigFile("deco");
-            AlertReactionDecorator dec = AlertReactionDecorator.tryDeserialize(cfg.get("dec100"), bot);
-            dec.setup();
+            decorator.registerDecorator(dec);
         });
 
         // Auto destroy 10s

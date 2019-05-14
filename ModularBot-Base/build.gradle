@@ -1,5 +1,0 @@
-dependencies {
-    implementation project(':modularbot-core')
-    implementation project(':modularbot-logger')
-    implementation project(':modularbot-command')
-}

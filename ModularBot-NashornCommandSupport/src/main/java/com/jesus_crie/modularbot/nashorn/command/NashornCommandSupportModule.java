@@ -3,6 +3,7 @@ package com.jesus_crie.modularbot.nashorn.command;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.command.CommandModule;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
 import com.jesus_crie.modularbot.core.nashorn.JavaScriptModule;
@@ -15,13 +16,15 @@ import javax.annotation.Nonnull;
 @Deprecated
 public class NashornCommandSupportModule extends Module {
 
-    private static final Logger LOG = LoggerFactory.getLogger("NashornCommandSupportModule");
+    private static final Logger LOG = LoggerFactory.getLogger("NashornCommandSupport");
 
     private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Command Support", ModularBotBuildInfo.AUTHOR,
             ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
+    @InjectorTarget
     public NashornCommandSupportModule() {
         super(INFO);
+        LOG.info("Requested");
     }
 
     @SuppressWarnings("ConstantConditions")

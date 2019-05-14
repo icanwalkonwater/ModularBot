@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 public final class DependencyInjector {
 
-    private static final Logger LOG = LoggerFactory.getLogger("DI");
+    private static final Logger LOG = LoggerFactory.getLogger("DependencyInjector");
 
     // Input & Output of the injector
     private final Map<Class<? extends Module>, Module> builtModules = new HashMap<>();

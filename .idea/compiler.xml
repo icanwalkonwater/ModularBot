@@ -4,6 +4,8 @@
     <bytecodeTargetLevel>
       <module name="modularbot-config_main" target="1.8" />
       <module name="modularbot-config_test" target="1.8" />
+      <module name="modularbot.modularbot-base.main" target="1.8" />
+      <module name="modularbot.modularbot-base.test" target="1.8" />
       <module name="modularbot.modularbot-bootstrap.main" target="1.8" />
       <module name="modularbot.modularbot-bootstrap.test" target="1.8" />
     </bytecodeTargetLevel>

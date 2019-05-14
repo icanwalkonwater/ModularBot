@@ -3,8 +3,11 @@ package com.jesus_crie.modularbot.core.nashorn;
 import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.dependencyinjection.DefaultInjectionParameters;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
+import com.jesus_crie.modularbot.core.module.ModuleSettingsProvider;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import org.slf4j.Logger;
@@ -22,6 +25,8 @@ import java.util.function.Consumer;
 @Deprecated
 public class NashornSupportModule extends Module {
 
+    private static final Logger LOG = LoggerFactory.getLogger("NashornSupport");
+
     private static final ModuleInfo INFO = new ModuleInfo("JS Nashorn Support", ModularBotBuildInfo.AUTHOR,
             ModularBotBuildInfo.GITHUB_URL, ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
@@ -29,11 +34,12 @@ public class NashornSupportModule extends Module {
     private static final String SCRIPT_HEADER_FILE = "_header.js";
     private static final String SCRIPT_MAIN_FILE = "main.js";
 
-    private static final Logger LOG = LoggerFactory.getLogger("NashornSupport");
-
     private final NashornScriptEngine ENGINE;
     private final File SCRIPT_FOLDER;
     private List<JavaScriptModule> modules = new ArrayList<>();
+
+    @DefaultInjectionParameters
+    private static final ModuleSettingsProvider DEFAULT_SETTINGS = new ModuleSettingsProvider(new File(DEFAULT_FOLDER).getAbsoluteFile());
 
     public NashornSupportModule() {
         this(new File(DEFAULT_FOLDER).getAbsoluteFile());
@@ -43,8 +49,11 @@ public class NashornSupportModule extends Module {
         this(new File(scriptLocation));
     }
 
+    @InjectorTarget
     public NashornSupportModule(@Nonnull final File scriptLocation) {
         super(INFO);
+        LOG.info("Requested");
+
         if (!scriptLocation.exists()) {
             if (!scriptLocation.mkdirs())
                 throw new IllegalStateException("Failed to create script directory !");

@@ -84,11 +84,6 @@ project(':modularbot-core') {
     }
 }
 
-project(':modularbot-base') {
-    ext.name = 'ModularBot - Core'
-    project.description = 'Bundle that includes the modules core, logger and command.'
-}
-
 project(':modularbot-logger') {
     ext.name = 'ModularBot - Logger'
     project.description = 'Module with a default implementation of SLF4J.'
@@ -140,7 +135,7 @@ subprojects {
                 pom {
                     name = project.ext.name
                     description = project.description
-                    url = 'https://github.com/JesusCrie/ModularBot_v2'
+                    url = 'https://github.com/JesusCrie/ModularBot'
 
                     developers {
                         developer {
@@ -160,8 +155,8 @@ subprojects {
 
                     scm {
                         connection = 'scm:git:git://github.com/JesusCrie/ModularBot_v2.git'
-                        developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot_v2.git'
-                        url = 'https://github.com/JesusCrie/ModularBot_v2'
+                        developerConnection = 'scm:git:ssh://github.com/JesusCrie/ModularBot.git'
+                        url = 'https://github.com/JesusCrie/ModularBot'
                     }
                 }
             }

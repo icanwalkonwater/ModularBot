@@ -5,7 +5,9 @@ import com.electronwill.nightconfig.core.file.FileConfig;
 import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.dependencyinjection.DefaultInjectionParameters;
 import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
+import com.jesus_crie.modularbot.core.module.ModuleSettingsProvider;
 import com.jesus_crie.modularbot.messagedecorator.decorator.MessageDecorator;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
@@ -27,11 +29,11 @@ import java.util.stream.Collectors;
 
 public class MessageDecoratorModule extends Module {
 
+    private static final Logger LOG = LoggerFactory.getLogger("MessageDecorator");
+
     private static final ModuleInfo INFO = new ModuleInfo("Message Decorator",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
             ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
-
-    private static final Logger LOG = LoggerFactory.getLogger("MessageDecoratorModule");
 
     private static final int CLEANUP_PERIOD_SECOND = 1800; // 30min
     private static final String CONFIG_DECORATOR_CACHE = "_modularDecoratorCache";
@@ -39,25 +41,21 @@ public class MessageDecoratorModule extends Module {
 
     private Map<Long, MessageDecorator<?>> decorators = Collections.emptyMap();
     private final File cacheFile;
-    private FileConfig cache;
+    private final FileConfig cache;
 
-    public MessageDecoratorModule() {
-        this("./decorator_cache.json");
-    }
+    @DefaultInjectionParameters
+    private static final ModuleSettingsProvider DEFAULT_SETTINGS = new ModuleSettingsProvider("./decorator_cache.json");
 
     @InjectorTarget
-    public MessageDecoratorModule(@Nonnull final String cachePath) {
-        this(new File(cachePath));
+    public MessageDecoratorModule(@Nonnull final NightConfigWrapperModule config, @Nonnull final String cachePath) {
+        this(config, new File(cachePath));
     }
 
-    public MessageDecoratorModule(@Nonnull final File cachePath) {
+    public MessageDecoratorModule(@Nonnull final NightConfigWrapperModule config, @Nonnull final File cachePath) {
         super(INFO);
-        cacheFile = cachePath;
-    }
+        LOG.info("Requested");
 
-    @Override
-    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {
-        NightConfigWrapperModule config = moduleManager.getModule(NightConfigWrapperModule.class);
+        cacheFile = cachePath;
         cache = config.registerSingletonSecondaryConfig(CONFIG_DECORATOR_CACHE, cacheFile);
     }
 

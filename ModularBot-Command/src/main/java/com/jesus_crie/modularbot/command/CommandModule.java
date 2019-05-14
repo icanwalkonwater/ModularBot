@@ -5,9 +5,12 @@ import com.jesus_crie.modularbot.command.listener.DiscordCommandListener;
 import com.jesus_crie.modularbot.command.processing.CommandProcessor;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.ModularBotBuilder;
+import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
 import net.dv8tion.jda.core.entities.Guild;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -15,6 +18,8 @@ import java.util.*;
 import java.util.function.Consumer;
 
 public class CommandModule extends Module {
+
+    private static final Logger LOG = LoggerFactory.getLogger("Command");
 
     private static final ModuleInfo INFO = new ModuleInfo("Command",
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
@@ -62,8 +67,10 @@ public class CommandModule extends Module {
 
     private List<CommandListener> listeners = new ArrayList<>();
 
+    @InjectorTarget
     public CommandModule() {
         super(INFO);
+        LOG.info("Requested");
     }
 
     @Override

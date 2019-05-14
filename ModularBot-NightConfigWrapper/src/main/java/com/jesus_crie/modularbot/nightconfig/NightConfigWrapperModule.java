@@ -52,6 +52,7 @@ public class NightConfigWrapperModule extends Module {
 
     public NightConfigWrapperModule(@Nonnull final FileConfigBuilder builder) {
         super(INFO);
+        LOG.info("Requested");
         primaryConfig = builder.build();
     }
 
@@ -62,12 +63,8 @@ public class NightConfigWrapperModule extends Module {
     }
 
     @Override
-    public void onShutdownShards() {
-        saveEveryConfigs();
-    }
-
-    @Override
     public void onUnload() {
+        saveEveryConfigs();
         closeEveryConfigs();
     }
 
@@ -281,7 +278,7 @@ public class NightConfigWrapperModule extends Module {
      */
     private void saveEveryConfigs() {
         primaryConfig.save();
-        configGroups.values().forEach(set -> set.forEach(FileConfig::close));
+        configGroups.values().forEach(set -> set.forEach(FileConfig::save));
     }
 
     /**
