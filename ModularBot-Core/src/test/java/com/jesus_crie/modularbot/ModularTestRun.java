@@ -110,8 +110,6 @@ public class ModularTestRun extends Module {
         /// Config
         NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
 
-        config.registerSingletonSecondaryConfig()
-
         Optional<Integer> startCount = config.getPrimaryConfig().getOptional("start_count");
         int count = startCount.orElse(0);
         count++;

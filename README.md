@@ -21,18 +21,26 @@ write modules in any language with the robustness of JDA.
 
 1. [Getting Started](#getting-started)
 2. [Modules](#modules)
-    1. [Available Modules](#available-modules)
-        1. [Base](#base)
-        2. [Core](#core*)
-        3. [Console Logger](#console-logger*)
-        4. [Command](#command*)
+    1. [Writing a Module](#writing-a-module)
+        1. [Quickstart](#quickstart)
+        2. [Lifecycle Hooks](#lifecycle-hooks)
+        3. [Injecting another Module](#injecting-another-module)
+        4. [Passing Parameters to your Module](#passing-parameters-to-your-module)
+        5. [Registering/Requesting your Module](#registeringrequesting-your-module)
+    2. [Dependency Injection (DI)](#dependency-injection-di)
+        1. [Requiring another Module (`@InjectorTarget`)](#requiring-another-module-injectortarget)
+        2. [Late injections and circular dependencies (`@LateInjectorTarget`)](#late-injections-and-circular-dependencies-lateinjectortarget)
+        3. [Building modules manually](#building-modules-manually)
+    3. [Available Modules](#available-modules)
+        2. [Core](#core)
+        3. [Console Logger](#console-logger)
+        4. [Command](#command)
         5. [Night Config Wrapper](#night-config-wrapper)
-        6. [JS Nashorn Support](#js-nashorn-support)
-        7. [JS Nashorn Command Support](#js-nashorn-command-support)
+        6. [~~JS Nashorn Support~~](#js-nashorn-support)
+        7. [~~JS Nashorn Command Support~~](#js-nashorn-command-support)
         8. [Message Decorator](#message-decorator)
-        9. [Audio](#audio)
-        10. [Eval](#eval)
-    2. [Your Custom Module](#your-custom-module)
+        9. [GraalVM Support](#graalvm-support)
+        10. [GraalVM Support DiscordJS](#graalvm-support-discordjs)
 
 ## Getting Started
 
@@ -45,9 +53,9 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.jesus-crie:modularbot-core:2.5.0_22'
-    implementation 'com.jesus-crie:modularbot-logger:2.5.0_22'
-    implementation 'com.jesus-crie:modularbot-command:2.5.0_22'
+    implementation 'com.jesus-crie:modularbot-core:2.5.0_23'
+    implementation 'com.jesus-crie:modularbot-logger:2.5.0_23'
+    implementation 'com.jesus-crie:modularbot-command:2.5.0_23'
 }
 ```
 As every module of the framework has the same version you can define a variable with the version to
@@ -300,7 +308,7 @@ ModularBot bot = new ModularBotBuilder("token")
 ModularBot provides a few default modules that covers the primary needs of any discord bot such as config
 files, commands, ... 
 
-#### Core*
+#### Core
 [![Javadocs core](http://www.javadoc.io/badge/com.jesus-crie/modularbot-core.svg?label=javadoc-core)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-core)
 > *Artifact: `com.jesus-crie:modularbot-core`.*
 
@@ -311,7 +319,7 @@ It doesn't have any default logger, like the rest of the framework it uses the s
 a custom implementation is provided in the logger module and works out of the box without any
 configuration.
 
-#### Console Logger*
+#### Console Logger
 [![Javadocs logger](http://www.javadoc.io/badge/com.jesus-crie/modularbot-logger.svg?label=javadoc-logger)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-logger)
 > *Artifact: `com.jesus-crie:modularbot-logger`.*
 
@@ -336,7 +344,7 @@ public class MyClass {
 You can listen to logs by yourself by adding a listener using the static `ModularLogger#addListener()`
 method.
 
-#### Command*
+#### Command
 [![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
 > *Artifact: `com.jesus-crie:modularbot-command`*
 
@@ -448,13 +456,15 @@ really recommend you to read its documentation.
 > As described in the [JEP 335](http://openjdk.java.net/jeps/335), the Nashorn JavaScript engine has been deprecated in Java 11.
 > **Therefore this module is considered deprecated**.
 
-This module allows you to load modules in JavaScript using the Nashorn
+> As a replacement, consider using GraalVM and the associated module.
+
+~~This module allows you to load modules in JavaScript using the Nashorn
 Script Engine. It will consider each subdirectory in `./scripts/` (or the
 specified base folder) as a module and will try to load the `main.js` of
 each one (if it exists) and will wrap any object in the `module` top-level
-variable into a module and send lifecycle events to it.
+variable into a module and send lifecycle events to it.~~
 
-A module in JavaScript looks like this:
+~~A module in JavaScript looks like this:~~
 ```javascript
 function TestModule() {
     this.log = LoggerFactory.getLogger("TestModule");
@@ -468,27 +478,29 @@ function TestModule() {
 var module = new TestModule();
 ```
 
-See [this section](#your-custom-module) for more information about the
-custom modules.
+~~See [this section](#your-custom-module) for more information about the
+custom modules.~~
 
-For each script, a header is added that imports some essential classes.
+~~For each script, a header is added that imports some essential classes.
 You can found this header [here](./ModularBot-NashornSupport/src/main/resources/script_header.js).
 It can be overridden if there is a file called `_header.js` in the
-scripts folder.
+scripts folder.~~
 
 #### JS Nashorn Command Support
 [![Javadocs nashorn command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-nashorn-command-support.svg?label=javadoc-nashorn-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-nashorn-command-support)
 > *Artifact: `com.jesus-crie:modularbot-nashorn-command-support`*
 
-An extension to the JS module that provide a way to use the command module
-in JavaScript.
+> As an extension of the nashorn support module, this module too is considered **deprecated**.
 
-This module let you define a `#getCommands()` that returns an array of
+~~An extension to the JS module that provide a way to use the command module
+in JavaScript.~~
+
+~~This module let you define a `#getCommands()` that returns an array of
 `JavaScriptCommand` that will be wrapped into real command objects and
 registered. But because of my poor skills in JavaScript you can't use the
 annotation system and you need to register your patterns explicitly like
 in the example below. Regardless of that, all of the other features are
-available.
+available.~~
 
 ```javascript
 with (baseImports) {
@@ -531,14 +543,14 @@ with (baseImports) {
 }
 ```
 
-Note that this code comes in addition to the module declaration. If a script
-doesn't contains a module, its entirely ignored.
+~~Note that this code comes in addition to the module declaration. If a script
+doesn't contains a module, its entirely ignored.~~
 
-> You can also extends `JavaScriptCommand` but for some reason Nashorn do
+> ~~You can also extends `JavaScriptCommand` but for some reason Nashorn do
 not evaluate the arrays correctly and messes up everything, but feel free
-to experiment and send me a pull request.
+to experiment and send me a pull request.~~
 
-For convenience you can add these imports to your custom header:
+~~For convenience you can add these imports to your custom header:~~
 ```javascript
 var JavaScriptCommandArray = Java.type("com.jesus_crie.modularbot_nashorn_command_support.JavaScriptCommand[]");
 
@@ -551,78 +563,148 @@ var commandImports = new JavaImporter(com.jesus_crie.modularbot_nashorn_command_
 [![Javadocs message decorator](http://www.javadoc.io/badge/com.jesus-crie/modularbot-message-decorator.svg?label=javadoc-message-decorator)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-message-decorator)
 > *Artifact: `com.jesus-crie:modularbot-message-decorator`*
 
-Decorators are objects that can be bound to a specific message to extend their
-behaviour by listening to specific events regarding this message.
-This module is mainly made to allow a bunch of interactions using the
-message's reactions.
+Decorators are objects that can be bound to a specific message to extend their behaviour by listening
+to specific events regarding this message. This module is mainly made to allow a bunch of interactions
+using the message's reactions (emotes under the message).
 
-Every decorator extends `MessageDecorator` which stores the bound message
-and its timeout.
-When a decorator is triggered, `MessageDecorator#onTrigger` is called and
-when it times out, it will call `MessageDecorator#onTimeout` which will call
-`MessageDecorator#destroy` in most implementations.
+Every decorator extends `MessageDecorator` which stores the bound message and its timeout. When a
+decorator is triggered, `MessageDecorator#onTrigger` is called and when it times out, it will call
+`MessageDecorator#onTimeout` which will call `MessageDecorator#destroy` in most implementations.
 
-Certain decorators implements `Cacheable` which allows them to be saved in
-a cache file when the bot is down and reloaded when the bot wake up. 
-> Note that all of the lambdas that you can provide are serializable and will
-be serialized and this means that if your lambda uses variables that aren't
-in the lambda's parameters, they will be serialized too and can lead to
-unexpected errors.
+Certain decorators implements `Cacheable` which allows them to be saved in a cache file when the bot
+is down and reloaded when the bot wake up. This caching is done automatically when the decorator is
+registered.
+ 
+> Note that all of the lambdas that you can provide are serializable and will be serialized and this
+> means that if your lambda uses variables that aren't in the lambda's parameters, they will be serialized
+> too and can lead to unexpected errors.
 
-From there you can use the `AutoDestroyMessageDecorator` which allows you to
-delete the bound message automatically after a certain period of time or when
-the bot is shutting down.
+From there you can use the `AutoDestroyMessageDecorator` which allows you to delete the bound message
+automatically after a certain period of time or when the bot is shutting down.
 
-The other decorators extends `ReactionDecorator` which allows interactions
-by the intermediate of message reactions. These reactions are wrapped in
-`DecoratorButton`s that also contains an action to perform when the button
-is triggered.
+The other decorators extends `ReactionDecorator` which allows interactions by the intermediate of 
+message reactions. These reactions are wrapped in `DecoratorButton`s that also contains an action to
+perform when the button is triggered.
 
 They are 2 kind of reaction decorator, permanent ones and dismissible ones.
 
-In the dismissible ones you can find `AlertReactionDecorator` which acts a
-bit like the `AutoDestroyMessageDecorator` but you can delete it earlier
-by clicking a reaction under the message. `ConfirmReactionDecorator` acts
-like a yes/no dialog box for the user.
+In the dismissible ones you can find `AlertReactionDecorator` which acts a bit like the
+`AutoDestroyMessageDecorator` but you can delete it earlier by clicking a reaction under the message.
+`ConfirmReactionDecorator` acts like a yes/no dialog box for the user.
 
-In the permanent decorators you can find the `PollReactionDecorator` which
-allows you to turn a message into a poll by providing the allowed "votes"
-to it, then you can query the votes at any times.
-> Querying the votes can be expensive if there are too many emotes.
+In the permanent decorators you can find the `PollReactionDecorator` which allows you to turn a message
+into a poll by providing the allowed "votes" to it, then you can query the votes at any times.
 
-There is also the `PanelReactionDecorator` which, like the poll, allows you
-to set a bunch of reactions under the message. But the panel decorator is
-made too handle more complex operations for each buttons. You need to
-extend this class before using it and create a method per button that you
-want and annotate it with `@RegisterPanelAction(...)`. More details can be
-found in the javadoc of the class.
+> Querying the votes can be expensive if there are too many emotes. Consider querying them as less often
+> as possible.
 
-#### Audio
+There is also the `PanelReactionDecorator` which, like the poll, allows you to set a bunch of reactions
+under the message. But the panel decorator is made too handle more complex operations for each buttons.
+You need to extend this class before using it and create a method per button that you want and annotate
+it with `@RegisterPanelAction(...)`. More details can be found in the javadoc of the class.
 
-TODO
+Note: The example bot demonstrates a bunch of these decorators and their possibilities.
 
-#### Eval
+#### GraalVM Support
+[![Javadocs graalvm suport](http://www.javadoc.io/badge/com.jesus-crie/modularbot-graalvm-support.svg?label=javadoc-graalvm-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-graalvm-support)
+> *Artifact: `com.jesus-crie:modularbot-graalvm-support`*
 
-TODO
+This module need to be built using the [GraalVM JDK](https://graalvm.org) and to be run on GraalVM JRE.
 
-### Your custom module
+GraalVM is an implementation of the JVM (Java Virtual Machine) that allows you to create polyglot
+applications, aka using multiple languages and interact between them flawlessly.
 
-If you want to create your own module, you can by simply extending
-`BaseModule`, providing information about your module.
-> Don't forget to enable it in with `ModularBotBuiler#registerModule()`.
+This module allows you to write a module in any language supported by GraalVM and interact with it from
+the Java code.
 
-You can now implement the methods from `Lifecycle` to allow your module to
-be notify when something important happens. **Every callback method is
-documented in the class.**
+The examples that will be given are assuming a module written in Javascript.
 
-> **Nothing can prevent a malicious module from stealing your token using
-reflection. And there are no efficient way to prevent reflection.**
+You can declare a module by creating a class and exporting the class object using the [`Polyglot` API](https://www.graalvm.org/docs/reference-manual/polyglot/)
+of GraalVM.
+```javascript
+class MyJSModule {
+    constructor() {
+        console.log("Hello from javascript !");
+    }
+}
 
-You can register a custom module like that
-```java
-ModularBotBuilder builder = ...;
-
-builder.registerModules(new ClassThatExtendsBaseModule());
-// or
-builder.registerModules(ClassThatExtendsBaseModule.class);
+Polyglot.export("class", MyJSModule);
 ```
+
+You don't need to explicitly extend anything but ModularBot will act like you are extending `Module`
+like any other module and will call the corresponding lifecycle hooks with the same signature as
+declared in the `Lifecycle` interface.
+
+In order for your module to work, you need to write a wrapper in Java to interact with it.
+
+The most simple wrapper will look like that:
+```java
+public class MyJSModule extends GraalModuleWrapper {
+    @InjectorTarget
+    public MyJSModule() {
+        super(new File("my-js-module.js"));
+    }
+}
+```
+
+The `GraalModuleWrapper` class extend the `Module` class and provides you a few methods to handle
+interaction with the wrapped module. It already extends every lifecycle hook and propagate them to
+the module.
+
+If your module has a public method that is supposed to be exposed to the rest of the application, you
+need to declare those methods and convert the arguments from Java to the client language.
+
+This example demonstrates both:
+```javascript
+class MyJSModule {
+    constructor(commandModule) {
+        commandModule.registerQuickCommand('ping', e => e.fastReply('Pong !'));
+    }
+    
+    signMessage(str) {
+        return str + ' <3';
+    }
+    
+    consumeAction(promise) {
+        promise.then(res => console.log(res));
+    }
+}
+```
+
+```java
+public class MyJSModule extends GraalModuleWrapper {
+    @InjectorTarget
+    public MyJSModule(CommandModule cmdModule) {
+        super(new File("my-js-module.js"), cmdModule);
+    }
+    
+    public String signMessage(String str) {
+        return safeInvoke("signMessage", str).asString();
+    }
+    
+    public void consumeAction(Supplier<String> action) {
+        safeInvoke("consumeAction", GUtils.createJSPromise(getContext(), new JSPromiseExecutorProxy() {
+            @Override
+            public void run() {
+                resolve(action.get());
+            }
+        }));
+    }
+}
+```
+
+Yes, this module enable you to wrap Java's functional interfaces and supply them as Javascript promises !
+What a time to be alive.
+
+If you are writing [TypeScript](https://typescriptlang.org), you can use the @types declared in the
+subporject [ModularBot-TS-Types](https://github.com/JesusCrie/ModularBot-TS-Types/) which declares a
+bunch of types for both the Polyglot API and the JDA classes.
+
+#### GraalVM Support DiscordJS
+[![Javadocs graalvm suport discordjs](http://www.javadoc.io/badge/com.jesus-crie/modularbot-graalvm-support.svg?label=javadoc-graalvm-support-discordjs)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-graalvm-support-discordjs)
+> *Artifact: `com.jesus-crie:modularbot-graalvm-support-discordjs`*
+
+This module isn't ready yet.
+
+This module will wrap everything in the [Discord.JS](https://discord.js.org) API to allow peoples who
+prefer the DJS way to do things in Javascript modules.

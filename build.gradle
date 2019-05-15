@@ -57,7 +57,7 @@ allprojects {
 
     task javadocJar(type: Jar) {
         archiveClassifier = 'javadoc'
-        from javadoc.destinationDir
+        from javadoc
     }
 
     task sourcesJar(type: Jar) {
