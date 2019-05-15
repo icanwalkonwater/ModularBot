@@ -2,22 +2,24 @@
 [![Maven Central](https://img.shields.io/maven-central/v/com.jesus-crie/modularbot-core.svg)](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22)
 
 > There are probably typos and some language mistakes in this project, if you
-see one, notify me.
+> see one, notify me.
 
-ModularBot is a framework aimed at anyone that would like to create discord bot. It uses
-[JDA](https://github.com/DV8FromTheWorld/JDA) to interface with discord, otherwise it provides
-a robust mechanism of modules that enables you to create tiny to large scale projects with many features
-and at the same time, provides you a organized and transparent way to manage them and their interactions.
+ModularBot is a framework aimed at anyone who would like to create a discord bot. It uses
+[JDA](https://github.com/DV8FromTheWorld/JDA) to interface with discord; otherwise it provides
+a robust mechanism of modules that enables you to create small to large scale projects organized in
+feature modules and at the same time, provides you a organized and transparent way to manage them
+and their interactions.
 
 It's modularity allows you to build only the modules you want to use instead of everything which means
 with the correct build configuration, you will be able to split your application in small chunks and
-leverage the amount of code that will be rebuilt and uploaded to your hosting service.
+leverage the amount of code that will be rebuilt and uploaded to your hosting service when you update
+your application.
 
 The full framework comes in small modules that allows you to choose the exact features you want.
 
 Side note: since v2.5.0, a module has been released that enables [GraalVM](https://www.graalvm.org/)
 users to write and build modules in every languages provided by GraalVM which means you are able to
-write modules in any language with the robustness of JDA.
+write modules in any languages with the robustness of JDA.
 
 1. [Getting Started](#getting-started)
 2. [Modules](#modules)
@@ -29,22 +31,22 @@ write modules in any language with the robustness of JDA.
         5. [Registering/Requesting your Module](#registeringrequesting-your-module)
     2. [Dependency Injection (DI)](#dependency-injection-di)
         1. [Requiring another Module (`@InjectorTarget`)](#requiring-another-module-injectortarget)
-        2. [Late injections and circular dependencies (`@LateInjectorTarget`)](#late-injections-and-circular-dependencies-lateinjectortarget)
-        3. [Building modules manually](#building-modules-manually)
+        2. [Late Injections and Circular Dependencies (`@LateInjectorTarget`)](#late-injections-and-circular-dependencies-lateinjectortarget)
+        3. [Building Modules Manually](#building-modules-manually)
     3. [Available Modules](#available-modules)
         2. [Core](#core)
         3. [Console Logger](#console-logger)
         4. [Command](#command)
         5. [Night Config Wrapper](#night-config-wrapper)
-        6. [~~JS Nashorn Support~~](#js-nashorn-support)
-        7. [~~JS Nashorn Command Support~~](#js-nashorn-command-support)
+        6. [JS Nashorn Support](#js-nashorn-support)
+        7. [JS Nashorn Command Support](#js-nashorn-command-support)
         8. [Message Decorator](#message-decorator)
         9. [GraalVM Support](#graalvm-support)
         10. [GraalVM Support DiscordJS](#graalvm-support-discordjs)
 
 ## Getting Started
 
-The framework is available on Maven Central but you still need to add JCenter to your repositories
+The framework is fully available on Maven Central but you still need to add JCenter to your repositories
 to be able to download JDA dependencies.
 ```groovy
 repositories {
@@ -58,8 +60,8 @@ dependencies {
     implementation 'com.jesus-crie:modularbot-command:2.5.0_23'
 }
 ```
-As every module of the framework has the same version you can define a variable with the version to
-update every module at the same time.
+As every module of the framework has the same version you can define a global variable with the version as
+a shorthand to update every module at once.
 
 Now you can build your first instance of `ModularBot` using the `ModularBotBuilder` class which
 mirrors the behaviour of the classic `JDABuilder` but with additional methods.
@@ -76,22 +78,23 @@ module.registerCreatorQuickCommand("stop", e -> bot.shutdown());
 bot.login();
 ```
 > Note that this is a great way to start experiencing things but not the clean way to use the framework.
+> Consider using modules as soon as possible and keep your main class clean.
 
 ## Modules
 
-Each module of your application is typically a collection of related utilities that depends on the same
-modules or provides the same kind of services. Each module is a singleton.
+Each module of your application is typically a collection of related utilities that provides the same
+kind of services, aka Feature Modules. Also each module is a singleton.
 
-The usage of 'request' for saying that you want to use a module refers to the fact that you are actually
-asking the DI to provide you an instance of a given module.
+The usage of the term 'request' for saying that you want to use a module comes from the fact that you
+are actually *asking* the DI to provide you an instance of a given module.
 
 All of the modules in this github repository are available on
 [Maven Central](https://search.maven.org/#search%7Cga%7C1%7Cg%3A%22com.jesus-crie%22).
 
 ### Writing a module
 
-To get a first glance of what a module is, it way be usefull the start writing one on your own to better
-understand how to manipulate them.
+To get a first glance of what a module is, it may be usefull the start writing one on your own to better
+understand how to manipulate them later.
 
 #### Quickstart
 
@@ -105,17 +108,17 @@ public class MyModule extends Module {
 }
 ```
 
-Event the default constructor is optional here !
+Even the default constructor is optional here !
 
-Note that just that is not enough to tell the framework to create your module, we will register it in
-the last section of the chapter. Note also that you will almost never call this constructor directly,
+Note that just this isn't enough to tell the framework to create your module, we will register it in
+the last section of the chapter. Note also that you will almost never call any constructor directly,
 so don't make complex constructor with lots of overloads and all. Only one will be used.
 
 #### Lifecycle hooks
 
-But what if you want to do something when your bot starts ? Fortunately, `Module` implement `Lifecycle`
-which defines some lifecycle hooks that you can use to do things at certain steps of the bootstrapping of
-your bot until its shutdown. 
+Your modules can be notified of a few imoprtant steps of the lifecycle of the bot through the `Lifecycle`
+interface which defines some callbacks that you can use to do things at certain steps of the bootstrapping of
+your bot until its shutdown.
 
 For example you can override the method `Lifecycle#onLoad()` to perform some initialization just after
 the module has been constructed and before the bot is created. Other hooks includes
@@ -125,16 +128,15 @@ The full listing of the callbacks is listed in the interface `Lifecycle`.
 
 #### Injecting another module
 
-You now have a module that can interact with the bot at any step of its lifecycle and thats great by
+You now have a module that can interact with the bot at any step of its lifecycle and thats great but
 you may want to split your code in multiple modules and communicate between them, or just use the
-default modules available like, for example the `CommandModule`, available in the `modularbot-command`
-maven artifact.
+default modules available like, for example the `CommandModule`.
 
-There are to things required to inject a module:
-- First, you need to create a constructor that has the wanted module has one of its parameters.
+There are two things required to inject a module:
+- First, you need to create a constructor that has the wanted module in its parameters.
 - Annotate this constructor with `@InjectorTarget` to tell the DI to use this constructor.
 
-**Important**: You can only have **one** annotated constructor and no more.
+**Important**: You can only have **one and only one** annotated constructor.
 
 For example if you want to write a module that register a command in the `CommandModule`, it will
 look like this:
@@ -148,14 +150,13 @@ public class MyModule extends Module {
 }
 ```
 
-Note that if your module is not explicitly request nor injected in another module, it will never be
+Note that if your module isn't explicitly requested nor injected in another module, it will never be
 instantiated by the DI.
 
 #### Passing parameters to your module
 
-You may want to make a configurable module and inject these settings in the constructor. The surprise
-is: you can ! You can define any other type of parameters in your constructor and pass arguments to
-them. Consider this module:
+You may want to make a configurable module and inject these settings in the constructor. You can define
+any other type of parameters in your constructor and pass arguments to them. Consider this module:
 ```java
 public class WelcomeModule extends Module {
     
@@ -180,15 +181,22 @@ ModularBot bot = new ModularBotBuilder("token")
 
 You can also specify default parameters in the module class by creating a static field of type
 `ModuleSettingsProvider` and annotating it with `@DefaultInjectionParameters`. These settings will be
-used if to call to `#configureModule()` has been made !
+used if no call to `#configureModule()` has been made !
+```java
+@DefaultInjectionParameters
+private static ModuleSettingsProvider DEFAULT_SETTINGS = new ModuleSettingsProvider("Welcome %s !");
+```
 
 The order of your arguments matters, you need to provide them in the correct order but the presence of
 modules to be injected doesn't matter at all.
 
+If your module has parameters and hasn't been configured in any way, or there were not enough arguments
+provided, they will be filled with the `null` value.
+
 #### Registering/Requesting your module
 
-If your module can't be registered implicitly (aka injected in another module), you need to do it
-yourself in the builder like:
+If your module isn't registered implicitly (aka injected in another module), you need to do it
+explicitly in the builder like:
 ```java
 ModularBot bot = new ModularBotBuilder("token")
     .requestModules(
@@ -204,7 +212,7 @@ Note that `#requestBaseModules()` can be used to request all of the default/offi
 
 ### Dependency Injection (DI)
 
-This dependency injector is a bit inspired of the way that angular module injection is used, defining a
+This dependency injector is a bit inspired of the way that Angular module injection is used: defining a
 constructor with the requested modules, declaring the module and boom you have everything you want.
 
 This section will not talk of the internals of this feature but rather of its usage.
@@ -215,25 +223,35 @@ Like you saw in the last section, you can request another module implicitly by *
 writing a constructor with the annotation and the module in question as a parameter.
 
 You can require as many modules as you want in this constructor, in theory you can even request the
-module twice or more as long as there have these requirements:
+module twice or more as long as they meet those requirements:
 - They need to extend `Module` of course, otherwise they will be treated like common parameters and not
 injections.
-- They are real modules, you can't inject a module by only knowing one of its superclasses which isn't
-instantiable.
+- They need to be instantiable modules, you can't inject a module by only knowing one of its superclasses
+which isn't instantiable.
+
+One could declare a target like that:
+```java
+public class MyModule extends Module {
+    @InjectorTarget
+    public MyModule(CommandModule cmdModule, NightConfigWrapperModule cfgModule) {
+        // TODO
+    }
+}
+```
 
 About the annotation (`@InjectorTarget`), there need to be **exactly one** constructor annotated by
 module, otherwise an exception will be thrown.
 > The only exception to that is the empty constructor, if the **only** constructor of your module is
-> a constructor without any parameters or the default constructor, you the annotation is optional.
+> a constructor without any parameters or the default constructor, the annotation is optional.
 
 #### Late injections and circular dependencies (`@LateInjectorTarget`)
 
 If for some reason you have a circular dependency, the DI will throw an exception. A circular dependency
-is described by the fact that a module A requires module B that in some way also required module A.
-It can be a simple loop, `A -> B -> A -> ...` or a bigger loop like `A -> C -> B -> A -> ...`
+is described by the fact that a module A requires module B that in some way also requires module A.
+It can be a simple loop, `A -> B -> A -> ...` or a larger loop like `A -> C -> B -> A -> ...`
 
-If such a loop shows up, the natural thing is to rethink your architecture a bit in my opinion. If for
-some reasons you can't, you can still take advantage of the late injection mechanism.
+If such a loop shows up, you may have a flaw in your architecture and you should consider this as a
+warning. If for some reasons you need it, you can still take advantage of the late injection mechanism.
 
 Late injection takes place after *every* requested module has been instantiated. The DI will look for
 methods and fields annotated with `@LateInjectorTarget` and extract required modules from the method
@@ -271,28 +289,28 @@ public class B extends Module {
     public void whatever(A moduleA) {}
 }
 ```
-> For the sake of the example, both a field and a method late injector target are used. This can work
-> but just don't.
+> For the sake of the example, both a field and a method late injector target are used for the same
+> module. This can work but just don't.
 
-Here, module A require the module B in its target which lead to the instantiation of module B. Module B
-doesn't require anything from the point of view of the main target so it can be instantiated without
-any constraint and module A requirements are fulfilled and A can be instantiated.
+Here, module A requires the module B as specified in its target which lead to the instantiation of
+module B. Module B doesn't require anything from the point of view of the main target so it can be
+instantiated without anything else, module A requirements are fulfilled and A can be instantiated.
 
-After everyone has been instantiated, the late injection come in place and sees the field target, query
+After everything has been instantiated, the late injection comes in place and sees the field target, query
 the corresponding module (A) and set its value to it. Then it looks for method targets, find the method
-and fulfill its dependency like for the field.
+and fulfill its dependencies like for the field.
 
 If you've been paying attention, you will notice something a little problematic with this solution. If
-We request only module B, module A will never be instantiated because it is never referenced in the main
+We request only module B, module A will never be instantiated because it is never required in the main
 injector target and the late injection will just throw a warning when it will see that it hasn't the
-module A ready. So for this to work, you need to request the module A, which *require* module B.
+module A built. So for this to work, you need to request the module A, which *requires* module B.
 
 You can also take advantage of this late injection mechanism to make optional dependencies.
 
 #### Building modules manually
 
 The DI allows you to provide already built modules if for some reason you want to provide you own
-instance of a module.
+instances of modules.
 
 This is particularly useful for the logger module which need to be built to start receiving logs.
 ```java
@@ -313,7 +331,7 @@ files, commands, ...
 > *Artifact: `com.jesus-crie:modularbot-core`.*
 
 This is the core of the framework, its contains the main classes like `ModularBot`, `Module` and the DI.
-If you want only the base code without any modules you can use this artifact.
+If you want only the basic features without any more advanced features you can use this artifact.
 
 It doesn't have any default logger, like the rest of the framework it uses the slf4j logger which
 a custom implementation is provided in the logger module and works out of the box without any
@@ -344,16 +362,20 @@ public class MyClass {
 You can listen to logs by yourself by adding a listener using the static `ModularLogger#addListener()`
 method.
 
+You can change the log level with
+```java
+ConsoleLoggerModule.MIN_LEVEL = ModularLog.Level.INFO;
+```
+
 #### Command
 [![Javadocs command](http://www.javadoc.io/badge/com.jesus-crie/modularbot-command.svg?label=javadoc-command)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-command)
 > *Artifact: `com.jesus-crie:modularbot-command`*
 
-This module provide a complete command system to craft commands that looks like
-
-`!command arg1 arg2 "arg 3" --explicit-option arg -i -o "implicit options"`
+This module provides a complete command system to craft commands that looks like
+```!command arg1 arg2 "arg 3" --explicit-option arg -i -o "implicit options"```
 
 With this system each command need to have a dedicated class that extends `Command`. You can provide 
-basic information about this command using the `@CommandInfo` annotation this class to avoid using a
+basic information about the command using the `@CommandInfo` annotation this class to avoid using a
 constructor.
  
 Note that only the constructors `Command#Command()` and `Command#Command(AccessLevel)` uses the
@@ -425,16 +447,16 @@ own `CommandListener` with `CommandModule#addListener`.
 > *Artifact: `com.jesus-crie:modularbot-night-config-wrapper`*
 
 This module uses [NightConfig 3.6.0](https://github.com/TheElectronWill/Night-Config) to load, parse
-and save config files. You will be forced to have a "primary" config file. You can also register names
-groups of secondary config files as well singleton config groups (basically a named config).
+and save config files. You will be forced to have a "primary" config file. You can also register named
+groups of secondary config files as well as singleton config groups (basically a named config).
 
 Note that the default config file contains information that will be delivered to the `CommandModule`
 like the "creator_id" and a list of custom prefixes for guilds. Note that the creator id will only be 
 loaded whereas the custom prefixes will be loaded and saved when the module is unloaded.
 
 You can customize the path of the default config by configuring the module but if you want to use a
-completely different `FileConfig` you will need to instantiate it yourself and provide it as a built
-module.
+completely different `FileConfig` you will need to instantiate it yourself and provide it as a
+[built module](#building-modules-manually).
 
 You can use secondary config files like this:
 ```java
@@ -456,7 +478,7 @@ really recommend you to read its documentation.
 > As described in the [JEP 335](http://openjdk.java.net/jeps/335), the Nashorn JavaScript engine has been deprecated in Java 11.
 > **Therefore this module is considered deprecated**.
 
-> As a replacement, consider using GraalVM and the associated module.
+> As a replacement, consider using [GraalVM and the associated module](#graalvm-support).
 
 ~~This module allows you to load modules in JavaScript using the Nashorn
 Script Engine. It will consider each subdirectory in `./scripts/` (or the
@@ -564,7 +586,7 @@ var commandImports = new JavaImporter(com.jesus_crie.modularbot_nashorn_command_
 > *Artifact: `com.jesus-crie:modularbot-message-decorator`*
 
 Decorators are objects that can be bound to a specific message to extend their behaviour by listening
-to specific events regarding this message. This module is mainly made to allow a bunch of interactions
+to specific events regarding their message. This module is mainly made to allow a bunch of interactions
 using the message's reactions (emotes under the message).
 
 Every decorator extends `MessageDecorator` which stores the bound message and its timeout. When a
@@ -572,7 +594,7 @@ decorator is triggered, `MessageDecorator#onTrigger` is called and when it times
 `MessageDecorator#onTimeout` which will call `MessageDecorator#destroy` in most implementations.
 
 Certain decorators implements `Cacheable` which allows them to be saved in a cache file when the bot
-is down and reloaded when the bot wake up. This caching is done automatically when the decorator is
+is down and reloaded when the bot wakes up. This caching is done automatically when the decorator is
 registered.
  
 > Note that all of the lambdas that you can provide are serializable and will be serialized and this
@@ -609,10 +631,11 @@ Note: The example bot demonstrates a bunch of these decorators and their possibi
 [![Javadocs graalvm suport](http://www.javadoc.io/badge/com.jesus-crie/modularbot-graalvm-support.svg?label=javadoc-graalvm-support)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-graalvm-support)
 > *Artifact: `com.jesus-crie:modularbot-graalvm-support`*
 
-This module need to be built using the [GraalVM JDK](https://graalvm.org) and to be run on GraalVM JRE.
+This module need to be built using the [GraalVM JDK](https://graalvm.org) and to be run on the GraalVM JRE.
 
 GraalVM is an implementation of the JVM (Java Virtual Machine) that allows you to create polyglot
-applications, aka using multiple languages and interact between them flawlessly.
+applications, aka allowing the usage of multiple languages and communication between them under the
+same runtime.
 
 This module allows you to write a module in any language supported by GraalVM and interact with it from
 the Java code.
@@ -631,9 +654,10 @@ class MyJSModule {
 Polyglot.export("class", MyJSModule);
 ```
 
-You don't need to explicitly extend anything but ModularBot will act like you are extending `Module`
+You don't need to explicitly extend anything but the framework will act like you are extending `Module`
 like any other module and will call the corresponding lifecycle hooks with the same signature as
 declared in the `Lifecycle` interface.
+> If you haven't declared the callback methods, they will not be called.
 
 In order for your module to work, you need to write a wrapper in Java to interact with it.
 
@@ -647,14 +671,14 @@ public class MyJSModule extends GraalModuleWrapper {
 }
 ```
 
-The `GraalModuleWrapper` class extend the `Module` class and provides you a few methods to handle
+The `GraalModuleWrapper` class extends the `Module` class and provides you a few methods to handle
 interaction with the wrapped module. It already extends every lifecycle hook and propagate them to
 the module.
 
 If your module has a public method that is supposed to be exposed to the rest of the application, you
-need to declare those methods and convert the arguments from Java to the client language.
+need to wrap this method and convert the arguments from Java to the client language.
 
-This example demonstrates both:
+This example demonstrates this pattern:
 ```javascript
 class MyJSModule {
     constructor(commandModule) {
@@ -692,13 +716,12 @@ public class MyJSModule extends GraalModuleWrapper {
     }
 }
 ```
+> The `GUtils` utility class contains a few methods like this one that can wrap a Functional
+> Interface into a JS Promise object.
 
-Yes, this module enable you to wrap Java's functional interfaces and supply them as Javascript promises !
-What a time to be alive.
-
-If you are writing [TypeScript](https://typescriptlang.org), you can use the @types declared in the
-subporject [ModularBot-TS-Types](https://github.com/JesusCrie/ModularBot-TS-Types/) which declares a
-bunch of types for both the Polyglot API and the JDA classes.
+If you are writing in [TypeScript](https://typescriptlang.org), you can use the @types declared in
+the subproject [ModularBot-TS-Types](https://github.com/JesusCrie/ModularBot-TS-Types/) which
+declares a bunch of types for both the Polyglot API and the JDA classes.
 
 #### GraalVM Support DiscordJS
 [![Javadocs graalvm suport discordjs](http://www.javadoc.io/badge/com.jesus-crie/modularbot-graalvm-support.svg?label=javadoc-graalvm-support-discordjs)](http://www.javadoc.io/doc/com.jesus-crie/modularbot-graalvm-support-discordjs)
