@@ -124,6 +124,11 @@ project(':modularbot-graalvm-support-discordjs') {
     project.description = 'Extension to the GraalVM module that emulates the DiscordJS API.'
 }
 
+project(':modularbot-node-support') {
+    ext.name = 'ModularBot - Node Support'
+    project.description = 'Module that can run modules in Node.JS thanks to J2V8 bindings.'
+}
+
 subprojects {
     artifacts {
         archives javadocJar

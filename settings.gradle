@@ -19,6 +19,8 @@ include 'ModularBot-GraalVMSupport'
 findProject(':ModularBot-GraalVMSupport')?.name = 'modularbot-graalvm-support'
 include 'ModularBot-GraalVMSupport-DiscordJS'
 findProject(':ModularBot-GraalVMSupport-DiscordJS')?.name = 'modularbot-graalvm-support-discordjs'
+include 'ModularBot-NodeSupport'
+findProject(':ModularBot-NodeSupport')?.name = 'modularbot-node-support'
 
 enableFeaturePreview('STABLE_PUBLISHING')
 

@@ -1,0 +1,18 @@
+import org.apache.tools.ant.taskdefs.condition.Os
+
+ext.getJ2V8Platform = { ->
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        return 'win32'
+    } else if (Os.isFamily(Os.FAMILY_MAC)) {
+        return 'macosx'
+    } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+        return 'linux'
+    }
+}
+
+dependencies {
+    implementation project(':modularbot-core')    
+    implementation("com.eclipsesource.j2v8:j2v8_${project.getJ2V8Platform()}_x86_64:4.6.0") {
+        transitive = false
+    }
+}

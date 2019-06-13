@@ -289,8 +289,10 @@ public class ModularBotBuilder {
         tryRequest("com.jesus_crie.modularbot.graalvm.GraalSupportModule");
         tryRequest("com.jesus_crie.modularbot.graalvm.discordjs.GraalSupportDiscordJSModule");
 
-        tryRequest("com.jesus_crie.modularbot.nashirn.NashornSupportModule");
+        tryRequest("com.jesus_crie.modularbot.nashorn.NashornSupportModule");
         tryRequest("com.jesus_crie.modularbot.nashorn.command.NashornCommandSupportModule");
+
+        tryRequest("com.jesus_crie.modularbot.v8support.V8SupportModule");
 
         return this;
     }
