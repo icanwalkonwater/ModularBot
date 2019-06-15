@@ -121,7 +121,7 @@ public final class DependencyInjector {
                 settings.put(request, extractDefaultSettingsProvider(request));
         }
 
-        // Build and inject them in the correct order
+        // Build and inject modules in the correct order
         LOG.debug("Starting construction...");
         while (!queuedInjections.isEmpty()) {
             final Class<? extends Module> request = queuedInjections.pop();
@@ -287,6 +287,7 @@ public final class DependencyInjector {
     @Nonnull
     private Constructor<? extends Module> findInjectorTarget(@Nonnull final Class<? extends Module> request)
             throws NoInjectorTargetException, TooManyInjectorTargetException {
+
         final Constructor<?>[] cs = Arrays.stream(request.getDeclaredConstructors())
                 .filter(c -> c.isAnnotationPresent(InjectorTarget.class))
                 .toArray(Constructor<?>[]::new);
@@ -317,7 +318,7 @@ public final class DependencyInjector {
                 .filter(f -> ModuleSettingsProvider.class.isAssignableFrom(f.getType()))
                 .toArray(Field[]::new);
 
-        // If not default can be found, well, don't insist.
+        // If not default can be found, well, don't insist
         if (sfs.length == 0)
             return ModuleSettingsProvider.EMPTY;
         else if (sfs.length > 1)

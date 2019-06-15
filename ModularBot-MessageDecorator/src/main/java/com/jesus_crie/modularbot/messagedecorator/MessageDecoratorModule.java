@@ -40,7 +40,6 @@ public class MessageDecoratorModule extends Module {
     private static final String CACHE_MAIN_PATH = "decorators";
 
     private Map<Long, MessageDecorator<?>> decorators = Collections.emptyMap();
-    private final File cacheFile;
     private final FileConfig cache;
 
     @DefaultInjectionParameters
@@ -55,8 +54,7 @@ public class MessageDecoratorModule extends Module {
         super(INFO);
         LOG.info("Requested");
 
-        cacheFile = cachePath;
-        cache = config.registerSingletonSecondaryConfig(CONFIG_DECORATOR_CACHE, cacheFile);
+        cache = config.registerSingletonSecondaryConfig(CONFIG_DECORATOR_CACHE, cachePath);
     }
 
     @Override
@@ -96,7 +94,7 @@ public class MessageDecoratorModule extends Module {
         LOG.info("De-serializing " + data.size() + " decorators...");
 
         for (final Config serialized : data) {
-            String clazzS = serialized.get(Cacheable.KEY_CLASS);
+            final String clazzS = serialized.get(Cacheable.KEY_CLASS);
             if (clazzS == null) {
                 LOG.warn("Found cached decorator without class, skipping.");
                 continue;

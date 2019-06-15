@@ -30,12 +30,9 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
     private void setup(@Nonnull final V8SupportModule module, @Nullable final V8Array parameters) {
         // Gather the exported module constructor
         final V8Object moduleConstructor = module.getNode().require(mainFile);
-        // Build a seemingly unique identifier and register it in the global scope
-        final String identifier = String.format("__module__%s_%d", getInfo().getName(), getInfo().hashCode());
-        module.getNode().getRuntime().add(identifier, moduleConstructor);
 
         // Create the instance of the module with the exported constructor
-        nodeModule = module.createNewInstance(identifier, parameters);
+        nodeModule = module.createNewInstance(moduleConstructor, parameters);
         moduleConstructor.release();
 
         module.registerModule(this);
