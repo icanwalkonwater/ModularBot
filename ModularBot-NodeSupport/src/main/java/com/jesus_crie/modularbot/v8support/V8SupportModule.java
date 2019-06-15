@@ -1,6 +1,7 @@
 package com.jesus_crie.modularbot.v8support;
 
 import com.eclipsesource.v8.*;
+import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
@@ -9,8 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class V8SupportModule extends Module {
 
@@ -27,6 +31,8 @@ public class V8SupportModule extends Module {
     private final V8Function newInstanceFn;
     private final List<V8ModuleWrapper> modules = new ArrayList<>();
 
+    private final Map<Object, V8Object> proxyCache = new HashMap<>();
+
     @InjectorTarget
     public V8SupportModule() {
         super(INFO);
@@ -39,12 +45,63 @@ public class V8SupportModule extends Module {
         LOG.info("Node.JS runtime configured");
     }
 
+    @Override
+    public void onShardsReady(@Nonnull final ModularBot bot) {
+        // Manually trigger the caching of the bot object
+        getOrMakeProxy(bot);
+    }
+
+    @Override
+    public void onUnload() {
+        LOG.info("Releasing " + modules.size() + " modules...");
+        modules.forEach(V8ModuleWrapper::release);
+
+        // Releasing cached values
+        proxyCache.values().stream()
+                .filter(v -> !v.isReleased())
+                .forEach(V8Value::release);
+
+        newInstanceFn.release();
+        node.release();
+    }
+
     public NodeJS getNode() {
         return node;
     }
 
     public void registerModule(@Nonnull final V8ModuleWrapper wrapper) {
         modules.add(wrapper);
+    }
+
+    /**
+     * Map a java object to a {@link V8Object} by registering each of its public methods,
+     * declared and inherited.
+     * The caller is <b>not</b> responsible for releasing the returned object.
+     * <p>
+     * The proxy objected created by this method are cached and thus, subsequent calls with
+     * the same object will result in the same object being returned.
+     *
+     * @param obj - The object to map.
+     * @return A {@link V8Object} which as every public methods of the given object.
+     */
+    public V8Object getOrMakeProxy(@Nullable final Object obj) {
+        if (obj == null)
+            return (V8Object) V8.getUndefined();
+
+        // If not already in cache we build the proxy object
+        return proxyCache.computeIfAbsent(obj, base -> {
+
+            // Gather every public method including inherited ones
+            final Method[] methods = base.getClass().getMethods();
+
+            // Create the proxy and populate it with methods
+            final V8Object proxy = new V8Object(runtime);
+            for (Method method : methods) {
+                proxy.registerJavaMethod(base, method.getName(), method.getName(), method.getParameterTypes());
+            }
+
+            return proxy;
+        });
     }
 
     /**
@@ -79,13 +136,5 @@ public class V8SupportModule extends Module {
     @Nonnull
     public V8Object createNewInstance(@Nonnull final V8Object constructor) {
         return createNewInstance(constructor, null);
-    }
-
-    @Override
-    public void onUnload() {
-        LOG.info("Releasing " + modules.size() + " modules...");
-        modules.forEach(V8ModuleWrapper::release);
-        newInstanceFn.release();
-        node.release();
     }
 }

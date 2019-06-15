@@ -11,11 +11,14 @@ import java.io.File;
 
 public abstract class V8ModuleWrapper extends Module implements Releasable {
 
-    private final File mainFile;
-    private V8Object nodeModule;
+    protected final V8SupportModule module;
+
+    protected final File mainFile;
+    protected V8Object nodeModule;
 
     public V8ModuleWrapper(@Nonnull final V8SupportModule module, @Nonnull final File mainFile, @Nullable final V8Array parameters) {
         super();
+        this.module = module;
         this.mainFile = mainFile;
         setup(module, parameters);
     }
@@ -23,6 +26,7 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
     public V8ModuleWrapper(@Nonnull final ModuleInfo info, @Nonnull final V8SupportModule module,
                            @Nonnull final File mainFile, @Nullable final V8Array parameters) {
         super(info);
+        this.module = module;
         this.mainFile = mainFile;
         setup(module, parameters);
     }
@@ -36,6 +40,11 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
         moduleConstructor.release();
 
         module.registerModule(this);
+    }
+
+    @Nonnull
+    public File getMainFile() {
+        return mainFile;
     }
 
     @Nonnull
