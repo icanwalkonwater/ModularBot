@@ -30,6 +30,7 @@ import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PollReacti
 import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
 import com.jesus_crie.modularbot.v8support.V8ModuleWrapper;
 import com.jesus_crie.modularbot.v8support.V8SupportModule;
+import com.jesus_crie.modularbot.v8support.proxying.ProxyRules;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
@@ -245,10 +246,15 @@ public class ModularTestRun extends Module {
     public static class TestJSModule extends V8ModuleWrapper {
 
         @InjectorTarget
-        public TestJSModule(@Nonnull final V8SupportModule v8Module) {
+        public TestJSModule(@Nonnull final V8SupportModule v8Module) throws NoSuchMethodException {
             super(v8Module,
                     new File("./example/node_script/test_module1/index.js"),
-                    v8Module.makeArray(v8Module.getOrMakeProxy(LOG)));
+                    v8Module.makeArray(
+                            v8Module.getOrMakeProxy(LOG, ProxyRules.dominatedBy(
+                                    LOG.getClass().getMethod("info", String.class)
+                            ))
+                    )
+            );
         }
     }
 

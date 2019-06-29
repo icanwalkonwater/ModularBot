@@ -8,12 +8,12 @@ import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.v8support.proxying.JavaAutoOverloadCombiner;
 import com.jesus_crie.modularbot.v8support.proxying.ProxyExport;
 import com.jesus_crie.modularbot.v8support.proxying.ProxyManager;
+import com.jesus_crie.modularbot.v8support.proxying.ProxyRules;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +46,7 @@ public class V8SupportModule extends Module {
         proxyManager = new ProxyManager(runtime);
 
         LOG.info("Node.JS runtime configured");
+        releaseLock();
     }
 
     @Override
@@ -56,6 +57,8 @@ public class V8SupportModule extends Module {
 
     @Override
     public void onUnload() {
+        acquireLock();
+
         LOG.info("Releasing " + modules.size() + " modules...");
         modules.forEach(V8ModuleWrapper::release);
 
@@ -64,10 +67,35 @@ public class V8SupportModule extends Module {
         newInstanceFn.release();
 
         node.release();
+
+        releaseLock();
     }
 
+    /**
+     * Get the node runtime.
+     * <p>
+     * WARNING: The node instance is NOT thread safe.
+     * You need to acquire the lock to use it.
+     *
+     * @return The {@link NodeJS} runtime.
+     */
     public NodeJS getNode() {
         return node;
+    }
+
+    /**
+     * Acquire the lock for the current runtime.
+     */
+    public void acquireLock() {
+        runtime.getLocker().acquire();
+    }
+
+    /**
+     * Release the lock for the current runtime.
+     */
+    public void releaseLock() {
+        runtime.getLocker().checkThread();
+        runtime.getLocker().release();
     }
 
     public void registerModule(@Nonnull final V8ModuleWrapper wrapper) {
@@ -85,15 +113,32 @@ public class V8SupportModule extends Module {
      * If there are multiple overloads, an arbitrary method which matches the
      * arguments will be used. Refer to {@link JavaAutoOverloadCombiner}.
      * <p>
+     * You can also provide a {@link ProxyRules} object that will tell more about
+     * what you want to keep if you are not using the annotation.
+     * <p>
      * Subsequent calls will with the same parameter will return the exact same
      * object (that was cached).
      *
-     * @param obj - The object to process.
+     * @param obj   - The object to process.
+     * @param rules - The rules to use.
      * @return A proxy object to interface with the target.
+     * @see ProxyManager#getOrMakeProxy(Object, ProxyRules)
+     */
+    @Nonnull
+    public V8Object getOrMakeProxy(@Nullable final Object obj, @Nullable final ProxyRules rules) {
+        acquireLock();
+        final V8Object proxy = proxyManager.getOrMakeProxy(obj, rules);
+        releaseLock();
+
+        return proxy;
+    }
+
+    /**
+     * @see #getOrMakeProxy(Object, ProxyRules)
      */
     @Nonnull
     public V8Object getOrMakeProxy(@Nullable final Object obj) {
-        return proxyManager.getOrMakeProxy(obj);
+        return getOrMakeProxy(obj, null);
     }
 
     /**
@@ -103,6 +148,8 @@ public class V8SupportModule extends Module {
      * @return A new {@link V8Array} containing the given values.
      */
     public V8Array makeArray(final V8Value... v8Values) {
+        acquireLock();
+
         final V8Array array = new V8Array(runtime);
 
         for (V8Value value : v8Values) {
@@ -116,6 +163,8 @@ public class V8SupportModule extends Module {
      * Instantiate an object using the given statement as a reference to a constructor method.
      * The caller of this method is responsible for releasing the {@link V8Object} instance returned.
      * The caller of this method is also responsible for releasing the parameter array if provided.
+     * <p>
+     * This method is NOT thread-safe ! You must acquire the lock before using it.
      *
      * @param constructor  - A JS object representing an ES6 class.
      * @param constrParams - The array of parameters to pass to the constructor (optional).

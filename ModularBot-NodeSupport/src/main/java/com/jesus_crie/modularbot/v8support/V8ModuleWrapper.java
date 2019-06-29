@@ -32,6 +32,8 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
     }
 
     private void setup(@Nonnull final V8SupportModule module, @Nullable final V8Array parameters) {
+        module.acquireLock();
+
         // Gather the exported module constructor
         final V8Object moduleConstructor = module.getNode().require(mainFile);
 
@@ -40,6 +42,7 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
         moduleConstructor.release();
 
         module.registerModule(this);
+        module.releaseLock();
     }
 
     @Nonnull
