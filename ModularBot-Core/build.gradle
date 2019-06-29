@@ -6,5 +6,6 @@ dependencies {
     testImplementation project(':modularbot-command')
     testImplementation project(':modularbot-night-config-wrapper')
     testImplementation project(':modularbot-message-decorator')
-    testImplementation project(':modularbot-graalvm-support')
+    //testImplementation project(':modularbot-graalvm-support')
+    testImplementation project(':modularbot-node-support')
 }

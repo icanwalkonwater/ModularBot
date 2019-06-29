@@ -120,6 +120,7 @@ gradle-app.setting
 example/decorator_cache.json
 example/scripts
 example/tmp
+example/node_script
 
 config.json
 decorator_cache.json

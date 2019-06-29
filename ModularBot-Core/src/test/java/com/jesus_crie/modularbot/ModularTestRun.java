@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot;
 
+import com.eclipsesource.v8.V8Array;
 import com.jesus_crie.modularbot.command.AccessLevel;
 import com.jesus_crie.modularbot.command.Command;
 import com.jesus_crie.modularbot.command.CommandEvent;
@@ -27,6 +28,8 @@ import com.jesus_crie.modularbot.messagedecorator.decorator.disposable.ConfirmRe
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PanelReactionDecorator;
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PollReactionDecorator;
 import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
+import com.jesus_crie.modularbot.v8support.V8ModuleWrapper;
+import com.jesus_crie.modularbot.v8support.V8SupportModule;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
@@ -90,22 +93,6 @@ public class ModularTestRun extends Module {
         //cmd.registerCreatorQuickCommand("stop", e -> bot.shutdown());
 
         // Test JS
-        TestJSModule js = bot.getModuleManager().getModule(TestJSModule.class);
-
-        cmd.registerQuickCommand("testpromise", commandEvent ->
-                js.acceptPromise(() -> 42)
-        );
-
-        cmd.registerQuickCommand("testpromisefail", commandEvent ->
-                js.acceptPromise(() -> {
-                    throw new RuntimeException();
-                })
-        );
-
-        cmd.registerQuickCommand("testra", commandEvent ->
-                js.listenRestAction(commandEvent.getChannel().sendMessage("YOLO !"))
-        );
-
 
         /// Config
         NightConfigWrapperModule config = bot.getModuleManager().getModule(NightConfigWrapperModule.class);
@@ -255,24 +242,13 @@ public class ModularTestRun extends Module {
         }
     }
 
-    public static class TestJSModule extends GraalModuleWrapper {
+    public static class TestJSModule extends V8ModuleWrapper {
 
         @InjectorTarget
-        public TestJSModule(@Nonnull final CommandModule cmdModule) {
-            super(new File("./example/main.js"), cmdModule);
-        }
-
-        public void acceptPromise(Supplier<Integer> action) {
-            safeInvoke("acceptPromise", GUtils.createJSPromise(getContext(), new JSPromiseExecutorProxy() {
-                @Override
-                public void run() {
-                    resolve(action.get());
-                }
-            }));
-        }
-
-        public void listenRestAction(RestAction<Message> action) {
-            safeInvoke("listenRestAction", GUtils.createJSPromise(getContext(), new JSRestActionWrapper<>(action)));
+        public TestJSModule(@Nonnull final V8SupportModule v8Module) {
+            super(v8Module,
+                    new File("./example/node_script/test_module1/index.js"),
+                    v8Module.makeArray(v8Module.getOrMakeProxy(LOG)));
         }
     }
 

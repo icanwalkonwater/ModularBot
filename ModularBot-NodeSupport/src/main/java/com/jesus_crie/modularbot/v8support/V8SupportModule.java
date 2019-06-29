@@ -5,6 +5,9 @@ import com.jesus_crie.modularbot.core.ModularBot;
 import com.jesus_crie.modularbot.core.ModularBotBuildInfo;
 import com.jesus_crie.modularbot.core.dependencyinjection.InjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.v8support.proxying.JavaAutoOverloadCombiner;
+import com.jesus_crie.modularbot.v8support.proxying.ProxyExport;
+import com.jesus_crie.modularbot.v8support.proxying.ProxyManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class V8SupportModule extends Module {
 
@@ -31,7 +32,7 @@ public class V8SupportModule extends Module {
     private final V8Function newInstanceFn;
     private final List<V8ModuleWrapper> modules = new ArrayList<>();
 
-    private final Map<Object, V8Object> proxyCache = new HashMap<>();
+    private final ProxyManager proxyManager;
 
     @InjectorTarget
     public V8SupportModule() {
@@ -41,6 +42,8 @@ public class V8SupportModule extends Module {
         node = NodeJS.createNodeJS();
         runtime = node.getRuntime();
         newInstanceFn = (V8Function) runtime.executeObjectScript(V8_NEW_INSTANCE_HELPER_SCRIPT);
+
+        proxyManager = new ProxyManager(runtime);
 
         LOG.info("Node.JS runtime configured");
     }
@@ -57,11 +60,9 @@ public class V8SupportModule extends Module {
         modules.forEach(V8ModuleWrapper::release);
 
         // Releasing cached values
-        proxyCache.values().stream()
-                .filter(v -> !v.isReleased())
-                .forEach(V8Value::release);
-
+        proxyManager.release();
         newInstanceFn.release();
+
         node.release();
     }
 
@@ -74,34 +75,41 @@ public class V8SupportModule extends Module {
     }
 
     /**
-     * Map a java object to a {@link V8Object} by registering each of its public methods,
-     * declared and inherited.
-     * The caller is <b>not</b> responsible for releasing the returned object.
+     * Retrieve a proxy object from the given java object.
+     * Will map each public method to a JS function on the returned object.
      * <p>
-     * The proxy objected created by this method are cached and thus, subsequent calls with
-     * the same object will result in the same object being returned.
+     * If the {@link ProxyExport} annotation is used, only the annotated methods
+     * will be mapped.
+     * <p>
+     * Without the annotation, every non-vararg public method will be mapped.
+     * If there are multiple overloads, an arbitrary method which matches the
+     * arguments will be used. Refer to {@link JavaAutoOverloadCombiner}.
+     * <p>
+     * Subsequent calls will with the same parameter will return the exact same
+     * object (that was cached).
      *
-     * @param obj - The object to map.
-     * @return A {@link V8Object} which as every public methods of the given object.
+     * @param obj - The object to process.
+     * @return A proxy object to interface with the target.
      */
+    @Nonnull
     public V8Object getOrMakeProxy(@Nullable final Object obj) {
-        if (obj == null)
-            return (V8Object) V8.getUndefined();
+        return proxyManager.getOrMakeProxy(obj);
+    }
 
-        // If not already in cache we build the proxy object
-        return proxyCache.computeIfAbsent(obj, base -> {
+    /**
+     * Make a {@link V8Array} from some raw {@link V8Value}.
+     *
+     * @param v8Values - Some raw values.
+     * @return A new {@link V8Array} containing the given values.
+     */
+    public V8Array makeArray(final V8Value... v8Values) {
+        final V8Array array = new V8Array(runtime);
 
-            // Gather every public method including inherited ones
-            final Method[] methods = base.getClass().getMethods();
+        for (V8Value value : v8Values) {
+            array.push(value);
+        }
 
-            // Create the proxy and populate it with methods
-            final V8Object proxy = new V8Object(runtime);
-            for (Method method : methods) {
-                proxy.registerJavaMethod(base, method.getName(), method.getName(), method.getParameterTypes());
-            }
-
-            return proxy;
-        });
+        return array;
     }
 
     /**
