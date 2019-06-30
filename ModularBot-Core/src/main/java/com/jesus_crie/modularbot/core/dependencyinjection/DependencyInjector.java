@@ -20,7 +20,7 @@ public final class DependencyInjector {
     private static final Logger LOG = LoggerFactory.getLogger("DependencyInjector");
 
     // Input & Output of the injector
-    private final Map<Class<? extends Module>, Module> builtModules = new HashMap<>();
+    private final Map<Class<? extends Module>, Module> builtModules = new LinkedHashMap<>();
     private final Map<Class<? extends Module>, ModuleSettingsProvider> settings = new HashMap<>();
 
     // Internal data

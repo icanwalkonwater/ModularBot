@@ -10,9 +10,16 @@ ext.getJ2V8Platform = { ->
     }
 }
 
+/*configurations.all { Configuration conf ->
+    conf.resolutionStrategy.dependencySubstitution {
+        substitute module('com.eclipsesource.j2v8:j2v8_linux_x86_64') with files('jni/j2v8-5.1.0.jar')
+    }
+}*/
+
 dependencies {
     implementation project(':modularbot-core')    
-    implementation("com.eclipsesource.j2v8:j2v8_${project.getJ2V8Platform()}_x86_64:4.6.0") {
+    /*implementation("com.eclipsesource.j2v8:j2v8_${project.getJ2V8Platform()}_x86_64:4.6.0") {
         transitive = false
-    }
+    }*/
+    implementation files('../jni/j2v8-5.1.0.jar')
 }

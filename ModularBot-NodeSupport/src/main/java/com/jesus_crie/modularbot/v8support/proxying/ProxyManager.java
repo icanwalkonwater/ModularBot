@@ -93,7 +93,7 @@ public class ProxyManager implements Releasable {
             if (annotation.override()) {
                 proxy.registerJavaMethod(target, method.getName(), name, method.getParameterTypes());
             } else {
-                if (proxy.get(name) == null) {
+                if (proxy.getType(name) == V8Value.UNDEFINED) {
                     proxy.registerJavaMethod(target, method.getName(), name, method.getParameterTypes());
                 }
             }
@@ -170,7 +170,7 @@ public class ProxyManager implements Releasable {
                                       @Nonnull final V8Object proxy, @Nonnull final List<String> overloadMethods,
                                       @Nonnull final Method method, @Nonnull final String name) {
 
-        if (proxy.get(name) == null) {
+        if (proxy.getType(name) == V8Value.UNDEFINED) {
             proxy.registerJavaMethod(target, name, name, method.getParameterTypes());
         } else if (!overloadMethods.contains(name)) {
             proxy.registerJavaMethod(new JavaAutoOverloadCombiner(target,
@@ -181,8 +181,14 @@ public class ProxyManager implements Releasable {
     }
 
     @Override
-    public void release() {
-        proxyCache.values().forEach(V8Value::release);
+    public void close() {
+        proxyCache.values().forEach(V8Value::close);
         proxyCache.clear();
+    }
+
+    @Override
+    @Deprecated
+    public void release() {
+        close();
     }
 }

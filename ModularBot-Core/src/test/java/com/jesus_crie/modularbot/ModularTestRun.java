@@ -1,6 +1,5 @@
 package com.jesus_crie.modularbot;
 
-import com.eclipsesource.v8.V8Array;
 import com.jesus_crie.modularbot.command.AccessLevel;
 import com.jesus_crie.modularbot.command.Command;
 import com.jesus_crie.modularbot.command.CommandEvent;
@@ -16,10 +15,6 @@ import com.jesus_crie.modularbot.core.dependencyinjection.LateInjectorTarget;
 import com.jesus_crie.modularbot.core.module.Module;
 import com.jesus_crie.modularbot.core.module.ModuleManager;
 import com.jesus_crie.modularbot.core.utils.SerializableConsumer;
-import com.jesus_crie.modularbot.graalvm.GUtils;
-import com.jesus_crie.modularbot.graalvm.GraalModuleWrapper;
-import com.jesus_crie.modularbot.graalvm.js.JSPromiseExecutorProxy;
-import com.jesus_crie.modularbot.graalvm.js.JSRestActionWrapper;
 import com.jesus_crie.modularbot.logger.ConsoleLoggerModule;
 import com.jesus_crie.modularbot.messagedecorator.MessageDecoratorModule;
 import com.jesus_crie.modularbot.messagedecorator.decorator.AutoDestroyMessageDecorator;
@@ -34,7 +29,6 @@ import com.jesus_crie.modularbot.v8support.proxying.ProxyRules;
 import net.dv8tion.jda.core.EmbedBuilder;
 import net.dv8tion.jda.core.entities.Message;
 import net.dv8tion.jda.core.events.message.react.GenericMessageReactionEvent;
-import net.dv8tion.jda.core.requests.RestAction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.impl.ModularLog;
@@ -48,7 +42,6 @@ import java.awt.Color;
 import java.io.File;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
 
 public class ModularTestRun extends Module {
 

@@ -128,7 +128,7 @@ public class JavaAutoOverloadCombiner implements JavaCallback {
 
             final Object o = parameters.get(i);
             if (o instanceof Releasable) {
-                ((Releasable) o).release();
+                ((Releasable) o).close();
             }
         }
     }

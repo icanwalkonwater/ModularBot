@@ -15,7 +15,10 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 public class V8SupportModule extends Module {
 
@@ -27,6 +30,7 @@ public class V8SupportModule extends Module {
 
     private static final String V8_NEW_INSTANCE_HELPER_SCRIPT = "(() => function (constr, args) { return new constr(...args || []); })()";
 
+    private final ReentrantLock lock = new ReentrantLock(true);
     private final NodeJS node;
     private final V8 runtime;
     private final V8Function newInstanceFn;
@@ -34,13 +38,36 @@ public class V8SupportModule extends Module {
 
     private final ProxyManager proxyManager;
 
+    private static class MyReferenceHandler implements ReferenceHandler {
+
+        private final List<V8Value> values = new LinkedList<>();
+
+        @Override
+        public void v8HandleCreated(V8Value object) {
+            values.add(object);
+        }
+
+        public List<V8Value> getNonReleased() {
+            return values.stream()
+                    .filter(v -> !v.isReleased())
+                    .collect(Collectors.toList());
+        }
+
+        @Override
+        public void v8HandleDisposed(V8Value object) {
+
+        }
+    }
+
     @InjectorTarget
     public V8SupportModule() {
         super(INFO);
         LOG.info("Requested");
+        lock.lock();
 
         node = NodeJS.createNodeJS();
         runtime = node.getRuntime();
+        runtime.addReferenceHandler(new MyReferenceHandler());
         newInstanceFn = (V8Function) runtime.executeObjectScript(V8_NEW_INSTANCE_HELPER_SCRIPT);
 
         proxyManager = new ProxyManager(runtime);
@@ -60,15 +87,19 @@ public class V8SupportModule extends Module {
         acquireLock();
 
         LOG.info("Releasing " + modules.size() + " modules...");
-        modules.forEach(V8ModuleWrapper::release);
+
+        // At this point, the modules have already been unloaded by
+        // the module manager thanks to the DI
+        for (V8ModuleWrapper module : modules) {
+            module.close();
+        }
 
         // Releasing cached values
-        proxyManager.release();
-        newInstanceFn.release();
+        proxyManager.close();
+        newInstanceFn.close();
 
         node.release();
-
-        releaseLock();
+        lock.unlock();
     }
 
     /**
@@ -87,6 +118,7 @@ public class V8SupportModule extends Module {
      * Acquire the lock for the current runtime.
      */
     public void acquireLock() {
+        lock.lock();
         runtime.getLocker().acquire();
     }
 
@@ -94,8 +126,8 @@ public class V8SupportModule extends Module {
      * Release the lock for the current runtime.
      */
     public void releaseLock() {
-        runtime.getLocker().checkThread();
         runtime.getLocker().release();
+        lock.unlock();
     }
 
     public void registerModule(@Nonnull final V8ModuleWrapper wrapper) {
@@ -156,6 +188,7 @@ public class V8SupportModule extends Module {
             array.push(value);
         }
 
+        releaseLock();
         return array;
     }
 
@@ -173,16 +206,14 @@ public class V8SupportModule extends Module {
     @Nonnull
     public V8Object createNewInstance(@Nonnull final V8Object constructor, @Nullable final V8Array constrParams) {
         // First argument is the class object, the second is a possibly-empty array of parameters
-        final V8Array params = new V8Array(runtime);
-        params.push(constructor);
+        try (final V8Array params = new V8Array(runtime)) {
+            params.push(constructor);
 
-        if (constrParams != null)
-            params.push(constrParams);
+            if (constrParams != null)
+                params.push(constrParams);
 
-        final V8Object obj = (V8Object) newInstanceFn.call(null, params);
-        params.release();
-
-        return obj;
+            return (V8Object) newInstanceFn.call(null, params);
+        }
     }
 
     /**

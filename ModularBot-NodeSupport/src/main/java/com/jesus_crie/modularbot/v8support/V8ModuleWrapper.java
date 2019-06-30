@@ -3,7 +3,12 @@ package com.jesus_crie.modularbot.v8support;
 import com.eclipsesource.v8.Releasable;
 import com.eclipsesource.v8.V8Array;
 import com.eclipsesource.v8.V8Object;
+import com.eclipsesource.v8.V8Value;
+import com.jesus_crie.modularbot.core.ModularBot;
+import com.jesus_crie.modularbot.core.ModularBotBuilder;
 import com.jesus_crie.modularbot.core.module.Module;
+import com.jesus_crie.modularbot.core.module.ModuleManager;
+import com.jesus_crie.modularbot.v8support.proxying.ProxyRules;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,11 +40,14 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
         module.acquireLock();
 
         // Gather the exported module constructor
-        final V8Object moduleConstructor = module.getNode().require(mainFile);
+        try (final V8Object moduleConstructor = module.getNode().require(mainFile)) {
 
-        // Create the instance of the module with the exported constructor
-        nodeModule = module.createNewInstance(moduleConstructor, parameters);
-        moduleConstructor.release();
+            // Create the instance of the module with the exported constructor
+            nodeModule = module.createNewInstance(moduleConstructor, parameters);
+        }
+
+        if (parameters != null)
+            parameters.close();
 
         module.registerModule(this);
         module.releaseLock();
@@ -55,8 +63,80 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
         return nodeModule;
     }
 
+    protected Object safeInvoke(@Nonnull final String functionName, @Nonnull final Object... parameters) {
+        module.acquireLock();
+
+        if (nodeModule.getType(functionName) == V8Value.V8_FUNCTION) {
+            return nodeModule.executeJSFunction(functionName, parameters);
+        }
+
+        module.releaseLock();
+        return null;
+    }
+
+    protected V8Value wrap(@Nonnull final Object object) {
+        if (object instanceof V8Value)
+            return (V8Value) object;
+
+        return module.getOrMakeProxy(object);
+    }
+
+    protected V8Value wrap(@Nonnull final Object object, @Nullable final ProxyRules rules) {
+        if (object instanceof V8Value)
+            return (V8Value) object;
+
+        return module.getOrMakeProxy(object, rules);
+    }
+
+    @Override
+    public void close() {
+        nodeModule.close();
+    }
+
+    @Deprecated
     @Override
     public void release() {
-        nodeModule.release();
+        close();
+    }
+
+    @Override
+    public void onLoad(@Nonnull final ModuleManager moduleManager, @Nonnull final ModularBotBuilder builder) {
+        safeInvoke("onLoad", wrap(moduleManager), wrap(builder));
+    }
+
+    @Override
+    public void onInitialization(@Nonnull final ModuleManager moduleManager) {
+        safeInvoke("onInitialization");
+    }
+
+    @Override
+    public void onPostInitialization() {
+        safeInvoke("onPostInitialization");
+    }
+
+    @Override
+    public void onPrepareShards() {
+        safeInvoke("onPrepareShards");
+    }
+
+    @Override
+    public void onShardsCreated() {
+        safeInvoke("onShardsCreated");
+    }
+
+    @Override
+    public void onShardsReady(@Nonnull final ModularBot bot) {
+        super.onShardsReady(bot);
+        safeInvoke("onShardsReady", wrap(bot));
+    }
+
+    @Override
+    public void onShutdownShards() {
+        safeInvoke("onShutdownShards");
+    }
+
+    @Override
+    public void onUnload() {
+        safeInvoke("onUnload");
     }
 }

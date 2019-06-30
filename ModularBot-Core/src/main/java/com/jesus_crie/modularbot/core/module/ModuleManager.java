@@ -9,11 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 
 /**
@@ -24,7 +21,7 @@ public class ModuleManager {
     private static final Logger LOG = LoggerFactory.getLogger("ModuleManager");
 
     private DependencyGraph dependencyGraph;
-    private final ConcurrentHashMap<Class<? extends Module>, Module> modules = new ConcurrentHashMap<>();
+    private final CopyOnWriteArrayList<Module> modules = new CopyOnWriteArrayList<>();
     private boolean initialized = false;
 
     @Nonnull
@@ -55,9 +52,13 @@ public class ModuleManager {
     @SuppressWarnings("unchecked")
     @Nonnull
     public <T extends Module> T getModule(@Nonnull final Class<T> clazz) {
-        if (!modules.containsKey(clazz))
+        final Optional<T> module = (Optional<T>) modules.stream().filter(m -> m.getClass().equals(clazz)).findAny();
+
+        if (!module.isPresent()) {
             throw new IllegalStateException("This module has not been loaded !");
-        return (T) modules.get(clazz);
+        }
+
+        return module.get();
     }
 
     /**
@@ -67,7 +68,7 @@ public class ModuleManager {
      * @see Lifecycle#onLoad(ModuleManager, ModularBotBuilder)
      */
     public void loadModules(@Nonnull final ModularBotBuilder builder) {
-        modules.forEachValue(20, module -> {
+        modules.forEach(module -> {
             module.onLoad(this, builder);
             module.state = Lifecycle.State.LOADED;
         });
@@ -81,10 +82,10 @@ public class ModuleManager {
      * @see Lifecycle#onPostInitialization()
      */
     public void initialize() {
-        modules.forEachValue(20, module -> module.onInitialization(this));
+        modules.forEach(module -> module.onInitialization(this));
         initialized = true;
 
-        modules.forEachValue(20, module -> {
+        modules.forEach(module -> {
             module.onPostInitialization();
             module.state = Lifecycle.State.INITIALIZED;
         });
@@ -97,7 +98,7 @@ public class ModuleManager {
      * @see Lifecycle#onShardsReady(ModularBot)
      */
     public void finalizeInitialization(@Nonnull final ModularBot bot) {
-        modules.forEachValue(20, module -> {
+        modules.forEach(module -> {
             module.onShardsReady(bot);
             module.state = Lifecycle.State.STARTED;
         });
@@ -109,10 +110,12 @@ public class ModuleManager {
      * @see Lifecycle#onShutdownShards()
      */
     public void preUnload() {
-        modules.forEachValue(20, module -> {
+        // Reverse order for the unloading
+        for (final ListIterator<Module> iterator = modules.listIterator(modules.size()); iterator.hasPrevious(); ) {
+            final Module module = iterator.previous();
             module.onShutdownShards();
             module.state = Lifecycle.State.OFFLINE;
-        });
+        }
     }
 
     /**
@@ -121,10 +124,12 @@ public class ModuleManager {
      * @see Lifecycle#onUnload()
      */
     public void unload() {
-        modules.forEachValue(20, module -> {
+        // Reverse order for the unloading
+        for (final ListIterator<Module> iterator = modules.listIterator(modules.size()); iterator.hasPrevious(); ) {
+            final Module module = iterator.previous();
             module.onUnload();
             module.state = Lifecycle.State.STOPPED;
-        });
+        }
 
         // Clear the map to allow the GC to collect them
         modules.clear();
@@ -147,7 +152,7 @@ public class ModuleManager {
      * @param action - The action to perform on each module.
      */
     public void dispatch(@Nonnull final Consumer<Module> action) {
-        modules.forEachValue(20, action);
+        modules.forEach(action);
     }
 
     /**
@@ -223,6 +228,7 @@ public class ModuleManager {
 
         /**
          * Check if the context has been resolved or not.
+         *
          * @return True if {@link #resolve()} has been called, otherwise false.
          */
         public boolean isResolved() {
@@ -238,7 +244,7 @@ public class ModuleManager {
         public void resolve() throws DependencyInjectionException {
             final Collection<Module> ms = injector.resolve(requests);
             modules.clear();
-            ms.forEach(module -> modules.put(module.getClass(), module));
+            modules.addAll(ms);
 
             dependencyGraph = injector.getDependencyGraph();
             resolved = true;

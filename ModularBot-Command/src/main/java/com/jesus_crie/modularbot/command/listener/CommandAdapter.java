@@ -13,7 +13,7 @@ import javax.annotation.Nonnull;
 import java.util.List;
 import java.util.Map;
 
-public class NopCommandListener implements CommandListener {
+public abstract class CommandAdapter implements CommandListener {
 
     @Override
     public void onCommandReceived(@Nonnull final MessageReceivedEvent event) {
