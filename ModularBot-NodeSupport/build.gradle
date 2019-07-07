@@ -1,4 +1,4 @@
-import org.apache.tools.ant.taskdefs.condition.Os
+/*import org.apache.tools.ant.taskdefs.condition.Os
 
 ext.getJ2V8Platform = { ->
     if (Os.isFamily(Os.FAMILY_WINDOWS)) {
@@ -8,18 +8,13 @@ ext.getJ2V8Platform = { ->
     } else if (Os.isFamily(Os.FAMILY_UNIX)) {
         return 'linux'
     }
-}
-
-/*configurations.all { Configuration conf ->
-    conf.resolutionStrategy.dependencySubstitution {
-        substitute module('com.eclipsesource.j2v8:j2v8_linux_x86_64') with files('jni/j2v8-5.1.0.jar')
-    }
 }*/
 
 dependencies {
-    implementation project(':modularbot-core')    
-    /*implementation("com.eclipsesource.j2v8:j2v8_${project.getJ2V8Platform()}_x86_64:4.6.0") {
+    implementation project(':modularbot-core')
+    
+    implementation files('../jni/j2v8-5.0.103.jar')
+    /*implementation("com.eclipsesource.j2v8:j2v8_${project.getJ2V8Platform()}_x86_64:4.8.0") {
         transitive = false
     }*/
-    implementation files('../jni/j2v8-5.1.0.jar')
 }

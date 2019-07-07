@@ -65,7 +65,13 @@ public class ProxyManager implements Releasable {
      */
     @Nonnull
     private V8Object createProxy(@Nonnull final Object target, @Nullable final ProxyRules rules) {
-        if (target.getClass().isAnnotationPresent(ProxyExport.class)) {
+        if (target instanceof V8Convertible) {
+            final V8Object obj = new V8Object(runtime);
+            ((V8Convertible) target).bindToV8Object(obj);
+
+            return obj;
+
+        } else if (target.getClass().isAnnotationPresent(ProxyExport.class)) {
             return createGranularProxy(target);
         } else {
             return createAutoProxy(target, rules);

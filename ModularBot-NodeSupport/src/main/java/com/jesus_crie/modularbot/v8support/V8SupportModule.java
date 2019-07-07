@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Collectors;
+import java.util.function.Supplier;
 
 public class V8SupportModule extends Module {
 
@@ -28,7 +27,7 @@ public class V8SupportModule extends Module {
             ModularBotBuildInfo.AUTHOR, ModularBotBuildInfo.GITHUB_URL,
             ModularBotBuildInfo.VERSION_NAME, ModularBotBuildInfo.BUILD_NUMBER());
 
-    private static final String V8_NEW_INSTANCE_HELPER_SCRIPT = "(() => function (constr, args) { return new constr(...args || []); })()";
+    private static final String V8_NEW_INSTANCE_HELPER_SCRIPT = "(()=>function(c,a){return new c(...a||[]);})()";
 
     private final ReentrantLock lock = new ReentrantLock(true);
     private final NodeJS node;
@@ -38,27 +37,6 @@ public class V8SupportModule extends Module {
 
     private final ProxyManager proxyManager;
 
-    private static class MyReferenceHandler implements ReferenceHandler {
-
-        private final List<V8Value> values = new LinkedList<>();
-
-        @Override
-        public void v8HandleCreated(V8Value object) {
-            values.add(object);
-        }
-
-        public List<V8Value> getNonReleased() {
-            return values.stream()
-                    .filter(v -> !v.isReleased())
-                    .collect(Collectors.toList());
-        }
-
-        @Override
-        public void v8HandleDisposed(V8Value object) {
-
-        }
-    }
-
     @InjectorTarget
     public V8SupportModule() {
         super(INFO);
@@ -67,12 +45,12 @@ public class V8SupportModule extends Module {
 
         node = NodeJS.createNodeJS();
         runtime = node.getRuntime();
-        runtime.addReferenceHandler(new MyReferenceHandler());
         newInstanceFn = (V8Function) runtime.executeObjectScript(V8_NEW_INSTANCE_HELPER_SCRIPT);
 
         proxyManager = new ProxyManager(runtime);
 
-        LOG.info("Node.JS runtime configured");
+        final String nodeVersion = runtime.executeStringScript("process.version");
+        LOG.info("Node.JS runtime configured (Node.JS " + nodeVersion + ")");
         releaseLock();
     }
 
@@ -150,6 +128,9 @@ public class V8SupportModule extends Module {
      * <p>
      * Subsequent calls will with the same parameter will return the exact same
      * object (that was cached).
+     * <p>
+     * This method is thread-safe, the lock will be acquired and then released.
+     * Thus if you still need the lock, you need to reacquire it.
      *
      * @param obj   - The object to process.
      * @param rules - The rules to use.
@@ -175,6 +156,9 @@ public class V8SupportModule extends Module {
 
     /**
      * Make a {@link V8Array} from some raw {@link V8Value}.
+     * <p>
+     * This method is thread-safe, the lock will be acquired and then released.
+     * Thus if you still need the lock, you need to reacquire it.
      *
      * @param v8Values - Some raw values.
      * @return A new {@link V8Array} containing the given values.

@@ -1,5 +1,6 @@
 package com.jesus_crie.modularbot;
 
+import com.eclipsesource.v8.V8Object;
 import com.jesus_crie.modularbot.command.AccessLevel;
 import com.jesus_crie.modularbot.command.Command;
 import com.jesus_crie.modularbot.command.CommandEvent;
@@ -23,6 +24,7 @@ import com.jesus_crie.modularbot.messagedecorator.decorator.disposable.ConfirmRe
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PanelReactionDecorator;
 import com.jesus_crie.modularbot.messagedecorator.decorator.permanent.PollReactionDecorator;
 import com.jesus_crie.modularbot.nightconfig.NightConfigWrapperModule;
+import com.jesus_crie.modularbot.v8support.V8EventEmitter;
 import com.jesus_crie.modularbot.v8support.V8ModuleWrapper;
 import com.jesus_crie.modularbot.v8support.V8SupportModule;
 import com.jesus_crie.modularbot.v8support.proxying.ProxyRules;
@@ -49,7 +51,7 @@ public class ModularTestRun extends Module {
 
     @InjectorTarget
     public ModularTestRun(final SubModule1 module1, final SubModule2 module2) {
-        super(new ModuleInfo("TestModule", "Jesus-Crie", "", "1.0", 1));
+        super(new ModuleInfo("TestModule", "Jesus_Crie", "", "1.0", 1));
         LOG.info("Main: Sub module 1 injection: " + (module1 == null ? "failed" : "successful"));
         LOG.info("Main: Sub module 2 injection: " + (module2 == null ? "failed" : "successful"));
     }
@@ -238,16 +240,45 @@ public class ModularTestRun extends Module {
 
     public static class TestJSModule extends V8ModuleWrapper {
 
+        private final V8EventEmitter emitter;
+
         @InjectorTarget
-        public TestJSModule(@Nonnull final V8SupportModule v8Module) throws NoSuchMethodException {
+        public TestJSModule(@Nonnull final V8SupportModule v8Module, @Nonnull final CommandModule cmdModule) throws NoSuchMethodException {
             super(v8Module,
                     new File("./example/node_script/test_module1/index.js"),
                     v8Module.makeArray(
                             v8Module.getOrMakeProxy(LOG, ProxyRules.dominatedBy(
-                                    LOG.getClass().getMethod("info", String.class)
-                            ))
+                                    LOG.getClass().getMethod("info", String.class, Object[].class)
+                            )),
+                            v8Module.getOrMakeProxy(cmdModule)
                     )
             );
+
+            module.acquireLock();
+
+            final V8Object nodeEmitter = getModuleObject().getObject("emitter");
+            emitter = new V8EventEmitter(v8Module, nodeEmitter);
+
+            nodeModule.registerJavaMethod((caller, params) -> 42, "_getMagicNumber");
+
+            module.releaseLock();
+        }
+
+        @Override
+        public void onShardsReady(@Nonnull final ModularBot bot) {
+            super.onShardsReady(bot);
+            bot.addEventListener(emitter);
+        }
+
+        @Override
+        public void onShutdownShards() {
+            bot.removeEventListener(emitter);
+        }
+
+        @Override
+        public void close() {
+            emitter.close();
+            super.close();
         }
     }
 
@@ -276,7 +307,10 @@ public class ModularTestRun extends Module {
                 event.fastReply("Regular shutdown");
             }
 
-            event.getModule().getBot().shutdown();
+            // Defer the shutdown
+            event.getModule().getBot().getMainPool().execute(() -> {
+                event.getModule().getBot().shutdown();
+            });
         }
     }
 

@@ -42,6 +42,12 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
         // Gather the exported module constructor
         try (final V8Object moduleConstructor = module.getNode().require(mainFile)) {
 
+            // Check that we can indeed invoke the constructor
+            if (moduleConstructor.getV8Type() != V8Value.V8_FUNCTION) {
+                throw new IllegalArgumentException("Exported module isn't a function ! " +
+                        "Found type: " + V8Value.getStringRepresentation(moduleConstructor.getV8Type()));
+            }
+
             // Create the instance of the module with the exported constructor
             nodeModule = module.createNewInstance(moduleConstructor, parameters);
         }
@@ -65,13 +71,17 @@ public abstract class V8ModuleWrapper extends Module implements Releasable {
 
     protected Object safeInvoke(@Nonnull final String functionName, @Nonnull final Object... parameters) {
         module.acquireLock();
+        try {
 
-        if (nodeModule.getType(functionName) == V8Value.V8_FUNCTION) {
-            return nodeModule.executeJSFunction(functionName, parameters);
+            if (nodeModule.getType(functionName) == V8Value.V8_FUNCTION) {
+                return nodeModule.executeJSFunction(functionName, parameters);
+            } else {
+                return null;
+            }
+
+        } finally {
+            module.releaseLock();
         }
-
-        module.releaseLock();
-        return null;
     }
 
     protected V8Value wrap(@Nonnull final Object object) {

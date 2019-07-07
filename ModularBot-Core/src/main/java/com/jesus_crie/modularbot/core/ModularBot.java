@@ -82,23 +82,23 @@ public class ModularBot extends DefaultShardManager {
      * @param enableCompression         Enable the compression
      */
     public ModularBot(final int shardsTotal, @Nullable final Collection<Integer> shardIds,
-               @Nullable final SessionController controller,
-               @Nullable final List<Object> listeners, @Nullable final List<IntFunction<Object>> listenerProviders,
-               @Nonnull final String token, @Nullable final IntFunction<? extends IEventManager> eventManagerProvider,
-               @Nullable final IAudioSendFactory audioSendFactory, @Nullable final IntFunction<? extends Game> gameProvider,
-               @Nullable final IntFunction<OnlineStatus> statusProvider,
-               @Nullable final OkHttpClient.Builder httpClientBuilder, @Nullable final OkHttpClient httpClient,
-               @Nullable final ThreadPoolProvider<? extends ScheduledExecutorService> rateLimitPoolProvider,
-               @Nullable final ThreadPoolProvider<? extends ScheduledExecutorService> gatewayPoolProvider,
-               @Nullable final ThreadPoolProvider<? extends ExecutorService> callbackPoolProvider,
-               @Nullable final WebSocketFactory wsFactory, @Nullable final ThreadFactory threadFactory,
-               final int maxReconnectDelay, final int corePoolSize, final boolean enableVoice,
-               final boolean enableShutdownHook, final boolean enableBulkDeleteSplitting,
-               final boolean autoReconnect, @Nullable final IntFunction<Boolean> idleProvider,
-               final boolean retryOnTimeout, final boolean useShutdownNow,
-               final boolean enableMDC, @Nullable final IntFunction<? extends ConcurrentMap<String, String>> contextProvider,
-               @Nullable final EnumSet<CacheFlag> cacheFlags, final boolean enableCompression,
-               @Nonnull final ModuleManager moduleManager) {
+                      @Nullable final SessionController controller,
+                      @Nullable final List<Object> listeners, @Nullable final List<IntFunction<Object>> listenerProviders,
+                      @Nonnull final String token, @Nullable final IntFunction<? extends IEventManager> eventManagerProvider,
+                      @Nullable final IAudioSendFactory audioSendFactory, @Nullable final IntFunction<? extends Game> gameProvider,
+                      @Nullable final IntFunction<OnlineStatus> statusProvider,
+                      @Nullable final OkHttpClient.Builder httpClientBuilder, @Nullable final OkHttpClient httpClient,
+                      @Nullable final ThreadPoolProvider<? extends ScheduledExecutorService> rateLimitPoolProvider,
+                      @Nullable final ThreadPoolProvider<? extends ScheduledExecutorService> gatewayPoolProvider,
+                      @Nullable final ThreadPoolProvider<? extends ExecutorService> callbackPoolProvider,
+                      @Nullable final WebSocketFactory wsFactory, @Nullable final ThreadFactory threadFactory,
+                      final int maxReconnectDelay, final int corePoolSize, final boolean enableVoice,
+                      final boolean enableShutdownHook, final boolean enableBulkDeleteSplitting,
+                      final boolean autoReconnect, @Nullable final IntFunction<Boolean> idleProvider,
+                      final boolean retryOnTimeout, final boolean useShutdownNow,
+                      final boolean enableMDC, @Nullable final IntFunction<? extends ConcurrentMap<String, String>> contextProvider,
+                      @Nullable final EnumSet<CacheFlag> cacheFlags, final boolean enableCompression,
+                      @Nonnull final ModuleManager moduleManager) {
 
         super(shardsTotal, shardIds, controller,
                 listeners, listenerProviders,
@@ -285,5 +285,9 @@ public class ModularBot extends DefaultShardManager {
         moduleManager.unload();
 
         logger.info("Bot powered off successfully !");
+
+        // For some reason there are some OkHttp thread still up from time to time
+        // To avoid the program from being locked in this state, we exit manually
+        System.exit(0);
     }
 }
